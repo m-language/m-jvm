@@ -88,19 +88,25 @@ object Gen {
                         Result(emptyList(), pushMKeyword(keyword), env)
                     }
                     first is Expr.Identifier && first.name == "lambda" -> {
-                        val name = (exprs[1] as Expr.Identifier).name
-                        val value = exprs[2]
-                        val closures = closures(env, value) - name
-                        val closureOps = closures.map { gen(Expr.Identifier(it, 1), env).op }
-                        val methodName = "${env.method}_${env.i}"
-                        val localEnv = env.copy(
-                                locals = (closures + name).asSequence().withIndex().map { it.value to it.index }.toList().toMap().mapValues { (_, index) -> Location.Local(index) },
-                                method = methodName
-                        )
-                        val (lambdaDecls, lambdaOps, _) = gen(value, localEnv)
-                        val ops = lambdaConstructor(env.clazz, methodName, closureOps)
-                        val method = Decl(lambdaMethod(methodName, closures, block(lambdaOps, `return`)), block())
-                        Result(listOf(method) + lambdaDecls, ops, env.copy(i = env.i + 1))
+                        when (exprs.size) {
+                            2 -> gen(Expr.List(listOf(first, Expr.Identifier("unused", expr.line), exprs[1]), expr.line), env)
+                            3 -> {
+                                val name = (exprs[1] as Expr.Identifier).name
+                                val value = exprs[2]
+                                val closures = closures(env, value) - name
+                                val closureOps = closures.map { gen(Expr.Identifier(it, 1), env).op }
+                                val methodName = "${env.method}_${env.i}"
+                                val localEnv = env.copy(
+                                        locals = (closures + name).asSequence().withIndex().map { it.value to it.index }.toList().toMap().mapValues { (_, index) -> Location.Local(index) },
+                                        method = methodName
+                                )
+                                val (lambdaDecls, lambdaOps, _) = gen(value, localEnv)
+                                val ops = lambdaConstructor(env.clazz, methodName, closureOps)
+                                val method = Decl(lambdaMethod(methodName, closures, block(lambdaOps, `return`)), block())
+                                Result(listOf(method) + lambdaDecls, ops, env.copy(i = env.i + 1))
+                            }
+                            else -> gen(Expr.List(listOf(first, exprs[1], Expr.List(listOf(first, exprs[2]) + exprs.drop(3), expr.line)), expr.line), env)
+                        }
                     }
                     first is Expr.Identifier && first.name == "def" -> {
                         val name = (exprs[1] as Expr.Identifier).name
