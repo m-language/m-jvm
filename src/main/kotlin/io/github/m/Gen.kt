@@ -20,7 +20,7 @@ object Gen {
             MFile.Definitions::class.java,
             MUndefined.Definitions::class.java,
             Runtime.Definitions::class.java,
-            Definitions::class.java,
+            Gen.Definitions::class.java,
             Expr.Definitions::class.java
     ).flatMap {
         it

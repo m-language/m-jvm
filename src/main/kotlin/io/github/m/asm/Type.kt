@@ -43,7 +43,7 @@ data class Type @JvmOverloads constructor(
         @JvmStatic
         @JvmOverloads
         fun clazz(
-                clazz: Class<*>,
+                clazz: java.lang.Class<*>,
                 generics: List<Type> = emptyList()
         ) = clazz(QualifiedName.fromClass(clazz), generics)
 
