@@ -1,0 +1,52 @@
+buildscript {
+    ext.kotlin_version = '1.2.70'
+
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+
+    buildscript.dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'eu.appsatori:gradle-fatjar-plugin:0.3'
+    }
+}
+
+group 'io.github.m'
+version '0.1.0'
+
+apply plugin: 'java'
+apply plugin: 'kotlin'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    maven { url "https://dl.bintray.com/aedans/maven/" }
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+}
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'io.github.m.jvm.Main'
+    }
+    baseName = project.name
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = 1.8
+    kotlinOptions.freeCompilerArgs += "-Xjvm-default=enable"
+    kotlinOptions.apiVersion = "1.2"
+}
+
+kotlin {
+    experimental {
+        coroutines "enable"
+    }
+}
