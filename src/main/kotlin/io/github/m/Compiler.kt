@@ -13,7 +13,7 @@ object Compiler {
 
     fun compile(`in`: File, out: File) {
         val text = `in`.readLines().joinToString("\n", "", "").asSequence()
-        val exprs = (Parser.parser(text, 1) as Parser.Result.Success).result
+        val exprs = (Parser.parser(text, 1) as Parser.Result.Success).value
         val clazz = Gen.gen(exprs, `in`)
         clazz.generate(out)
     }

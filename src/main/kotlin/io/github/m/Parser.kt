@@ -22,7 +22,7 @@ object Parser {
     @Suppress("unused")
     sealed class Result<out R, out S, out T> {
         data class Failure<out S>(val state: S) : Result<Nothing, S, Nothing>()
-        data class Success<out R, out S, out T>(val result: R, val state: S, val rest: Sequence<T>) : Result<R, S, T>()
+        data class Success<out R, out S, out T>(val value: R, val state: S, val rest: Sequence<T>) : Result<R, S, T>()
     }
 
     fun <S, T> predicateParser(predicate: (T) -> Boolean) = Parser<T, S, T> { input, state ->
@@ -40,12 +40,12 @@ object Parser {
             mapParser(parser) { if (it is Result.Success) fn(it) else it as Result.Failure<S> }
 
     fun <A, B, S, T> mapParserResult(parser: Parser<A, S, T>, fn: (A) -> B) =
-            mapParserSuccess(parser) { Result.Success(fn(it.result), it.state, it.rest) }
+            mapParserSuccess(parser) { Result.Success(fn(it.value), it.state, it.rest) }
 
     fun <R, S, T> mapParserState(parser: Parser<R, S, T>, fn: (R, S) -> S) =
-            mapParserSuccess(parser) { it.copy(state = fn(it.result, it.state)) }
+            mapParserSuccess(parser) { it.copy(state = fn(it.value, it.state)) }
 
-    fun <R, S, T> injectPastState(parser: Parser<R, S, T>): Parser<Pair<R, S>, S, T> = Parser { input, state ->
+    fun <R, S, T> providePastState(parser: Parser<R, S, T>): Parser<Pair<R, S>, S, T> = Parser { input, state ->
         mapParserResult(parser) { it to state }.invoke(input, state)
     }
 
@@ -55,7 +55,7 @@ object Parser {
             is Result.Success -> {
                 val result2 = parser2(result1.rest, result1.state)
                 when (result2) {
-                    is Result.Success -> Result.Success(result1.result to result2.result, result2.state, result2.rest)
+                    is Result.Success -> Result.Success(result1.value to result2.value, result2.state, result2.rest)
                     is Result.Failure -> result2
                 }
             }
@@ -74,7 +74,7 @@ object Parser {
         when (result) {
             is Result.Success -> {
                 val restResult = repeatParser(parser)(result.rest, result.state) as Result.Success<Sequence<R>, S, T>
-                Result.Success(sequenceOf(result.result) + restResult.result, restResult.state, restResult.rest)
+                Result.Success(sequenceOf(result.value) + restResult.value, restResult.state, restResult.rest)
             }
             is Result.Failure -> Result.Success(emptySequence(), state, input)
         }
@@ -101,19 +101,18 @@ object Parser {
     val newlineParser: Parser<Char, Int, Char> = mapParserState(predicateParser(io.github.m.Parser::isNewline)) { _, position -> position + 1 }
     val whitespaceParser: Parser<Char, Int, Char> = alternativeParser(newlineParser, predicateParser { isWhitespace(it) })
     
-    fun <R> ignoreUnused(parser: Parser<R, Int, Char>) =
-            combineParserRight(repeatParser(whitespaceParser), parser)
+    fun <R> ignoreUnused(parser: Parser<R, Int, Char>) = combineParserRight(repeatParser(whitespaceParser), parser)
 
     fun isIdentifierCharacter(c: Char) = !(isWhitespace(c) || c == '(' || c == ')')
 
     val identifierCharParser: Parser<Char, Int, Char> = predicateParser(io.github.m.Parser::isIdentifierCharacter)
-    val identifierParser: Parser<Identifier, Int, Char> = ignoreUnused(mapParserResult(injectPastState(repeatParser1(identifierCharParser))) { (e, p) -> Identifier(e, p) })
+    val identifierParser: Parser<Identifier, Int, Char> = ignoreUnused(mapParserResult(providePastState(repeatParser1(identifierCharParser))) { (e, p) -> Identifier(e, p) })
 
     val openParenParser: Parser<Char, Int, Char> = ignoreUnused(predicateParser { it == '(' })
     val closeParenParser: Parser<Char, Int, Char> = ignoreUnused(predicateParser { it == ')' })
 
     val listExprParser1: Parser<Sequence<Expr>, Int, Char> = combineParserRight(openParenParser, combineParserLeft(lazyParser { parser }, closeParenParser))
-    val listExprParser: Parser<List, Int, Char> = ignoreUnused(mapParserResult(injectPastState(listExprParser1)) { (e, p) -> List(e.toList(), p) })
+    val listExprParser: Parser<List, Int, Char> = ignoreUnused(mapParserResult(providePastState(listExprParser1)) { (e, p) -> List(e.toList(), p) })
     val exprParser: Parser<Expr, Int, Char> = alternativeParser(identifierParser, listExprParser)
 
     val parser: Parser<Sequence<Expr>, Int, Char> = repeatParser(exprParser)

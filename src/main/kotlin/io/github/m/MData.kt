@@ -36,16 +36,16 @@ interface MData : MAny {
 
     @Suppress("unused", "ObjectPropertyName")
     object Definitions {
-        @MField("data-constructor")
+        @MField("new-data")
         @JvmField
-        val dataConstructor: MAny = MFunction { name, fields, values ->
+        val newData: MAny = MFunction { name, fields, values ->
             val fields0 = Cast.toList(fields).asSequence().map { Cast.toKeyword(it) }
             val values0 = Cast.toList(values).asSequence()
             Impl(Cast.toKeyword(name), (fields0 zip values0).toMap())
         }
 
-        @MField("dot")
+        @MField("field")
         @JvmField
-        val dot: MAny = MFunction { data, name -> Cast.toData(data)[Cast.toKeyword(name)] }
+        val field: MAny = MFunction { name, data -> Cast.toData(data)[Cast.toKeyword(name)] }
     }
 }
