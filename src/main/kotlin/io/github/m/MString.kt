@@ -5,7 +5,7 @@ package io.github.m
 /**
  * Converts a Java string to an M list.
  */
-val String.mString get(): MList = MList.valueOf(map(MChar.Companion::valueOf))
+val String.mString get(): MList = MList.valueOf(map(::MChar))
 
 /**
  * Converts a M list to a java string.

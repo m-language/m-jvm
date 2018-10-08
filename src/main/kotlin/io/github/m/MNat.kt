@@ -62,8 +62,8 @@ data class MNat private constructor(val value: Int) : MAny {
         @JvmField
         val eqNat: MAny = MFunction { x, y -> Cast.toNat(x).eq(Cast.toNat(y)) }
 
-        @MField("n")
+        @MField("keyword->nat")
         @JvmField
-        val n: MAny = MFunction { x -> valueOf(Cast.toKeyword(x).value.toInt()) }
+        val keywordToNat: MAny = MFunction { x -> MNat(Cast.toKeyword(x).value.toInt()) }
     }
 }

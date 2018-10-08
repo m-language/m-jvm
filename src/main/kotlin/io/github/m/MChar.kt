@@ -23,12 +23,16 @@ data class MChar(val value: Char) : MAny {
 
     @Suppress("unused", "ObjectPropertyName")
     object Definitions {
-        @MField("c")
-        @JvmField
-        val c: MAny = MFunction { x -> valueOf(Cast.toKeyword(x).value.toInt().toChar()) }
-
         @MField("eq-char")
         @JvmField
         val eqChar: MAny = MFunction { x, y -> Cast.toChar(x).eq(Cast.toChar(y)) }
+
+        @MField("int->char")
+        @JvmField
+        val intToChar: MAny = MFunction { x -> MChar(Cast.toInt(x).value.toChar()) }
+
+        @MField("keyword->char")
+        @JvmField
+        val keywordToChar: MAny = MFunction { x -> MChar(Cast.toKeyword(x).value.first()) }
     }
 }

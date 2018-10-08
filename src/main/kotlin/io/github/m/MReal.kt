@@ -61,8 +61,8 @@ data class MReal(val value: Float) : MAny {
         @JvmField
         val eqReal: MAny = MFunction { x, y -> Cast.toReal(x).eq(Cast.toReal(y)) }
 
-        @MField("r")
+        @MField("keyword->real")
         @JvmField
-        val r: MAny = MFunction { x -> valueOf(Cast.toKeyword(x).value.toFloat()) }
+        val keywordToReal: MAny = MFunction { x -> MReal(Cast.toKeyword(x).value.toFloat()) }
     }
 }

@@ -61,8 +61,8 @@ data class MInt(val value: Int) : MAny {
         @JvmField
         val eqInt: MAny = MFunction { x, y -> Cast.toInt(x).eq(Cast.toInt(y)) }
 
-        @MField("i")
+        @MField("keyword->int")
         @JvmField
-        val i: MAny = MFunction { x -> valueOf(Cast.toKeyword(x).value.toInt()) }
+        val keywordToInt: MAny = MFunction { x -> MInt(Cast.toKeyword(x).value.toInt()) }
     }
 }

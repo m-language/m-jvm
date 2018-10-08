@@ -15,7 +15,7 @@ data class MFile(val file: File) : MData {
             val sequence = buildSequence<MAny> {
                 while (bufferedReader.ready()) {
                     val char = bufferedReader.read().toChar()
-                    yield(MChar.valueOf(char))
+                    yield(MChar(char))
                 }
             }
             MList.valueOf(sequence.asIterable())
