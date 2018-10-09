@@ -13,7 +13,7 @@ object Gen {
             MInt.Definitions::class.java,
             MReal.Definitions::class.java,
             MChar.Definitions::class.java,
-            MKeyword.Definitions::class.java,
+            MSymbol.Definitions::class.java,
             MData.Definitions::class.java,
             MError.Definitions::class.java,
             MProcess.Definitions::class.java,
@@ -83,9 +83,9 @@ object Gen {
                         val (decls3, ifFalseOps, env3) = gen(ifFalse, env2)
                         Result(decls1 + decls2 + decls3, `if`(conditionOps, ifTrueOps, ifFalseOps), env3)
                     }
-                    first is Expr.Identifier && first.name == "keyword" -> {
-                        val keyword = (exprs[1] as Expr.Identifier).name
-                        Result(emptyList(), pushMKeyword(keyword), env)
+                    first is Expr.Identifier && first.name == "symbol" -> {
+                        val symbol = (exprs[1] as Expr.Identifier).name
+                        Result(emptyList(), pushMSymbol(symbol), env)
                     }
                     first is Expr.Identifier && first.name == "lambda" -> {
                         when (exprs.size) {

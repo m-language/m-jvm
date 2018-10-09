@@ -7,7 +7,7 @@ interface MAny {
     /**
      * The type of the value.
      */
-    val type: MKeyword
+    val type: MSymbol
 
     @Suppress("unused", "ObjectPropertyName")
     object Definitions {

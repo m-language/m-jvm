@@ -9,7 +9,7 @@ import kotlin.coroutines.experimental.buildSequence
 data class MFile(val file: File) : MData {
     override val type = Companion.type
 
-    override fun get(key: MKeyword): MAny = when (key.value) {
+    override fun get(key: MSymbol): MAny = when (key.value) {
         "read" -> MProcess {
             val bufferedReader = file.bufferedReader()
             val sequence = buildSequence<MAny> {
@@ -27,7 +27,7 @@ data class MFile(val file: File) : MData {
         /**
          * The type of all files.
          */
-        override val type = MKeyword("file")
+        override val type = MSymbol("file")
     }
 
     @Suppress("unused")

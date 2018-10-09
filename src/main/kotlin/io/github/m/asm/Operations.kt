@@ -42,8 +42,8 @@ fun pushMLocal(index: Int) = pushArg(index)
 
 val pushMNil = getStaticField(Type.clazz(MList.Definitions::class.java), "nil", Gen.mAnyType)
 
-fun pushMKeyword(value: String) = pushNew(
-        Type.clazz(MKeyword::class.java),
+fun pushMSymbol(value: String) = pushNew(
+        Type.clazz(MSymbol::class.java),
         MethodType.constructor(listOf(Type.string), emptySet()),
         listOf(pushString(value))
 )

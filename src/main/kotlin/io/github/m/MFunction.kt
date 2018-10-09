@@ -21,7 +21,7 @@ interface MFunction : MAny {
         /**
          * The type of all functions.
          */
-        override val type = MKeyword("function")
+        override val type = MSymbol("function")
 
         @Suppress("NOTHING_TO_INLINE")
         inline operator fun invoke(noinline fn: () -> MAny) = Impl0(fn)

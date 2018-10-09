@@ -21,7 +21,7 @@ data class MReal(val value: Float) : MAny {
         /**
          * The type of all reals.
          */
-        override val type = MKeyword("real")
+        override val type = MSymbol("real")
 
         @JvmStatic
         fun valueOf(value: Float) = MReal(value)
@@ -61,8 +61,8 @@ data class MReal(val value: Float) : MAny {
         @JvmField
         val eqReal: MAny = MFunction { x, y -> Cast.toReal(x).eq(Cast.toReal(y)) }
 
-        @MField("keyword->real")
+        @MField("symbol->real")
         @JvmField
-        val keywordToReal: MAny = MFunction { x -> MReal(Cast.toKeyword(x).value.toFloat()) }
+        val symbolToReal: MAny = MFunction { x -> MReal(Cast.toSymbol(x).value.toFloat()) }
     }
 }

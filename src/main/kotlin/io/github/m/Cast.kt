@@ -26,7 +26,7 @@ object Cast {
     inline fun toList(any: MAny) = cast<MList>(any)
 
     @JvmStatic
-    inline fun toKeyword(any: MAny) = cast<MKeyword>(any)
+    inline fun toSymbol(any: MAny) = cast<MSymbol>(any)
 
     @JvmStatic
     inline fun toFunction(any: MAny) = cast<MFunction>(any)

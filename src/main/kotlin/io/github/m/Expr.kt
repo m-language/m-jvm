@@ -12,7 +12,7 @@ sealed class Expr : MAny {
     data class Identifier(val name: String, override val line: Int) : Expr(), MData {
         constructor(name: Sequence<Char>, line: Int) : this(name.joinToString("", "", ""), line)
 
-        override fun get(key: MKeyword) = when (key.value) {
+        override fun get(key: MSymbol) = when (key.value) {
             "name" -> name.mString
             "line" -> MInt(line)
             else -> noField(key)
@@ -23,12 +23,12 @@ sealed class Expr : MAny {
         override fun toString() = name
 
         companion object : MAny {
-            override val type = MKeyword("identifier-expr")
+            override val type = MSymbol("identifier-expr")
         }
     }
 
     data class List(val exprs: kotlin.collections.List<Expr>, override val line: Int) : Expr(), MData {
-        override fun get(key: MKeyword) = when (key.value) {
+        override fun get(key: MSymbol) = when (key.value) {
             "exprs" -> MList.valueOf(exprs)
             "line" -> MInt(line)
             else -> noField(key)
@@ -39,7 +39,7 @@ sealed class Expr : MAny {
         override fun toString() = exprs.joinToString(" ", "(", ")")
 
         companion object : MAny {
-            override val type= MKeyword("list-expr")
+            override val type= MSymbol("list-expr")
         }
     }
 

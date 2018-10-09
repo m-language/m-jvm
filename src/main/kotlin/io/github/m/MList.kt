@@ -33,7 +33,7 @@ sealed class MList : MAny, Iterable<MAny> {
         override val type get() = Companion.type
 
         companion object : MAny {
-            override val type = MKeyword("cons")
+            override val type = MSymbol("cons")
 
             operator fun invoke(car: MAny, cdr: MList) = Eager(car, cdr)
             operator fun invoke(lazyCons: () -> Cons) = Lazy(lazyCons)
@@ -52,13 +52,13 @@ sealed class MList : MAny, Iterable<MAny> {
      * The empty list.
      */
     object Nil : MList() {
-        override val type = MKeyword("nil")
+        override val type = MSymbol("nil")
         override val car get() = throw MError.InvalidArgument("car", MList.Nil)
         override val cdr get() = throw MError.InvalidArgument("cdr", MList.Nil)
     }
 
     companion object : MAny {
-        override val type = MKeyword("list")
+        override val type = MSymbol("list")
 
         fun valueOf(iterable: Iterable<MAny>) = valueOf(iterable.iterator())
         fun valueOf(iterator: Iterator<MAny>): MList = when {

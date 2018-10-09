@@ -8,13 +8,10 @@ package io.github.m
  * ```
  */
 object MUndefined : MAny {
-    override val type = MKeyword("undefined")
+    override val type = MSymbol("undefined")
 
     @Suppress("unused")
     object Definitions {
-        /**
-         * Internal definition to prevent re-defining undefined.
-         */
         @MField("undefined")
         @JvmField
         val undefined = MUndefined

@@ -15,7 +15,7 @@ interface MProcess : MAny {
         /**
          * The type of all processes.
          */
-        override val type = MKeyword("process")
+        override val type = MSymbol("process")
 
         @Suppress("NOTHING_TO_INLINE")
         inline operator fun invoke(noinline fn: () -> MAny) = Impl(fn)

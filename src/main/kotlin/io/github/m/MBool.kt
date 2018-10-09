@@ -12,7 +12,7 @@ sealed class MBool(val value: Boolean) : MAny {
         /**
          * The type of all booleans.
          */
-        override val type = MKeyword("bool")
+        override val type = MSymbol("bool")
 
         @Suppress("NOTHING_TO_INLINE")
         @JvmStatic

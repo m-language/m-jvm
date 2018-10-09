@@ -15,7 +15,7 @@ data class MChar(val value: Char) : MAny {
         /**
          * The type of all characters.
          */
-        override val type = MKeyword("char")
+        override val type = MSymbol("char")
 
         @JvmStatic
         fun valueOf(c: Char) = MChar(c)
@@ -31,8 +31,8 @@ data class MChar(val value: Char) : MAny {
         @JvmField
         val intToChar: MAny = MFunction { x -> MChar(Cast.toInt(x).value.toChar()) }
 
-        @MField("keyword->char")
+        @MField("symbol->char")
         @JvmField
-        val keywordToChar: MAny = MFunction { x -> MChar(Cast.toKeyword(x).value.first()) }
+        val symbolToChar: MAny = MFunction { x -> MChar(Cast.toSymbol(x).value.first()) }
     }
 }

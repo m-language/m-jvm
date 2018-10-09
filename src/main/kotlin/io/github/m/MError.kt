@@ -24,7 +24,7 @@ sealed class MError(message: String) : java.lang.Error(message) {
      * @param from The type of the object that is being cast.
      * @param to   The type that the object is being cast to.
      */
-    data class Cast(val from: MKeyword, val to: MKeyword) : MError("Cannot cast $from to $to")
+    data class Cast(val from: MSymbol, val to: MSymbol) : MError("Cannot cast $from to $to")
 
     /**
      * Error that is thrown when accessing a field that does not exist.
@@ -32,7 +32,7 @@ sealed class MError(message: String) : java.lang.Error(message) {
      * @param key  The key of the field.
      * @param type The type of the object missing the field.
      */
-    data class NoField(val key: MKeyword, val type: MKeyword) : MError("No field $key for $type")
+    data class NoField(val key: MSymbol, val type: MSymbol) : MError("No field $key for $type")
 
     /**
      * Error that is thrown when a function is called with invalid arguments.

@@ -22,7 +22,7 @@ data class MNat private constructor(val value: Int) : MAny {
         /**
          * The type of all naturals.
          */
-        override val type = MKeyword("nat")
+        override val type = MSymbol("nat")
 
         @JvmStatic
         fun valueOf(value: Int) = MNat(value)
@@ -62,8 +62,8 @@ data class MNat private constructor(val value: Int) : MAny {
         @JvmField
         val eqNat: MAny = MFunction { x, y -> Cast.toNat(x).eq(Cast.toNat(y)) }
 
-        @MField("keyword->nat")
+        @MField("symbol->nat")
         @JvmField
-        val keywordToNat: MAny = MFunction { x -> MNat(Cast.toKeyword(x).value.toInt()) }
+        val symbolToNat: MAny = MFunction { x -> MNat(Cast.toSymbol(x).value.toInt()) }
     }
 }

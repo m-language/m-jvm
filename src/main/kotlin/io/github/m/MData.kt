@@ -9,7 +9,7 @@ interface MData : MAny {
      *
      * @param key The key for the field.
      */
-    operator fun get(key: MKeyword): MAny
+    operator fun get(key: MSymbol): MAny
 
     /**
      * Utility method for failing if a field does not exist.
@@ -17,7 +17,7 @@ interface MData : MAny {
      * @param key The key for the field.
      */
     @JvmDefault
-    fun noField(key: MKeyword): Nothing = throw MError.NoField(key, type)
+    fun noField(key: MSymbol): Nothing = throw MError.NoField(key, type)
 
     /**
      * A generic implementation of data.
@@ -25,13 +25,13 @@ interface MData : MAny {
      * @param type   The type of the data.
      * @param fields A map of fields representing the data
      */
-    class Impl(override val type: MKeyword, private val fields: Map<MKeyword, MAny>) : MData {
-        override fun get(key: MKeyword) = fields[key] ?: noField(key)
+    class Impl(override val type: MSymbol, private val fields: Map<MSymbol, MAny>) : MData {
+        override fun get(key: MSymbol) = fields[key] ?: noField(key)
         override fun toString() = "$type($fields)"
     }
 
     companion object : MAny {
-        override val type = MKeyword("data")
+        override val type = MSymbol("data")
     }
 
     @Suppress("unused", "ObjectPropertyName")
@@ -39,13 +39,13 @@ interface MData : MAny {
         @MField("new-data")
         @JvmField
         val newData: MAny = MFunction { name, fields, values ->
-            val fields0 = Cast.toList(fields).asSequence().map { Cast.toKeyword(it) }
+            val fields0 = Cast.toList(fields).asSequence().map { Cast.toSymbol(it) }
             val values0 = Cast.toList(values).asSequence()
-            Impl(Cast.toKeyword(name), (fields0 zip values0).toMap())
+            Impl(Cast.toSymbol(name), (fields0 zip values0).toMap())
         }
 
         @MField("field")
         @JvmField
-        val field: MAny = MFunction { name, data -> Cast.toData(data)[Cast.toKeyword(name)] }
+        val field: MAny = MFunction { name, data -> Cast.toData(data)[Cast.toSymbol(name)] }
     }
 }

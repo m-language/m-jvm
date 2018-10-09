@@ -21,7 +21,7 @@ data class MInt(val value: Int) : MAny {
         /**
          * The type of all integers.
          */
-        override val type = MKeyword("int")
+        override val type = MSymbol("int")
 
         @JvmStatic
         fun valueOf(value: Int) = MInt(value)
@@ -61,8 +61,8 @@ data class MInt(val value: Int) : MAny {
         @JvmField
         val eqInt: MAny = MFunction { x, y -> Cast.toInt(x).eq(Cast.toInt(y)) }
 
-        @MField("keyword->int")
+        @MField("symbol->int")
         @JvmField
-        val keywordToInt: MAny = MFunction { x -> MInt(Cast.toKeyword(x).value.toInt()) }
+        val symbolToInt: MAny = MFunction { x -> MInt(Cast.toSymbol(x).value.toInt()) }
     }
 }
