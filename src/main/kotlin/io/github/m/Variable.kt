@@ -4,7 +4,6 @@ package io.github.m
  * Class representing an M variable.
  */
 sealed class Variable : Value {
-
     data class Local(val name: List, val index: Int) : Variable(), Data {
         override val type get() = Companion.type
 

@@ -14,7 +14,7 @@ object Compiler {
     private fun compile(`in`: File, out: File) {
         val text = `in`.readLines().joinToString("\n", "", "").asSequence()
         val exprs = (Parser.parser(text, 1) as Parser.Result.Success).value
-        Generator.Definitions.generate.asFunction(`in`.nameWithoutExtension.m, io.github.m.File(out), List.valueOf(exprs))
+        Generator.generate(`in`.nameWithoutExtension.m, io.github.m.File(out), List.valueOf(exprs))
                 .asProcess()
     }
 }

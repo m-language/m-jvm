@@ -164,19 +164,30 @@ object Generator {
         throw Error.Internal(e.message + "\n    at line ${expr.line}", e)
     }
 
-    fun generateExprs(exprs: List, env: Env): GenerateResult =
-            when (exprs) {
-                List.Nil -> GenerateResult(Operation.empty, Declaration.empty, env)
-                is List.Cons -> {
-                    val generateResultCar = generateExpr(exprs.car.cast(), env)
-                    val generateResultCdr = generateExprs(exprs.cdr, generateResultCar.env)
-                    GenerateResult(
-                            block(generateResultCar.operation, pop, generateResultCdr.operation),
-                            block(generateResultCar.declaration, generateResultCdr.declaration),
-                            generateResultCdr.env
-                    )
+    fun generateExprs(exprs: List, env: Env): GenerateResult = when (exprs) {
+        List.Nil -> GenerateResult(Operation.empty, Declaration.empty, env)
+        is List.Cons -> {
+            val generateResultCar = generateExpr(exprs.car.cast(), env)
+            val generateResultCdr = generateExprs(exprs.cdr, generateResultCar.env)
+            GenerateResult(
+                    block(generateResultCar.operation, pop, generateResultCdr.operation),
+                    block(generateResultCar.declaration, generateResultCdr.declaration),
+                    generateResultCdr.env
+            )
+        }
+    }
+
+    fun generate(name: List, out: File, exprs: List) = run {
+        val internals = internals
+                .fold(TreeMap.empty(stringCompare)) { map, value ->
+                    val pair = value.cast<Pair>()
+                    map.putValue(pair.first, pair.second)
                 }
-            }
+
+        val env = Env(internals, List.Cons(name, List.Nil), List.Nil, Int(0))
+        val result = generateExprs(exprs.asList, env)
+        Definitions.generateFile.asFunction(name, out, result.operation, result.declaration)
+    }
 
     @Suppress("unused")
     object Definitions {
@@ -295,27 +306,6 @@ object Generator {
                 clazz.generate(out.asFile.file)
                 List.Nil
             }
-        }
-
-        @MField("~generate")
-        @JvmField
-        val generate: Value = Function { name, out, exprs ->
-            val internals = internals
-                    .fold(TreeMap.empty(stringCompare)) { map, value ->
-                        val pair = value.cast<Pair>()
-                        map.putValue(pair.first, pair.second)
-                    }
-
-            val env = Env(internals, List.Cons(name, List.Nil), List.Nil, Int(0))
-            val result = generateExprs(exprs.asList, env)
-            generateFile.asFunction(name, out, result.operation, result.declaration)
-        }
-
-        @MField("~debug")
-        @JvmField
-        val debug: Value = Function { x ->
-            println(x)
-            x
         }
     }
 }
