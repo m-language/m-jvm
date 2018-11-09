@@ -19,17 +19,18 @@ dependencies {
 }
 
 task fatJar(type: Jar) {
-    manifest {
-        attributes 'Main-Class': 'io.github.m.jvm.Main'
-    }
+    manifest { attributes 'Main-Class': 'io.github.m.jvm.Main' }
     baseName = project.name
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
 
 compileKotlin {
-    kotlinOptions.jvmTarget = 1.8
-    kotlinOptions.freeCompilerArgs += "-Xjvm-default=enable"
+    kotlinOptions {
+        jvmTarget = 1.8
+        freeCompilerArgs += "-Xjvm-default=enable"
+        allWarningsAsErrors = true
+    }
 }
 
 kotlin {

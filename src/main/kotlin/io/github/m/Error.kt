@@ -3,7 +3,7 @@ package io.github.m
 /**
  * The superclass of all errors in M.
  */
-sealed class MError(message: String) : java.lang.Error(message) {
+sealed class Error(message: String) : java.lang.Error(message) {
     init {
         stackTrace = stackTrace
                 .filter { it?.fileName?.contains(".m") ?: false }
@@ -23,7 +23,7 @@ sealed class MError(message: String) : java.lang.Error(message) {
     object Definitions {
         @MField("error")
         @JvmField
-        val error: MAny = MFunction { message ->
+        val error: Value = Function { message ->
             throw Generic(message.asString)
         }
     }
@@ -31,7 +31,7 @@ sealed class MError(message: String) : java.lang.Error(message) {
     /**
      * Error that is thrown when no other error types match.
      */
-    class Generic(message: String) : MError(message)
+    class Generic(message: String) : Error(message)
 
     /**
      * Error that is thrown when an M object is cast to an incompatible type.
@@ -39,7 +39,7 @@ sealed class MError(message: String) : java.lang.Error(message) {
      * @param from The type of the object that is being cast.
      * @param to   The type that the object is being cast to.
      */
-    data class Cast(val from: MSymbol, val to: MSymbol) : MError("Cannot cast $from to $to")
+    data class Cast(val from: Symbol, val to: Symbol) : Error("Cannot cast $from to $to")
 
     /**
      * Error that is thrown when accessing a field that does not exist.
@@ -47,7 +47,7 @@ sealed class MError(message: String) : java.lang.Error(message) {
      * @param key  The key of the field.
      * @param type The type of the object missing the field.
      */
-    data class NoField(val key: MSymbol, val type: MSymbol) : MError("No field \"$key\" for $type")
+    data class NoField(val key: Symbol, val type: Symbol) : Error("No field \"$key\" for $type")
 
     /**
      * Error that is thrown when a function is called with invalid arguments.
@@ -55,12 +55,12 @@ sealed class MError(message: String) : java.lang.Error(message) {
      * @param function The name of the function.
      * @param arg      The argument of the function.
      */
-    data class InvalidArgument(val function: String, val arg: MAny) : MError("($function $arg)")
+    data class InvalidArgument(val function: String, val arg: Value) : Error("($function $arg)")
 
     /**
      * Error that is thrown when there is an error outside of the M program.
      */
-    class Internal(message: String, cause: Throwable?) : MError(message) {
+    class Internal(message: String, cause: Throwable?) : Error(message) {
         constructor(cause: Throwable?) : this(cause?.message ?: "null", cause)
 
         init {

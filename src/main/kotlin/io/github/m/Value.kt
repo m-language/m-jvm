@@ -3,16 +3,16 @@ package io.github.m
 /**
  * The superclass of all M values.
  */
-interface MAny {
+interface Value {
     /**
      * The type of the value.
      */
-    val type: MSymbol
+    val type: Symbol
 
     @Suppress("unused")
     object Definitions {
         @MField("type-name")
         @JvmField
-        val typeName: MAny = MFunction(MAny::type)
+        val typeName: Value = Function(Value::type)
     }
 }

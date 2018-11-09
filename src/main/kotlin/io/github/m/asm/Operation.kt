@@ -1,19 +1,19 @@
 package io.github.m.asm
 
-import io.github.m.MAny
-import io.github.m.MSymbol
+import io.github.m.Symbol
+import io.github.m.Value
 import jdk.internal.org.objectweb.asm.commons.GeneratorAdapter
 
 /**
- * An operation for a def.
+ * An operation for a method.
  */
-interface Operation : MAny {
+interface Operation : Value {
     override val type get() = Companion.type
 
     fun generate(generatorAdapter: GeneratorAdapter)
 
-    companion object : MAny {
-        override val type get() = MSymbol("operation")
+    companion object : Value {
+        override val type get() = Symbol("operation")
 
         val empty = Operation { }
 

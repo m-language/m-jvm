@@ -3,16 +3,16 @@ package io.github.m
 /**
  * M wrapper class for booleans.
  */
-sealed class MBool(val value: Boolean) : MAny {
+sealed class Bool(val value: Boolean) : Value {
     override val type get() = Companion.type
 
     override fun toString(): String = java.lang.Boolean.toString(value)
 
-    companion object : MAny {
+    companion object : Value {
         /**
          * The type of all booleans.
          */
-        override val type = MSymbol("bool")
+        override val type = Symbol("bool")
 
         @Suppress("NOTHING_TO_INLINE")
         @JvmStatic
@@ -22,21 +22,27 @@ sealed class MBool(val value: Boolean) : MAny {
     /**
      * The singleton true object.
      */
-    object True : MBool(true)
+    object True : Bool(true)
 
     /**
      * The singleton false object.
      */
-    object False : MBool(false)
+    object False : Bool(false)
 
     @Suppress("unused")
     object Definitions {
         @MField("true")
         @JvmField
-        val `true`: MAny = True
+        val `true`: Value = True
 
         @MField("false")
         @JvmField
-        val `false`: MAny = False
+        val `false`: Value = False
+    }
+
+    @Suppress("unused")
+    object Internal {
+        @JvmStatic
+        fun toPrimitiveBool(value: Value) = value.asBool.value
     }
 }

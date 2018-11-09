@@ -2,6 +2,9 @@ package io.github.m
 
 import io.github.m.Expr.Identifier
 import io.github.m.Expr.List
+import io.github.m.Char as MChar
+import io.github.m.Int as MInt
+import io.github.m.Pair as MPair
 
 /**
  * A parser for the M grammar.
@@ -99,7 +102,7 @@ object Parser {
 
     val newlineParser: Parser<Char, Int, Char> = mapParserState(predicateParser(io.github.m.Parser::isNewline)) { _, position -> position + 1 }
     val whitespaceParser: Parser<Char, Int, Char> = alternativeParser(newlineParser, predicateParser { isWhitespace(it) })
-    
+
     fun <R> ignoreUnused(parser: Parser<R, Int, Char>) = combineParserRight(repeatParser(whitespaceParser), parser)
 
     fun isIdentifierCharacter(c: Char) = !(isWhitespace(c) || c == '(' || c == ')')

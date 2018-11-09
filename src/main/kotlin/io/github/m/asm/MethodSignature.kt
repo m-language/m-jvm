@@ -1,12 +1,12 @@
 package io.github.m.asm
 
 /**
- * Class representing the signature for a def.
+ * Class representing the signature for a method.
  *
- * @param generics   The generic parameters of the def.
- * @param returnType The return type of the def.
- * @param paramTypes The types of the parameters for the def.
- * @param exceptions The set of declared exception types for the def.
+ * @param generics   The generic parameters of the method.
+ * @param returnType The return type of the method.
+ * @param paramTypes The types of the parameters for the method.
+ * @param exceptions The set of declared exception types for the method.
  */
 data class MethodSignature(
         val generics: List<Generic>,
@@ -15,7 +15,7 @@ data class MethodSignature(
         val exceptions: Set<Type>
 ) {
     /**
-     * Returns the string representation of this def on the jvm.
+     * Returns the string representation of this method on the jvm.
      */
     fun internalString() = if (generics.isEmpty())
         ""

@@ -7,7 +7,7 @@ import java.lang.reflect.InvocationTargetException
  */
 object Runtime {
     /**
-     * The implementation of the main def for an M program with top level
+     * The implementation of the main definition for an M program with top level
      * expressions.
      *
      * @param args  The array of arguments passed to the program.
@@ -16,18 +16,18 @@ object Runtime {
     @Suppress("unused")
     @JvmStatic
     fun run(args: Array<String>, clazz: Class<*>) {
-        Definitions.args = MList.valueOf(args.map(String::mString))
+        Definitions.args = List.valueOf(args.map(String::m))
 
         try {
             clazz.getMethod("run")(null)
         } catch (e: InvocationTargetException) {
             val cause = e.cause
             when (cause) {
-                is MError -> throw cause
-                else -> throw MError.Internal(cause)
+                is Error -> throw cause
+                else -> throw Error.Internal(cause)
             }
         } catch (t: Throwable) {
-            throw MError.Internal(t)
+            throw Error.Internal(t)
         }
     }
 
@@ -38,6 +38,6 @@ object Runtime {
          */
         @MField("args")
         @JvmField
-        var args: MAny = MUndefined
+        var args: Value = Undefined
     }
 }

@@ -4,31 +4,27 @@ import io.github.m.asm.Declaration
 import io.github.m.asm.Operation
 
 /**
- * The result of generating an expression.
- *
- * @param operation   The operation for the expression.
- * @param declaration The declaration for the expression.
- * @param env         The new environment after this expression.
+ * Class representing an M generate result.
  */
-data class GenerateResult(val operation: Operation, val declaration: Declaration, val env: Env) : MData {
+data class GenerateResult(val operation: Operation, val declaration: Declaration, val env: Env) : Data {
     override val type get() = Companion.type
 
-    override fun get(key: MSymbol) = when (key.value) {
+    override fun get(key: Symbol) = when (key.value) {
         "operation" -> operation
         "declaration" -> declaration
         "env" -> env
         else -> noField(key)
     }
 
-    companion object : MAny {
-        override val type = MSymbol("generate-result")
+    companion object : Value {
+        override val type = Symbol("generate-result")
     }
 
     @Suppress("unused")
     object Definitions {
         @MField("generate-result")
         @JvmField
-        val generateResult: MAny = MFunction { fields ->
+        val generateResult: Value = Function { fields ->
             val list = fields.asCons
             val list2 = list.cdr.asCons
             val list3 = list2.cdr.asCons

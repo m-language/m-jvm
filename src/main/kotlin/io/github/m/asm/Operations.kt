@@ -8,7 +8,7 @@ import jdk.internal.org.objectweb.asm.Opcodes
 import jdk.internal.org.objectweb.asm.commons.GeneratorAdapter
 import jdk.internal.org.objectweb.asm.Type as AsmType
 
-val MAny.asOperation get() = cast<Operation>()
+val Value.asOperation get() = cast<Operation>()
 
 fun block(operations: Iterable<Operation>) = Operation { operations.forEach { it.generate(this) } }
 fun block(vararg operations: Operation) = block(operations.asIterable())
@@ -44,21 +44,21 @@ fun pushNew(type: Type, methodType: MethodType, args: List<Operation>) = block(
 )
 
 fun localVariableOperation(@Suppress("UNUSED_PARAMETER") name: String, index: Int) = pushArg(index)
-fun globalVariableOperation(name: String, file: Type) = getStaticField(file, name, mAnyType)
+fun globalVariableOperation(name: String, file: Type) = getStaticField(file, name, valueType)
 fun reflectiveVariableOperation(name: String, file: Type) = globalVariableOperation(name, file)
 
-val nilOperation = getStaticField(Type.clazz(MList.Definitions::class.java), "nil", mAnyType)
+val nilOperation = getStaticField(Type.clazz(io.github.m.List.Definitions::class.java), "nil", valueType)
 
 fun symbolOperation(value: String) = pushNew(
-        Type.clazz(MSymbol::class.java),
+        Type.clazz(Symbol::class.java),
         MethodType.constructor(listOf(Type.string), emptySet()),
         listOf(pushString(value))
 )
 
 fun defOperation(name: String, op: Operation, main: Type) = block(
         op,
-        setStaticField(main, name, mAnyType),
-        getStaticField(main, name, mAnyType)
+        setStaticField(main, name, valueType),
+        getStaticField(main, name, valueType)
 )
 
 fun ifOperation(cond: Operation, `true`: Operation, `false`: Operation): Operation = Operation {
@@ -68,8 +68,8 @@ fun ifOperation(cond: Operation, `true`: Operation, `false`: Operation): Operati
     cond.generate(this)
 
     invokeStatic(
-            Type.clazz(Cast::class.java),
-            MethodType("toPrimitiveBool", emptyList(), Type.boolean, listOf(mAnyType), emptySet())
+            Type.clazz(io.github.m.Bool.Internal::class.java),
+            MethodType("toPrimitiveBool", emptyList(), Type.boolean, listOf(valueType), emptySet())
     ).generate(this)
 
     ifZCmp(GeneratorAdapter.EQ, falseLabel)
@@ -88,8 +88,8 @@ fun applyOperation(fn: Operation, arg: Operation) = block(
         fn,
         arg,
         invokeStatic(
-                Type.clazz(MFunction.Internal::class.java),
-                MethodType("apply", emptyList(), mAnyType, listOf(mAnyType, mAnyType), emptySet())
+                Type.clazz(io.github.m.Function.Internal::class.java),
+                MethodType("apply", emptyList(), valueType, listOf(valueType, valueType), emptySet())
         )
 )
 
@@ -98,24 +98,24 @@ fun lambdaOperation(
         name: String,
         closures: List<Operation>
 ): Operation = Operation {
-    val closureTypes = closures.map { mAnyType }
+    val closureTypes = closures.map { valueType }
     closures.forEach { it.generate(this) }
     visitInvokeDynamicInsn(
             "invoke",
-            closureTypes.joinToString("", "(", ")") { it.descriptor } + mFunctionType.descriptor,
+            closureTypes.joinToString("", "(", ")") { it.descriptor } + functionType.descriptor,
             Handle(
                     Opcodes.H_INVOKESTATIC,
                     "java/lang/invoke/LambdaMetafactory",
                     "metafactory",
                     "(Ljava/lang/invoke/MethodHandles\$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;"
             ),
-            AsmType.getType("(${mAnyType.descriptor})${mAnyType.descriptor}"),
+            AsmType.getType("(${valueType.descriptor})${valueType.descriptor}"),
             Handle(
                     Opcodes.H_INVOKESTATIC,
                     main.qualifiedName().toPathString(),
                     name,
-                    "(${closureTypes.joinToString("", "", "") { it.descriptor }}${mAnyType.descriptor})${mAnyType.descriptor}"
+                    "(${closureTypes.joinToString("", "", "") { it.descriptor }}${valueType.descriptor})${valueType.descriptor}"
             ),
-            AsmType.getType("(${mAnyType.descriptor})${mAnyType.descriptor}")
+            AsmType.getType("(${valueType.descriptor})${valueType.descriptor}")
     )
 }

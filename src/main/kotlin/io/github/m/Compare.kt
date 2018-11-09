@@ -3,34 +3,34 @@ package io.github.m
 /**
  * Class representing an M compare.
  */
-sealed class Compare : MData {
+sealed class Compare : Data {
     object Equals : Compare() {
-        override val type = MSymbol("compare=")
-        override fun get(key: MSymbol) = noField(key)
+        override val type = Symbol("compare=")
+        override fun get(key: Symbol) = noField(key)
         override fun toString() = "="
     }
 
     object Less : Compare() {
-        override val type = MSymbol("compare<")
-        override fun get(key: MSymbol) = noField(key)
+        override val type = Symbol("compare<")
+        override fun get(key: Symbol) = noField(key)
         override fun toString() = "<"
     }
 
     object Greater : Compare() {
-        override val type = MSymbol("compare>")
-        override fun get(key: MSymbol) = noField(key)
+        override val type = Symbol("compare>")
+        override fun get(key: Symbol) = noField(key)
         override fun toString() = ">"
     }
 
     companion object {
-        fun list(compare: MFunction) = MFunction { a, b ->
-            tailrec fun impl(a: MList, b: MList): Compare = when {
-                a is MList.Nil && b is MList.Nil -> Equals
-                a is MList.Nil -> Less
-                b is MList.Nil -> Greater
+        fun list(compare: Function) = Function { a, b ->
+            tailrec fun impl(a: List, b: List): Compare = when {
+                a is List.Nil && b is List.Nil -> Equals
+                a is List.Nil -> Less
+                b is List.Nil -> Greater
                 else -> {
-                    a as MList.Cons
-                    b as MList.Cons
+                    a as List.Cons
+                    b as List.Cons
                     val result = compare(a.car, b.car).cast<Compare>()
                     if (result == Equals) impl(a.cdr, b.cdr) else result
                 }
@@ -39,7 +39,7 @@ sealed class Compare : MData {
             impl(a.asList, b.asList)
         }
 
-        fun from(comparator: Comparator<MAny>) = MFunction { a, b ->
+        fun from(comparator: Comparator<Value>) = Function { a, b ->
             val compare = comparator.compare(a, b)
             when {
                 compare < 0 -> Less

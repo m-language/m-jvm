@@ -3,9 +3,9 @@ package io.github.m
 /**
  * M implementation of lists.
  */
-sealed class MList : MAny, Iterable<MAny> {
+sealed class List : Value, Iterable<Value> {
     override fun iterator() = run {
-        var list = this@MList
+        var list = this@List
         generateSequence {
             (list as? Cons)?.run {
                 list = cdr.asList
@@ -19,31 +19,31 @@ sealed class MList : MAny, Iterable<MAny> {
     /**
      * The non empty list.
      */
-    abstract class Cons : MList() {
+    abstract class Cons : List() {
         override val type get() = Companion.type
 
         /**
          * The head of the list.
          */
-        abstract val car: MAny
+        abstract val car: Value
 
         /**
          * The tail of the list.
          */
-        abstract val cdr: MList
+        abstract val cdr: List
 
-        val cadr: MAny get() = cdr.asCons.car
-        val caddr: MAny get() = cdr.asCons.cadr
-        val cadddr: MAny get() = cdr.asCons.caddr
+        val cadr: Value get() = cdr.asCons.car
+        val caddr: Value get() = cdr.asCons.cadr
+        val cadddr: Value get() = cdr.asCons.caddr
 
-        companion object : MAny {
-            override val type = MSymbol("cons")
+        companion object : Value {
+            override val type = Symbol("cons")
 
-            operator fun invoke(car: MAny, cdr: MList) = Eager(car, cdr)
+            operator fun invoke(car: Value, cdr: List) = Eager(car, cdr)
             operator fun invoke(lazyCons: () -> Cons) = Lazy(lazyCons)
         }
 
-        class Eager(override val car: MAny, override val cdr: MList) : Cons()
+        class Eager(override val car: Value, override val cdr: List) : Cons()
 
         class Lazy(lazyCons: () -> Cons) : Cons() {
             private val cons by lazy(lazyCons)
@@ -55,16 +55,16 @@ sealed class MList : MAny, Iterable<MAny> {
     /**
      * The empty list.
      */
-    object Nil : MList() {
-        override val type = MSymbol("nil")
+    object Nil : List() {
+        override val type = Symbol("nil")
     }
 
-    companion object : MAny {
-        override val type = MSymbol("list")
+    companion object : Value {
+        override val type = Symbol("list")
 
-        fun valueOf(sequence: Sequence<MAny>) = valueOf(sequence.iterator())
-        fun valueOf(iterable: Iterable<MAny>) = valueOf(iterable.iterator())
-        fun valueOf(iterator: Iterator<MAny>): MList = when {
+        fun valueOf(sequence: Sequence<Value>) = valueOf(sequence.iterator())
+        fun valueOf(iterable: Iterable<Value>) = valueOf(iterable.iterator())
+        fun valueOf(iterator: Iterator<Value>): List = when {
             iterator.hasNext() -> Cons { Cons(iterator.next(), valueOf(iterator)) }
             else -> Nil
         }
@@ -74,18 +74,18 @@ sealed class MList : MAny, Iterable<MAny> {
     object Definitions {
         @MField("nil")
         @JvmField
-        val nil: MAny = Nil
+        val nil: Value = Nil
 
         @MField("cons")
         @JvmField
-        val cons: MAny = MFunction { car, cdr -> Cons(car, cdr.asList) }
+        val cons: Value = Function { car, cdr -> Cons(car, cdr.asList) }
 
         @MField("car")
         @JvmField
-        val car: MAny = MFunction { arg -> arg.asCons.car }
+        val car: Value = Function { arg -> arg.asCons.car }
 
         @MField("cdr")
         @JvmField
-        val cdr: MAny = MFunction { arg -> arg.asCons.cdr }
+        val cdr: Value = Function { arg -> arg.asCons.cdr }
     }
 }

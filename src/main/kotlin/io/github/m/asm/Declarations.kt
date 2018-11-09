@@ -2,11 +2,11 @@
 
 package io.github.m.asm
 
-import io.github.m.MAny
 import io.github.m.Runtime
+import io.github.m.Value
 import io.github.m.cast
 
-val MAny.asDeclaration get() = cast<Declaration>()
+val Value.asDeclaration get() = cast<Declaration>()
 
 fun block(declarations: Iterable<Declaration>) = Declaration { declarations.forEach { it.generate(this) } }
 
@@ -14,7 +14,7 @@ fun block(vararg declaration: Declaration) = block(declaration.asIterable())
 
 fun defDeclaration(name: String, main: Type) = Field(
         Access().asPublic().asStatic(),
-        mAnyType,
+        valueType,
         name,
         main
 )
@@ -23,8 +23,8 @@ fun lambdaDeclaration(name: String, closures: List<String>, operation: Operation
         Access().asPrivate().asStatic().asSynthetic(),
         name,
         emptyList(),
-        mAnyType,
-        closures.map { mAnyType } + mAnyType,
+        valueType,
+        closures.map { valueType } + valueType,
         emptySet(),
         block(operation, `return`)
 )
