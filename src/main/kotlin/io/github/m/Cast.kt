@@ -1,51 +1,48 @@
+@file:Suppress("NOTHING_TO_INLINE", "unused")
+
 package io.github.m
 
 import kotlin.reflect.full.companionObjectInstance
 
-/**
- * Functions for casting M values.
- */
-@Suppress("unused", "NOTHING_TO_INLINE")
+inline fun MAny.asData(type: MSymbol) = try {
+    if (this.type != type)
+        throw MError.Cast(this.type, type)
+    this as MData
+} catch (e: ClassCastException) {
+    throw MError.Cast(this.type, type)
+}
+
+inline val MAny.asBool get() = cast<MBool>()
+
+inline val MAny.asInt get() = cast<MInt>()
+
+inline val MAny.asReal get() = cast<MReal>()
+
+inline val MAny.asChar get() = cast<MChar>()
+
+inline val MAny.asList get() = cast<MList>()
+
+inline val MAny.asCons get() = cast<MList.Cons>()
+
+inline val MAny.asNil get() = cast<MList.Nil>()
+
+inline val MAny.asSymbol get() = cast<MSymbol>()
+
+inline val MAny.asFunction get() = cast<MFunction>()
+
+inline val MAny.asProcess get() = cast<MProcess>()
+
+inline val MAny.asFile get() = cast<MFile>()
+
+inline fun <reified T : MAny> MAny.cast() = try {
+    this as T
+} catch (e: ClassCastException) {
+    throw MError.Cast(this.type, ((T::class.companionObjectInstance
+            ?: T::class.objectInstance
+            ?: throw Exception("${T::class.java} does not have a companion")) as MAny).type)
+}
+
 object Cast {
     @JvmStatic
-    inline fun toBool(any: MAny) = cast<MBool>(any)
-
-    @JvmStatic
-    inline fun toNat(any: MAny) = cast<MNat>(any)
-
-    @JvmStatic
-    inline fun toInt(any: MAny) = cast<MInt>(any)
-
-    @JvmStatic
-    inline fun toReal(any: MAny) = cast<MReal>(any)
-
-    @JvmStatic
-    inline fun toChar(any: MAny) = cast<MChar>(any)
-
-    @JvmStatic
-    inline fun toList(any: MAny) = cast<MList>(any)
-
-    @JvmStatic
-    inline fun toSymbol(any: MAny) = cast<MSymbol>(any)
-
-    @JvmStatic
-    inline fun toFunction(any: MAny) = cast<MFunction>(any)
-
-    @JvmStatic
-    inline fun toProcess(any: MAny) = cast<MProcess>(any)
-
-    @JvmStatic
-    inline fun toData(any: MAny) = cast<MData>(any)
-
-    @JvmStatic
-    inline fun toFile(any: MAny) = cast<MFile>(any)
-
-    @JvmStatic
-    inline fun toPrimitiveBool(any: MAny) = toBool(any).value
-
-    inline fun <reified T : MAny> cast(any: MAny) = try {
-        any as T
-    } catch (e: ClassCastException) {
-        throw MError.Cast(any.type, (T::class.companionObjectInstance as MAny).type)
-    }
+    inline fun toPrimitiveBool(any: MAny) = any.asBool.value
 }

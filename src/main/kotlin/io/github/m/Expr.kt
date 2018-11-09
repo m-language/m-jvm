@@ -1,40 +1,39 @@
 package io.github.m
 
 /**
- * Class representing M expressions.
+ * Class representing an M expression.
  */
 sealed class Expr : MAny {
-    /**
-     * The line the expression is on.
-     */
-    abstract val line: Int
+    abstract val line: MInt
 
-    data class Identifier(val name: String, override val line: Int) : Expr(), MData {
-        constructor(name: Sequence<Char>, line: Int) : this(name.joinToString("", "", ""), line)
-
-        override fun get(key: MSymbol) = when (key.value) {
-            "name" -> name.mString
-            "line" -> MInt(line)
-            else -> noField(key)
-        }
+    data class Identifier(val name: MList, override val line: MInt) : Expr(), MData {
+        constructor(name: Sequence<Char>, line: Int) : this(MList.valueOf(name.map { MChar(it) }), MInt(line))
 
         override val type get() = Companion.type
 
-        override fun toString() = name
+        override fun get(key: MSymbol) = when (key.value) {
+            "name" -> name
+            "line" -> line
+            else -> noField(key)
+        }
+
+        override fun toString() = name.asString
 
         companion object : MAny {
             override val type = MSymbol("identifier-expr")
         }
     }
 
-    data class List(val exprs: kotlin.collections.List<Expr>, override val line: Int) : Expr(), MData {
-        override fun get(key: MSymbol) = when (key.value) {
-            "exprs" -> MList.valueOf(exprs)
-            "line" -> MInt(line)
-            else -> noField(key)
-        }
+    data class List(val exprs: MList, override val line: MInt) : Expr(), MData {
+        constructor(exprs: Sequence<Expr>, line: Int) : this(MList.valueOf(exprs), MInt(line))
 
         override val type get() = Companion.type
+
+        override fun get(key: MSymbol) = when (key.value) {
+            "exprs" -> MList.valueOf(exprs)
+            "line" -> line
+            else -> noField(key)
+        }
 
         override fun toString() = exprs.joinToString(" ", "(", ")")
 
@@ -43,20 +42,22 @@ sealed class Expr : MAny {
         }
     }
 
-    @Suppress("unused", "ObjectPropertyName")
+    @Suppress("unused")
     object Definitions {
         @MField("identifier-expr")
         @JvmField
         val identifierExpr: MAny = MFunction { fields ->
-            val list = Cast.toList(fields)
-            Identifier(Cast.toList(list.car).string, Cast.toInt(list.cdr.car).value)
+            val list = fields.asCons
+            val list2 = list.cdr.asCons
+            Identifier(list.car.asList, list2.car.asInt)
         }
 
         @MField("list-expr")
         @JvmField
         val listExpr: MAny = MFunction { fields ->
-            val list = Cast.toList(fields)
-            List(Cast.toList(list.car).asSequence().map { it as Expr }.toList(), Cast.toInt(list.cdr.car).value)
+            val list = fields.asCons
+            val list2 = list.cdr.asCons
+            List(list.car.asList, list2.car.asInt)
         }
     }
 }

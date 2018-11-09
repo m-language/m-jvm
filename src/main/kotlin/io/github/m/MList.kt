@@ -1,27 +1,17 @@
 package io.github.m
 
-import kotlin.coroutines.experimental.buildIterator
-
 /**
  * M implementation of lists.
  */
 sealed class MList : MAny, Iterable<MAny> {
-    /**
-     * The head of the list.
-     */
-    abstract val car: MAny
-
-    /**
-     * The tail of the list.
-     */
-    abstract val cdr: MList
-
-    override fun iterator() = buildIterator {
+    override fun iterator() = run {
         var list = this@MList
-        while (list != Nil) {
-            yield(list.car)
-            list = Cast.toList(list.cdr)
-        }
+        generateSequence {
+            (list as? Cons)?.run {
+                list = cdr.asList
+                car
+            }
+        }.iterator()
     }
 
     override fun toString() = joinToString(" ", "(", ")")
@@ -31,6 +21,20 @@ sealed class MList : MAny, Iterable<MAny> {
      */
     abstract class Cons : MList() {
         override val type get() = Companion.type
+
+        /**
+         * The head of the list.
+         */
+        abstract val car: MAny
+
+        /**
+         * The tail of the list.
+         */
+        abstract val cdr: MList
+
+        val cadr: MAny get() = cdr.asCons.car
+        val caddr: MAny get() = cdr.asCons.cadr
+        val cadddr: MAny get() = cdr.asCons.caddr
 
         companion object : MAny {
             override val type = MSymbol("cons")
@@ -53,13 +57,12 @@ sealed class MList : MAny, Iterable<MAny> {
      */
     object Nil : MList() {
         override val type = MSymbol("nil")
-        override val car get() = throw MError.InvalidArgument("car", MList.Nil)
-        override val cdr get() = throw MError.InvalidArgument("cdr", MList.Nil)
     }
 
     companion object : MAny {
         override val type = MSymbol("list")
 
+        fun valueOf(sequence: Sequence<MAny>) = valueOf(sequence.iterator())
         fun valueOf(iterable: Iterable<MAny>) = valueOf(iterable.iterator())
         fun valueOf(iterator: Iterator<MAny>): MList = when {
             iterator.hasNext() -> Cons { Cons(iterator.next(), valueOf(iterator)) }
@@ -75,14 +78,14 @@ sealed class MList : MAny, Iterable<MAny> {
 
         @MField("cons")
         @JvmField
-        val cons: MAny = MFunction { car, cdr -> Cons(car, Cast.toList(cdr)) }
+        val cons: MAny = MFunction { car, cdr -> Cons(car, cdr.asList) }
 
         @MField("car")
         @JvmField
-        val car: MAny = MFunction { arg -> Cast.toList(arg).car }
+        val car: MAny = MFunction { arg -> arg.asCons.car }
 
         @MField("cdr")
         @JvmField
-        val cdr: MAny = MFunction { arg -> Cast.toList(arg).cdr }
+        val cdr: MAny = MFunction { arg -> arg.asCons.cdr }
     }
 }

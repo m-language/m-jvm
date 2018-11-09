@@ -9,7 +9,7 @@ interface MAny {
      */
     val type: MSymbol
 
-    @Suppress("unused", "ObjectPropertyName")
+    @Suppress("unused")
     object Definitions {
         @MField("type-name")
         @JvmField

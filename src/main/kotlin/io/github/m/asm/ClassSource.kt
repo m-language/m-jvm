@@ -7,7 +7,7 @@ import jdk.internal.org.objectweb.asm.ClassWriter
  *
  * @param name The name of the source file.
  */
-data class ClassSource @JvmOverloads constructor(val name: String, val debug: String? = null) : Declaration {
+data class ClassSource(val name: String, val debug: String? = null) : Declaration {
     override fun generate(classWriter: ClassWriter) {
         classWriter.visitSource(name, debug)
     }

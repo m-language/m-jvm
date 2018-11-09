@@ -6,6 +6,9 @@ import io.github.m.*
 import jdk.internal.org.objectweb.asm.Handle
 import jdk.internal.org.objectweb.asm.Opcodes
 import jdk.internal.org.objectweb.asm.commons.GeneratorAdapter
+import jdk.internal.org.objectweb.asm.Type as AsmType
+
+val MAny.asOperation get() = cast<Operation>()
 
 fun block(operations: Iterable<Operation>) = Operation { operations.forEach { it.generate(this) } }
 fun block(vararg operations: Operation) = block(operations.asIterable())
@@ -14,6 +17,9 @@ fun cast(type: Type) = Operation { checkCast(type.asm) }
 
 val dup = Operation { dup() }
 val `return` = Operation { returnValue() }
+val pop = Operation { pop() }
+
+fun `return`(op: Operation) = block(op, `return`)
 
 fun getStaticField(owner: Type, name: String, type: Type) = Operation { getStatic(owner.asm, name, type.asm) }
 fun setStaticField(owner: Type, name: String, type: Type) = Operation { putStatic(owner.asm, name, type.asm) }
@@ -37,77 +43,79 @@ fun pushNew(type: Type, methodType: MethodType, args: List<Operation>) = block(
         invokeConstructor(type, methodType)
 )
 
-fun pushMGlobal(type: Type, name: String) = getStaticField(type, name, Gen.mAnyType)
-fun pushMLocal(index: Int) = pushArg(index)
+fun localVariableOperation(@Suppress("UNUSED_PARAMETER") name: String, index: Int) = pushArg(index)
+fun globalVariableOperation(name: String, file: Type) = getStaticField(file, name, mAnyType)
+fun reflectiveVariableOperation(name: String, file: Type) = globalVariableOperation(name, file)
 
-val pushMNil = getStaticField(Type.clazz(MList.Definitions::class.java), "nil", Gen.mAnyType)
+val nilOperation = getStaticField(Type.clazz(MList.Definitions::class.java), "nil", mAnyType)
 
-fun pushMSymbol(value: String) = pushNew(
+fun symbolOperation(value: String) = pushNew(
         Type.clazz(MSymbol::class.java),
         MethodType.constructor(listOf(Type.string), emptySet()),
         listOf(pushString(value))
 )
 
-fun initDef(name: String, op: Operation, main: Type) = block(
+fun defOperation(name: String, op: Operation, main: Type) = block(
         op,
-        setStaticField(main, name, Gen.mAnyType)
+        setStaticField(main, name, mAnyType),
+        getStaticField(main, name, mAnyType)
 )
 
-fun `if`(condition: Operation, ifTrue: Operation, ifFalse: Operation): Operation = Operation {
+fun ifOperation(cond: Operation, `true`: Operation, `false`: Operation): Operation = Operation {
     val endLabel = newLabel()
     val falseLabel = newLabel()
 
-    condition.generate(this)
+    cond.generate(this)
 
     invokeStatic(
             Type.clazz(Cast::class.java),
-            MethodType("toPrimitiveBool", emptyList(), Type.boolean, listOf(Gen.mAnyType), emptySet())
+            MethodType("toPrimitiveBool", emptyList(), Type.boolean, listOf(mAnyType), emptySet())
     ).generate(this)
 
     ifZCmp(GeneratorAdapter.EQ, falseLabel)
 
-    ifTrue.generate(this)
+    `true`.generate(this)
     goTo(endLabel)
 
     mark(falseLabel)
 
-    ifFalse.generate(this)
+    `false`.generate(this)
 
     mark(endLabel)
 }
 
-fun invoke(fn: Operation, arg: Operation) = block(
+fun applyOperation(fn: Operation, arg: Operation) = block(
         fn,
         arg,
         invokeStatic(
                 Type.clazz(MFunction.Internal::class.java),
-                MethodType("apply", emptyList(), Gen.mAnyType, listOf(Gen.mAnyType, Gen.mAnyType), emptySet())
+                MethodType("apply", emptyList(), mAnyType, listOf(mAnyType, mAnyType), emptySet())
         )
 )
 
-fun lambdaConstructor(
+fun lambdaOperation(
         main: Type,
         name: String,
         closures: List<Operation>
 ): Operation = Operation {
-    val closureTypes = closures.map { Gen.mAnyType }
+    val closureTypes = closures.map { mAnyType }
     closures.forEach { it.generate(this) }
     visitInvokeDynamicInsn(
             "invoke",
-            closureTypes.joinToString("", "(", ")") { it.descriptor } + Gen.mFunctionType.descriptor,
+            closureTypes.joinToString("", "(", ")") { it.descriptor } + mFunctionType.descriptor,
             Handle(
                     Opcodes.H_INVOKESTATIC,
                     "java/lang/invoke/LambdaMetafactory",
                     "metafactory",
                     "(Ljava/lang/invoke/MethodHandles\$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;"
             ),
-            jdk.internal.org.objectweb.asm.Type.getType("(${Gen.mAnyType.descriptor})${Gen.mAnyType.descriptor}"),
+            AsmType.getType("(${mAnyType.descriptor})${mAnyType.descriptor}"),
             Handle(
                     Opcodes.H_INVOKESTATIC,
-                    main.toQualifiedName().toPathString(),
+                    main.qualifiedName().toPathString(),
                     name,
-                    "(${closureTypes.joinToString("", "", "") { it.descriptor }}${Gen.mAnyType.descriptor})${Gen.mAnyType.descriptor}"
+                    "(${closureTypes.joinToString("", "", "") { it.descriptor }}${mAnyType.descriptor})${mAnyType.descriptor}"
             ),
-            jdk.internal.org.objectweb.asm.Type.getType("(${Gen.mAnyType.descriptor})${Gen.mAnyType.descriptor}")
+            AsmType.getType("(${mAnyType.descriptor})${mAnyType.descriptor}")
     )
 }

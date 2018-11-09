@@ -1,24 +1,12 @@
-buildscript {
-    ext.kotlin_version = '1.2.70'
-
-    repositories {
-        mavenCentral()
-        jcenter()
-    }
-
-    buildscript.dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'eu.appsatori:gradle-fatjar-plugin:0.3'
-    }
+plugins {
+    id 'java'
+    id "org.jetbrains.kotlin.jvm" version "1.2.70"
 }
 
 group 'io.github.m'
 version '0.1.0'
 
 apply plugin: 'java'
-apply plugin: 'kotlin'
-
-sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
@@ -26,8 +14,8 @@ repositories {
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    compile "org.jetbrains.kotlin:kotlin-reflect"
 }
 
 task fatJar(type: Jar) {
@@ -42,7 +30,6 @@ task fatJar(type: Jar) {
 compileKotlin {
     kotlinOptions.jvmTarget = 1.8
     kotlinOptions.freeCompilerArgs += "-Xjvm-default=enable"
-    kotlinOptions.apiVersion = "1.2"
 }
 
 kotlin {

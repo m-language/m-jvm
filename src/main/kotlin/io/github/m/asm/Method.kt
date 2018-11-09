@@ -6,14 +6,14 @@ import jdk.internal.org.objectweb.asm.commons.GeneratorAdapter
 /**
  * Class representing a method on the jvm.
  *
- * @param access     The access level of the method.
- * @param type       The type of the method.
- * @param operations The list of operations that make up the method.
+ * @param access     he access level of the method.
+ * @param methodType The type of the method.
+ * @param operation  The operation that makes up the method.
  */
 data class Method(
         val access: Access,
-        val type: MethodType,
-        val operations: List<Operation>
+        val methodType: MethodType,
+        val operation: Operation
 ) : Declaration {
     constructor(
             access: Access,
@@ -22,37 +22,34 @@ data class Method(
             returnType: Type,
             paramTypes: List<Type>,
             exceptions: Set<Type>,
-            operations: List<Operation>
-    ) : this(access, MethodType(name, generics, returnType, paramTypes, exceptions), operations)
+            operation: Operation
+    ) : this(access, MethodType(name, generics, returnType, paramTypes, exceptions), operation)
 
     override fun generate(classWriter: ClassWriter) {
         val generatorAdapter = GeneratorAdapter(
                 access.intValue,
-                type.asm,
-                type.signature.internalString().let { if (it.isEmpty()) null else it },
-                type.signature.exceptions.map { it.asm }.toTypedArray(),
+                methodType.asm,
+                methodType.signature.internalString().let { if (it.isEmpty()) null else it },
+                methodType.signature.exceptions.map { it.asm }.toTypedArray(),
                 classWriter
         )
 
-        operations.forEach {
-            it.generate(generatorAdapter)
-        }
+        operation.generate(generatorAdapter)
 
         generatorAdapter.endMethod()
     }
 
     companion object {
         /**
-         * Creates a method for a constructor.
+         * Creates a def for a constructor.
          */
-        @JvmStatic
         fun constructor(
                 access: Access,
                 paramTypes: List<Type>,
                 exceptions: Set<Type>,
                 superType: Type,
                 superSignature: MethodSignature,
-                operations: List<Operation>
+                operation: Operation
         ) = Method(
                 access,
                 "<init>",
@@ -60,21 +57,20 @@ data class Method(
                 Type.void,
                 paramTypes,
                 exceptions,
-                operations + pushThis + invokeConstructor(superType, MethodType("<init>", superSignature)) + `return`
+                block(operation, pushThis, invokeConstructor(superType, MethodType("<init>", superSignature)), `return`)
         )
 
         /**
-         * Creates a method that is called upon the static initialization of an object.
+         * Creates a def that is called upon the static initialization of an object.
          */
-        @JvmStatic
-        fun staticInit(operations: List<Operation>) = Method(
+        fun staticInit(operation: Operation) = Method(
                 Access().asPublic().asStatic(),
                 "<clinit>",
                 emptyList(),
                 Type.void,
                 emptyList(),
                 emptySet(),
-                operations + `return`
+                block(operation, `return`)
         )
     }
 }

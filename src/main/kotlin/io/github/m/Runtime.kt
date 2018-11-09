@@ -7,7 +7,7 @@ import java.lang.reflect.InvocationTargetException
  */
 object Runtime {
     /**
-     * The implementation of the main method for an M program with top level
+     * The implementation of the main def for an M program with top level
      * expressions.
      *
      * @param args  The array of arguments passed to the program.
@@ -19,13 +19,12 @@ object Runtime {
         Definitions.args = MList.valueOf(args.map(String::mString))
 
         try {
-            clazz.getMethod("run").invoke(null)
+            clazz.getMethod("run")(null)
         } catch (e: InvocationTargetException) {
             val cause = e.cause
-            if (cause is MError) {
-                throw cause
-            } else {
-                throw MError.Internal(cause)
+            when (cause) {
+                is MError -> throw cause
+                else -> throw MError.Internal(cause)
             }
         } catch (t: Throwable) {
             throw MError.Internal(t)

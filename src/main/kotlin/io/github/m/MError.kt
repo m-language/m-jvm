@@ -4,12 +4,27 @@ package io.github.m
  * The superclass of all errors in M.
  */
 sealed class MError(message: String) : java.lang.Error(message) {
+    init {
+        stackTrace = stackTrace
+                .filter { it?.fileName?.contains(".m") ?: false }
+                .map {
+                    tailrec fun clean(name: String): String = if (name.contains("_"))
+                        clean(name.substringBefore("_"))
+                    else
+                        name
+                    StackTraceElement(it.className, clean(it.methodName), it.fileName, it.lineNumber)
+                }
+                .toTypedArray()
+    }
+
+    final override fun toString() = message ?: "null"
+
     @Suppress("unused")
     object Definitions {
         @MField("error")
         @JvmField
         val error: MAny = MFunction { message ->
-            throw Generic(io.github.m.Cast.toList(message).string)
+            throw Generic(message.asString)
         }
     }
 
@@ -32,7 +47,7 @@ sealed class MError(message: String) : java.lang.Error(message) {
      * @param key  The key of the field.
      * @param type The type of the object missing the field.
      */
-    data class NoField(val key: MSymbol, val type: MSymbol) : MError("No field $key for $type")
+    data class NoField(val key: MSymbol, val type: MSymbol) : MError("No field \"$key\" for $type")
 
     /**
      * Error that is thrown when a function is called with invalid arguments.

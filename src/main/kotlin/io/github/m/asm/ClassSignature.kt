@@ -1,7 +1,7 @@
 package io.github.m.asm
 
 /**
- * Class representing the methodType for a class
+ * Class representing the signature for a class
  *
  * @param generics       The generic arguments of the class.
  * @param superType      The type of the class the class extends.
@@ -13,7 +13,7 @@ data class ClassSignature(
         val interfaceTypes: Set<Type>
 ) {
     /**
-     * Returns the string representation of this class methodType on the jvm.
+     * Returns the string representation of the class signature on the jvm.
      */
     fun internalString() = when {
         generics.isEmpty() -> ""

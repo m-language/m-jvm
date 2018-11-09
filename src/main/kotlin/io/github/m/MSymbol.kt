@@ -23,10 +23,26 @@ data class MSymbol(val value: String) : MAny {
     object Definitions {
         @MField("eq-symbol")
         @JvmField
-        val eqSymbol: MAny = MFunction { x, y -> Cast.toSymbol(x).eq(Cast.toSymbol(y)) }
+        val eqSymbol: MAny = MFunction { x, y -> x.asSymbol.eq(y.asSymbol) }
 
         @MField("add-symbol")
         @JvmField
-        val addSymbol: MAny = MFunction { x, y -> Cast.toSymbol(x).add(Cast.toSymbol(y)) }
+        val addSymbol: MAny = MFunction { x, y -> x.asSymbol.add(y.asSymbol) }
+
+        @MField("symbol->char")
+        @JvmField
+        val symbolToChar: MAny = MFunction { x -> MChar(x.asSymbol.value.first()) }
+
+        @MField("symbol->int")
+        @JvmField
+        val symbolToInt: MAny = MFunction { x -> MInt(x.asSymbol.value.toInt()) }
+
+        @MField("symbol->list")
+        @JvmField
+        val symbolToList: MAny = MFunction { arg -> arg.asSymbol.value.mString }
+
+        @MField("symbol->real")
+        @JvmField
+        val symbolToReal: MAny = MFunction { x -> MReal(x.asSymbol.value.toFloat()) }
     }
 }

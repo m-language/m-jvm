@@ -14,6 +14,6 @@ object MUndefined : MAny {
     object Definitions {
         @MField("undefined")
         @JvmField
-        val undefined = MUndefined
+        val undefined: MAny = MUndefined
     }
 }

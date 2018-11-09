@@ -4,10 +4,9 @@ import io.github.m.Expr.Identifier
 import io.github.m.Expr.List
 
 /**
- * A parser for the M1 grammar.
+ * A parser for the M grammar.
  */
 @Suppress("MemberVisibilityCanBePrivate")
-@SelfHosted
 object Parser {
     interface Parser<out R, S, T> {
         operator fun invoke(input: Sequence<T>, state: S): Result<R, S, T>
@@ -112,7 +111,7 @@ object Parser {
     val closeParenParser: Parser<Char, Int, Char> = ignoreUnused(predicateParser { it == ')' })
 
     val listExprParser1: Parser<Sequence<Expr>, Int, Char> = combineParserRight(openParenParser, combineParserLeft(lazyParser { parser }, closeParenParser))
-    val listExprParser: Parser<List, Int, Char> = ignoreUnused(mapParserResult(providePastState(listExprParser1)) { (e, p) -> List(e.toList(), p) })
+    val listExprParser: Parser<List, Int, Char> = ignoreUnused(mapParserResult(providePastState(listExprParser1)) { (e, p) -> List(e, p) })
     val exprParser: Parser<Expr, Int, Char> = alternativeParser(identifierParser, listExprParser)
 
     val parser: Parser<Sequence<Expr>, Int, Char> = repeatParser(exprParser)

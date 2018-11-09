@@ -1,5 +1,3 @@
-@file:Suppress("unused")
-
 package io.github.m.asm
 
 /**
@@ -7,7 +5,7 @@ package io.github.m.asm
  */
 data class QualifiedName(val list: List<String>) {
     /**
-     * The qualified of the qualified name, e.g. "java.lang".
+     * The qualifier of the qualified name, e.g. "java.lang".
      */
     val qualifier get() = list.dropLast(1)
 
@@ -30,19 +28,16 @@ data class QualifiedName(val list: List<String>) {
         /**
          * Returns the qualified name of a class.
          */
-        @JvmStatic
         fun fromClass(clazz: java.lang.Class<*>) = fromQualifiedString(clazz.typeName)
 
         /**
          * Creates a qualified name from a [string] of the form "java/lang/String".
          */
-        @JvmStatic
         fun fromPathString(string: String) = QualifiedName(string.split('/'))
 
         /**
          * Creates a qualified name from a [string] of the form "java.lang.String".
          */
-        @JvmStatic
         fun fromQualifiedString(string: String) = QualifiedName(string.split('.'))
     }
 }

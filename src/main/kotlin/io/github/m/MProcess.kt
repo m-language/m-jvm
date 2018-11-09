@@ -41,21 +41,21 @@ interface MProcess : MAny {
     }
 
     /**
-     * Implementation of [Definitions.runWith]
+     * Implementation of [Definitions.runWith].
      */
     class RunWith(val process: MProcess, val function: MFunction) : MProcess {
         override fun invoke(): MAny = function(process())
     }
 
     /**
-     * Implementation of [Definitions.thenRunWith]
+     * Implementation of [Definitions.thenRunWith].
      */
     class ThenRunWith(val process: MProcess, val function: MFunction) : MProcess {
-        override fun invoke(): MAny = flatten(this)()
+        override fun invoke(): MAny = function(process()).asProcess()
 
-        private tailrec fun flatten(process: MProcess): MProcess = when (process) {
-            is ThenRunWith -> flatten(Cast.toProcess(function(process.process())))
-            else -> process
+        private tailrec fun rec(process: MProcess): MAny = when (process) {
+            is ThenRunWith -> rec(function(process.process()).asProcess)
+            else -> process()
         }
     }
 
@@ -63,22 +63,22 @@ interface MProcess : MAny {
     object Definitions {
         @MField("then-run")
         @JvmField
-        val thenRun: MAny = MFunction { proc1, proc2 -> ThenRun(Cast.toProcess(proc1), Cast.toProcess(proc2)) }
+        val thenRun: MAny = MFunction { proc1, proc2 -> ThenRun(proc1.asProcess, proc2.asProcess) }
 
         @MField("run-with")
         @JvmField
-        val runWith: MAny = MFunction { proc, fn -> RunWith(Cast.toProcess(proc), Cast.toFunction(fn)) }
+        val runWith: MAny = MFunction { proc, fn -> RunWith(proc.asProcess, fn.asFunction) }
 
         @MField("then-run-with")
         @JvmField
-        val thenRunWith: MAny = MFunction { proc, fn -> ThenRunWith(Cast.toProcess(proc), Cast.toFunction(fn)) }
+        val thenRunWith: MAny = MFunction { proc, fn -> ThenRunWith(proc.asProcess, fn.asFunction) }
 
         @MField("run-unsafe")
         @JvmField
-        val runUnsafe: MAny = MFunction { proc -> (Cast.toProcess(proc))() }
+        val runUnsafe: MAny = MFunction { proc -> proc.asProcess() }
 
         @MField("create-process")
         @JvmField
-        val createProcess: MAny = MFunction { fn -> MProcess { (Cast.toFunction(fn))() } }
+        val createProcess: MAny = MFunction { fn -> MProcess { fn.asFunction() } }
     }
 }

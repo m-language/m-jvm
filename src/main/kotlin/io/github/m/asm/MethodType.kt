@@ -1,10 +1,10 @@
 package io.github.m.asm
 
 /**
- * Class representing the type of a method.
+ * Class representing the type of a def.
  *
- * @param name      The name of the method.
- * @param signature The signature of the method.
+ * @param name      The name of the def.
+ * @param signature The signature of the def.
  */
 data class MethodType(
         val name: String,
@@ -25,7 +25,7 @@ data class MethodType(
 
     companion object {
         /**
-         * Creates the method type for a constructor.
+         * Creates the def type for a constructor.
          */
         fun constructor(
                 paramTypes: List<Type>,

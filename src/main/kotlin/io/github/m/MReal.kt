@@ -31,38 +31,34 @@ data class MReal(val value: Float) : MAny {
     object Definitions {
         @MField("add-real")
         @JvmField
-        val addReal: MAny = MFunction { x, y -> Cast.toReal(x).add(Cast.toReal(y)) }
+        val addReal: MAny = MFunction { x, y -> x.asReal.add(y.asReal) }
 
         @MField("sub-real")
         @JvmField
-        val subReal: MAny = MFunction { x, y -> Cast.toReal(x).sub(Cast.toReal(y)) }
+        val subReal: MAny = MFunction { x, y -> x.asReal.sub(y.asReal) }
 
         @MField("mul-real")
         @JvmField
-        val mulReal: MAny = MFunction { x, y -> Cast.toReal(x).mul(Cast.toReal(y)) }
+        val mulReal: MAny = MFunction { x, y -> x.asReal.mul(y.asReal) }
 
         @MField("div-real")
         @JvmField
-        val divReal: MAny = MFunction { x, y -> Cast.toReal(x).div(Cast.toReal(y)) }
+        val divReal: MAny = MFunction { x, y -> x.asReal.div(y.asReal) }
 
         @MField("rem-real")
         @JvmField
-        val remReal: MAny = MFunction { x, y -> Cast.toReal(x).rem(Cast.toReal(y)) }
+        val remReal: MAny = MFunction { x, y -> x.asReal.rem(y.asReal) }
 
         @MField("lt-real")
         @JvmField
-        val ltReal: MAny = MFunction { x, y -> Cast.toReal(x).lt(Cast.toReal(y)) }
+        val ltReal: MAny = MFunction { x, y -> x.asReal.lt(y.asReal) }
 
         @MField("gt-real")
         @JvmField
-        val gtReal: MAny = MFunction { x, y -> Cast.toReal(x).gt(Cast.toReal(y)) }
+        val gtReal: MAny = MFunction { x, y -> x.asReal.gt(y.asReal) }
 
         @MField("eq-real")
         @JvmField
-        val eqReal: MAny = MFunction { x, y -> Cast.toReal(x).eq(Cast.toReal(y)) }
-
-        @MField("symbol->real")
-        @JvmField
-        val symbolToReal: MAny = MFunction { x -> MReal(Cast.toSymbol(x).value.toFloat()) }
+        val eqReal: MAny = MFunction { x, y -> x.asReal.eq(y.asReal) }
     }
 }

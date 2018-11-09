@@ -5,20 +5,21 @@ import jdk.internal.org.objectweb.asm.ClassWriter.COMPUTE_FRAMES
 import jdk.internal.org.objectweb.asm.Opcodes.V1_8
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.StandardOpenOption
 
 /**
  * Class representing a class on the jvm.
  *
- * @param access       The access level of the class.
- * @param name         The name of the class.
- * @param signature    The signature of the class
- * @param declarations The declarations declared in the class.
+ * @param access      The access level of the class.
+ * @param name        The name of the class.
+ * @param signature   The signature of the class.
+ * @param declaration The declaration in the class.
  */
 data class Class(
         val access: Access,
         val name: QualifiedName,
         val signature: ClassSignature,
-        val declarations: List<Declaration>
+        val declaration: Declaration
 ) {
     constructor(
             access: Access,
@@ -26,8 +27,8 @@ data class Class(
             generics: List<Generic>,
             superType: Type,
             interfaceTypes: Set<Type>,
-            declarations: List<Declaration>
-    ) : this(access, name, ClassSignature(generics, superType, interfaceTypes), declarations)
+            declaration: Declaration
+    ) : this(access, name, ClassSignature(generics, superType, interfaceTypes), declaration)
 
     /**
      * Generates this class, returning a byte array that represents the class file for this class.
@@ -40,13 +41,11 @@ data class Class(
                 access.intValue,
                 name.toPathString(),
                 signature.internalString().let { if (it.isEmpty()) null else it },
-                signature.superType.toQualifiedName().toPathString(),
-                signature.interfaceTypes.map { it.toQualifiedName().toPathString() }.toTypedArray()
+                signature.superType.qualifiedName().toPathString(),
+                signature.interfaceTypes.map { it.qualifiedName().toPathString() }.toTypedArray()
         )
 
-        declarations.forEach {
-            it.generate(classWriter)
-        }
+        declaration.generate(classWriter)
 
         classWriter.visitEnd()
         return classWriter.toByteArray()
@@ -56,9 +55,11 @@ data class Class(
      * Writes the bytes of this class to a file in the given [directory].
      */
     fun generate(directory: File): File {
-        val file = File(directory, "${name.toPathString()}.class")
+        val file = File(directory, "${name.toQualifiedString()}.class")
+        val path = file.toPath()
         directory.mkdirs()
-        Files.write(file.toPath(), generate())
+        if (file.exists()) Files.delete(path)
+        Files.write(path, generate(), StandardOpenOption.CREATE)
         return file
     }
 }

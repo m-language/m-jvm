@@ -31,38 +31,38 @@ data class MInt(val value: Int) : MAny {
     object Definitions {
         @MField("add-int")
         @JvmField
-        val addInt: MAny = MFunction { x, y -> Cast.toInt(x).add(Cast.toInt(y)) }
+        val addInt: MAny = MFunction { x, y -> x.asInt.add(y.asInt) }
 
         @MField("sub-int")
         @JvmField
-        val subInt: MAny = MFunction { x, y -> Cast.toInt(x).sub(Cast.toInt(y)) }
+        val subInt: MAny = MFunction { x, y -> x.asInt.sub(y.asInt) }
 
         @MField("mul-int")
         @JvmField
-        val mulInt: MAny = MFunction { x, y -> Cast.toInt(x).mul(Cast.toInt(y)) }
+        val mulInt: MAny = MFunction { x, y -> x.asInt.mul(y.asInt) }
 
         @MField("div-int")
         @JvmField
-        val divInt: MAny = MFunction { x, y -> Cast.toInt(x).div(Cast.toInt(y)) }
+        val divInt: MAny = MFunction { x, y -> x.asInt.div(y.asInt) }
 
         @MField("rem-int")
         @JvmField
-        val remInt: MAny = MFunction { x, y -> Cast.toInt(x).rem(Cast.toInt(y)) }
+        val remInt: MAny = MFunction { x, y -> x.asInt.rem(y.asInt) }
 
         @MField("lt-int")
         @JvmField
-        val ltInt: MAny = MFunction { x, y -> Cast.toInt(x).lt(Cast.toInt(y)) }
+        val ltInt: MAny = MFunction { x, y -> x.asInt.lt(y.asInt) }
 
         @MField("gt-int")
         @JvmField
-        val gtInt: MAny = MFunction { x, y -> Cast.toInt(x).gt(Cast.toInt(y)) }
+        val gtInt: MAny = MFunction { x, y -> x.asInt.gt(y.asInt) }
 
         @MField("eq-int")
         @JvmField
-        val eqInt: MAny = MFunction { x, y -> Cast.toInt(x).eq(Cast.toInt(y)) }
+        val eqInt: MAny = MFunction { x, y -> x.asInt.eq(y.asInt) }
 
-        @MField("symbol->int")
+        @MField("int->char")
         @JvmField
-        val symbolToInt: MAny = MFunction { x -> MInt(Cast.toSymbol(x).value.toInt()) }
+        val intToChar: MAny = MFunction { x -> MChar(x.asInt.value.toChar()) }
     }
 }

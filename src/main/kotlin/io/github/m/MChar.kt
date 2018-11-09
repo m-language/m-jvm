@@ -25,14 +25,10 @@ data class MChar(val value: Char) : MAny {
     object Definitions {
         @MField("eq-char")
         @JvmField
-        val eqChar: MAny = MFunction { x, y -> Cast.toChar(x).eq(Cast.toChar(y)) }
+        val eqChar: MAny = MFunction { x, y -> x.asChar.eq(y.asChar) }
 
-        @MField("int->char")
+        @MField("char->int")
         @JvmField
-        val intToChar: MAny = MFunction { x -> MChar(Cast.toInt(x).value.toChar()) }
-
-        @MField("symbol->char")
-        @JvmField
-        val symbolToChar: MAny = MFunction { x -> MChar(Cast.toSymbol(x).value.first()) }
+        val charToInt: MAny = MFunction { x -> MInt(x.asChar.value.toInt()) }
     }
 }

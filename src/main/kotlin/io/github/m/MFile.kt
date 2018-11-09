@@ -1,25 +1,25 @@
 package io.github.m
 
 import java.io.File
-import kotlin.coroutines.experimental.buildSequence
 
 /**
  * M wrapper class for files.
  */
 data class MFile(val file: File) : MData {
-    override val type = Companion.type
+    override val type get() = Companion.type
 
     override fun get(key: MSymbol): MAny = when (key.value) {
         "read" -> MProcess {
             val bufferedReader = file.bufferedReader()
-            val sequence = buildSequence<MAny> {
-                while (bufferedReader.ready()) {
-                    val char = bufferedReader.read().toChar()
-                    yield(MChar(char))
-                }
+            val sequence = kotlin.sequences.generateSequence<MAny> {
+                if (bufferedReader.ready())
+                    MChar(bufferedReader.read().toChar())
+                else
+                    null
             }
             MList.valueOf(sequence.asIterable())
         }
+        "name" -> MProcess { file.name.mString }
         else -> MUndefined
     }
 
@@ -34,6 +34,6 @@ data class MFile(val file: File) : MData {
     object Definitions {
         @MField("file")
         @JvmField
-        val file: MAny = MFunction { name -> MFile(File(Cast.toList(name).string).absoluteFile) }
+        val file: MAny = MFunction { name -> MFile(File(name.asString).absoluteFile) }
     }
 }

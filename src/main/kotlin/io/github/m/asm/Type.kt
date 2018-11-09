@@ -2,28 +2,28 @@
 
 package io.github.m.asm
 
+import jdk.internal.org.objectweb.asm.Type as AsmType
+
 /**
  * Class representing a type on the jvm.
  *
- * @param name       The simple java name of the type, e.g. "Class" or "void".
+ * @param name       The simple java name of the type, e.g. "java.lang.Class" or "void".
  * @param descriptor The internal descriptor of the type on the jvm, e.g. "Ljava/lang/Class;" or "V".
- * @param signature  The internal methodType of the type on the jvm, e.g. "Ljava/lang/Class<Ljava/lang/Object;>;" or "V".
+ * @param signature  The internal signature of the type on the jvm, e.g. "Ljava/lang/Class<Ljava/lang/Object;>;" or "V".
  */
 data class Type @JvmOverloads constructor(
         val name: String,
         val descriptor: String,
         val signature: String = descriptor
 ) {
-    fun toQualifiedName() = QualifiedName.fromQualifiedString(name)
+    fun qualifiedName() = QualifiedName.fromQualifiedString(name)
 
-    internal val asm: jdk.internal.org.objectweb.asm.Type get() = jdk.internal.org.objectweb.asm.Type.getType(descriptor)
+    internal val asm: AsmType get() = AsmType.getType(descriptor)
 
     companion object {
         /**
          * Creates a type from a class with the given [qualifiedName] with generic parameters [generics].
          */
-        @JvmStatic
-        @JvmOverloads
         fun clazz(
                 qualifiedName: QualifiedName,
                 generics: List<Type> = emptyList()
@@ -40,8 +40,6 @@ data class Type @JvmOverloads constructor(
         /**
          * Creates a type from a class [clazz] with generic parameters [generics].
          */
-        @JvmStatic
-        @JvmOverloads
         fun clazz(
                 clazz: java.lang.Class<*>,
                 generics: List<Type> = emptyList()
@@ -50,46 +48,23 @@ data class Type @JvmOverloads constructor(
         /**
          * Creates a generic type with a given [name].
          */
-        @JvmStatic
         fun generic(name: String) = Type(name, "T$name;")
 
         /**
          * Creates the type representing an array of [type]s.
          */
-        @JvmStatic
         fun array(type: Type) = Type("${type.name}[]", "[${type.descriptor}")
 
-        @JvmField
         val `object` = clazz(Object::class.java)
-
-        @JvmField
         val string = clazz(String::class.java)
-
-        @JvmField
         val void = Type("void", "V")
-
-        @JvmField
         val boolean = Type("boolean", "Z")
-
-        @JvmField
         val char = Type("char", "C")
-
-        @JvmField
         val byte = Type("byte", "B")
-
-        @JvmField
         val short = Type("short", "S")
-
-        @JvmField
         val int = Type("int", "I")
-
-        @JvmField
         val long = Type("long", "J")
-
-        @JvmField
         val float = Type("float", "F")
-
-        @JvmField
         val double = Type("double", "D")
     }
 }

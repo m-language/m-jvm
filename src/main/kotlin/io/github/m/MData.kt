@@ -12,7 +12,7 @@ interface MData : MAny {
     operator fun get(key: MSymbol): MAny
 
     /**
-     * Utility method for failing if a field does not exist.
+     * Utility def for failing if a field does not exist.
      *
      * @param key The key for the field.
      */
@@ -39,13 +39,13 @@ interface MData : MAny {
         @MField("new-data")
         @JvmField
         val newData: MAny = MFunction { name, fields, values ->
-            val fields0 = Cast.toList(fields).asSequence().map { Cast.toSymbol(it) }
-            val values0 = Cast.toList(values).asSequence()
-            Impl(Cast.toSymbol(name), (fields0 zip values0).toMap())
+            val fields0 = fields.asList.asSequence().map { it.asSymbol }
+            val values0 = values.asList.asSequence()
+            Impl(name.asSymbol, (fields0 zip values0).toMap())
         }
 
         @MField("field")
         @JvmField
-        val field: MAny = MFunction { name, data -> Cast.toData(data)[Cast.toSymbol(name)] }
+        val field: MAny = MFunction { type, name, data -> data.asData(type.asSymbol)[name.asSymbol] }
     }
 }

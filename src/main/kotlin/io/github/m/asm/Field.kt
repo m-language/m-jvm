@@ -5,14 +5,14 @@ import jdk.internal.org.objectweb.asm.ClassWriter
 /**
  * Class representing a field on the jvm.
  *
- * @param access The access level of the field.
- * @param type   The type of the field.
- * @param name   The name of the field.
- * @param owner  The type of the owner of the field.
+ * @param access    The access level of the field.
+ * @param fieldType The type of the field.
+ * @param name      The name of the field.
+ * @param owner     The type of the owner of the field.
  */
 data class Field(
         val access: Access,
-        val type: Type,
+        val fieldType: Type,
         val name: String,
         val owner: Type
 ) : Declaration {
@@ -20,8 +20,8 @@ data class Field(
         val fieldVisitor = classWriter.visitField(
                 access.intValue,
                 name,
-                type.descriptor,
-                type.signature,
+                fieldType.descriptor,
+                fieldType.signature,
                 null
         )
 
