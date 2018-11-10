@@ -18,7 +18,9 @@ data class File(val file: java.io.File) : Data {
             List.valueOf(sequence)
         }
         "name" -> Process { file.name.m }
-        else -> Undefined
+        "child" -> Function { name -> Process { File(java.io.File(file, name.asString)) } }
+        "child-names" -> Process { List.valueOf(file.listFiles().asSequence().map { it.name.m }) }
+        else -> noField(key)
     }
 
     companion object : Value {
@@ -30,8 +32,8 @@ data class File(val file: java.io.File) : Data {
 
     @Suppress("unused")
     object Definitions {
-        @MField("file")
+        @MField("local-file")
         @JvmField
-        val file: Value = Function { name -> File(java.io.File(name.asString).absoluteFile) }
+        val localFile: Value = File(java.io.File("."))
     }
 }

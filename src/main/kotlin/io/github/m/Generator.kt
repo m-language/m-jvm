@@ -55,9 +55,9 @@ object Generator {
                     run {
                         val variable = env.vars[name]
                         when (variable) {
-                            null -> reflectiveVariableOperation(name.string, env.file.asType)
+                            null -> reflectiveVariableOperation(name.string, env.path.asType)
                             is Variable.Local -> localVariableOperation(variable.name.string, variable.index.value)
-                            is Variable.Global -> globalVariableOperation(variable.name.string, variable.file.asType)
+                            is Variable.Global -> globalVariableOperation(variable.name.string, variable.path.asType)
                         }
                     },
                     Declaration.empty,
@@ -87,20 +87,20 @@ object Generator {
         }
         val exprResult = generateExpr(expr, env2.copy(vars = locals, def = methodName))
         GenerateResult(
-                lambdaOperation(env2.file.asType, methodName.string, closureOperations),
+                lambdaOperation(env2.path.asType, methodName.string, closureOperations),
                 block(exprResult.declaration, lambdaDeclaration(methodName.string, closures.map { it.string }, exprResult.operation)),
                 env2
         )
     }
 
     fun generateDefExpr(name: List, expr: Expr, env: Env): GenerateResult = run {
-        val env2 = env.copy(vars = env.vars + (name to Variable.Global(name, env.file)))
+        val env2 = env.copy(vars = env.vars + (name to Variable.Global(name, env.path)))
         val localEnv = env2.copy(def = name)
         val exprResult = generateExpr(expr, localEnv)
         if (env.vars[name] == null) {
             GenerateResult(
-                    defOperation(name.asString, exprResult.operation, localEnv.file.asType),
-                    block(exprResult.declaration, defDeclaration(name.asString, env.file.asType)),
+                    defOperation(name.asString, exprResult.operation, localEnv.path.asType),
+                    block(exprResult.declaration, defDeclaration(name.asString, env.path.asType)),
                     env2
             )
         } else {
@@ -171,7 +171,7 @@ object Generator {
         val internals = internals.map { it.first.asList to it.second.cast<Variable>() }.toMap()
         val env = Env(internals, List.Cons(name, List.Nil), List.Nil, Int(0))
         val result = generateExprs(exprs.asList, env)
-        Definitions.generateFile.asFunction(name, out, result.operation, result.declaration)
+        Definitions.generateProgram.asFunction(name, out, result.operation, result.declaration)
     }
 
     @Suppress("unused")
@@ -282,9 +282,9 @@ object Generator {
         @JvmField
         val internalVariables: Value = List.valueOf(internals.asSequence())
 
-        @MField("generate-file")
+        @MField("generate-program")
         @JvmField
-        val generateFile: Value = Function { name, out, operation, declaration ->
+        val generateProgram: Value = Function { name, out, operation, declaration ->
             val clazzName = QualifiedName(listOf(name.asString))
             val clazz = mainClass(Type.clazz(clazzName), operation.asOperation, declaration.asDeclaration)
             Process {

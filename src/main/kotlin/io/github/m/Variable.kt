@@ -18,12 +18,12 @@ sealed class Variable : Value {
         }
     }
 
-    data class Global(val name: List, val file: List) : Variable(), Data {
+    data class Global(val name: List, val path: List) : Variable(), Data {
         override val type get() = Companion.type
 
         override fun get(key: Symbol) = when (key.value) {
             "name" -> name
-            "file" -> file
+            "path" -> path
             else -> noField(key)
         }
 
