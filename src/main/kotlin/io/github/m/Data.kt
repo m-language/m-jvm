@@ -20,32 +20,61 @@ interface Data : Value {
     fun noField(key: Symbol): Nothing = throw Error.NoField(key, type)
 
     /**
+     * Derives a data object with a key and value.
+     *
+     * @param key   The key for the derived field.
+     * @param value The value for the derived field.
+     */
+    @JvmDefault
+    fun derive(key: Symbol, value: Value): Data = Derive(this, key, value)
+
+    /**
      * A generic implementation of data.
      *
      * @param type   The type of the data.
-     * @param fields A map of fields representing the data
+     * @param fields A map of fields representing the data.
      */
-    class Impl(override val type: Symbol, private val fields: Map<Symbol, Value>) : Data {
+    data class Impl(override val type: Symbol, val fields: Map<Symbol, Value>) : Data {
         override fun get(key: Symbol) = fields[key] ?: noField(key)
-        override fun toString() = "$type($fields)"
+        override fun derive(key: Symbol, value: Value) = copy(fields = fields + (key to value))
+        override fun toString() = "$type$fields"
+    }
+
+    /**
+     * A generic implementation of derived data.
+     *
+     * @param data  The data to derive.
+     * @param key   The key for the derived field.
+     * @param value The value for the derived field.
+     */
+    data class Derive(val data: Data, val key: Symbol, val value: Value) : Data {
+        override val type get() = data.type
+        override fun get(key: Symbol) = if (key == this.key) value else data[key]
+        override fun toString() = "$data${key to value}"
     }
 
     companion object : Value {
         override val type = Symbol("data")
     }
 
-    @Suppress("unused", "ObjectPropertyName")
+    @Suppress("unused")
     object Definitions {
-        @MField("new-data")
+        @MField("object")
         @JvmField
-        val newData: Value = Function { name, fields, values ->
-            val fields0 = fields.asList.asSequence().map { it.asSymbol }
-            val values0 = values.asList.asSequence()
-            Impl(name.asSymbol, (fields0 zip values0).toMap())
+        val `object`: Value = Function { type ->
+            Impl(type.asSymbol, emptyMap())
+        }
+
+        @MField("derive")
+        @JvmField
+        val derive: Value = Function { type, key, value, data ->
+            data.asData(type.asSymbol).derive(key.asSymbol, value)
         }
 
         @MField("field")
         @JvmField
-        val field: Value = Function { type, name, data -> data.asData(type.asSymbol)[name.asSymbol] }
+        val field: Value = Function { type, name, data ->
+            data.asData(type.asSymbol)[name.asSymbol]
+        }
     }
 }

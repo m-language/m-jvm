@@ -48,18 +48,14 @@ sealed class Expr : Value {
     object Definitions {
         @MField("identifier-expr")
         @JvmField
-        val identifierExpr: Value = Function { fields ->
-            val list = fields.asCons
-            val list2 = list.cdr.asCons
-            Identifier(list.car.asList, list2.car.asInt)
+        val identifierExpr: Value = Function { name, line ->
+            Identifier(name.asList, line.asInt)
         }
 
         @MField("list-expr")
         @JvmField
-        val listExpr: Value = Function { fields ->
-            val list = fields.asCons
-            val list2 = list.cdr.asCons
-            List(list.car.asList, list2.car.asInt)
+        val listExpr: Value = Function { exprs, line ->
+            List(exprs.asList, line.asInt)
         }
     }
 }

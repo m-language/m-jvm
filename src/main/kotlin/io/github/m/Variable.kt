@@ -38,20 +38,16 @@ sealed class Variable : Value {
 
     @Suppress("unused")
     object Definitions {
-        @MField("global-variable")
-        @JvmField
-        val globalVariable: Value = Function { fields ->
-            val list = fields.asCons
-            val list2 = list.cdr.asCons
-            Global(list.car.cast(), list2.car.cast())
-        }
-
         @MField("local-variable")
         @JvmField
-        val localVariable: Value = Function { fields ->
-            val list = fields.asCons
-            val list2 = list.cdr.asCons
-            Local(list.car.cast(), list2.car.cast())
+        val localVariable: Value = Function { name, index ->
+            Local(name.asList, index.asInt)
+        }
+
+        @MField("global-variable")
+        @JvmField
+        val globalVariable: Value = Function { name, file ->
+            Global(name.asList, file.asList)
         }
     }
 }

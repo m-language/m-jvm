@@ -20,10 +20,8 @@ data class Pair(val first: Value, val second: Value) : Data {
     object Definitions {
         @MField("pair")
         @JvmField
-        val pair: Value = Function { fields ->
-            val list = fields.asCons
-            val list2 = list.cdr.asCons
-            Pair(list.car.cast(), list2.car.cast())
+        val pair: Value = Function { first, second ->
+            Pair(first, second)
         }
     }
 }
