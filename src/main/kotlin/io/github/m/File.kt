@@ -15,7 +15,7 @@ data class File(val file: java.io.File) : Data {
                 else
                     null
             }
-            List.valueOf(sequence.asIterable())
+            List.valueOf(sequence)
         }
         "name" -> Process { file.name.m }
         else -> Undefined

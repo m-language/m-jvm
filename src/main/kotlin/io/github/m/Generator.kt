@@ -4,9 +4,7 @@ import io.github.m.asm.*
 
 @Suppress("MemberVisibilityCanBePrivate")
 object Generator {
-    val stringCompare = Compare.list(Compare.from(Comparator.comparing<Value, kotlin.Char> { it.asChar.value }))
-
-    val internals: List = List.valueOf(listOf<java.lang.Class<*>>(
+    val internals: kotlin.collections.List<Pair> = listOf<java.lang.Class<*>>(
             Value.Definitions::class.java,
             Bool.Definitions::class.java,
             List.Definitions::class.java,
@@ -21,14 +19,11 @@ object Generator {
             Undefined.Definitions::class.java,
             Runtime.Definitions::class.java,
             Generator.Definitions::class.java,
-            GenerateResult.Definitions::class.java,
             Expr.Definitions::class.java,
-            Env.Definitions::class.java,
             Pair.Definitions::class.java,
-            TreeMap.Definitions::class.java,
             Variable.Definitions::class.java
     ).flatMap {
-        List.valueOf(it
+        it
                 .fields
                 .asSequence()
                 .filter { field -> field.isAnnotationPresent(MField::class.java) }
@@ -36,21 +31,20 @@ object Generator {
                     val name = field.getAnnotation(MField::class.java).name.m
                     val variable = Variable.Global(
                             field.name.m,
-                            List.valueOf(QualifiedName.fromClass(it).list.map(String::m))
+                            List.valueOf(QualifiedName.fromClass(it).list.asSequence().map(String::m))
                     )
                     Pair(name, variable)
-                })
-    })
+                }
+                .toList()
+    }
 
     fun closures(expr: Expr, env: Env): Set<List> = when (expr) {
         is Expr.Identifier -> {
-            val maybe = env.vars.getValue(expr.name)
-            when (maybe) {
-                Maybe.None -> emptySet()
-                is Maybe.Some -> when (maybe.value.cast<Variable>()) {
-                    is Variable.Global -> emptySet()
-                    is Variable.Local -> setOf(expr.name)
-                }
+            val variable = env.vars[expr.name]
+            when (variable) {
+                null -> emptySet()
+                is Variable.Global -> emptySet()
+                is Variable.Local -> setOf(expr.name)
             }
         }
         is Expr.List -> expr.exprs.flatMap { closures(it.cast(), env) }.toSet()
@@ -59,16 +53,11 @@ object Generator {
     fun generateIdentifierExpr(name: List, env: Env) =
             GenerateResult(
                     run {
-                        val maybe = env.vars.getValue(name)
-                        when (maybe) {
-                            Maybe.None -> reflectiveVariableOperation(name.string, env.file.asType)
-                            is Maybe.Some -> {
-                                val variable = maybe.value.cast<Variable>()
-                                when (variable) {
-                                    is Variable.Local -> localVariableOperation(variable.name.string, variable.index.value)
-                                    is Variable.Global -> globalVariableOperation(variable.name.string, variable.file.asType)
-                                }
-                            }
+                        val variable = env.vars[name]
+                        when (variable) {
+                            null -> reflectiveVariableOperation(name.string, env.file.asType)
+                            is Variable.Local -> localVariableOperation(variable.name.string, variable.index.value)
+                            is Variable.Global -> globalVariableOperation(variable.name.string, variable.file.asType)
                         }
                     },
                     Declaration.empty,
@@ -89,32 +78,33 @@ object Generator {
     }
 
     fun generateLambdaExpr(name: List, expr: Expr, env: Env): GenerateResult = run {
-        val methodName = Definitions.mangleLambdaName.asFunction(env.def, env.index).asString
+        val methodName = Definitions.mangleLambdaName.asFunction(env.def, env.index).asList
         val env2 = env.copy(index = env.index.add(Int(1)))
-        val closures = closures(expr, env)
+        val closures = closures(expr, env).toList()
         val closureOperations = closures.map { generateIdentifierExpr(it, env2).operation }
         val (_, locals) = closures.plus(element = name).fold(0 to env.vars) { (index, map), name ->
-            index + 1 to map.putValue(name, Variable.Local(name, Int(index)))
+            index + 1 to map + (name to Variable.Local(name, Int(index)))
         }
-        val exprResult = generateExpr(expr, env2.copy(vars = locals))
+        val exprResult = generateExpr(expr, env2.copy(vars = locals, def = methodName))
         GenerateResult(
-                lambdaOperation(env2.file.asType, methodName, closureOperations),
-                block(exprResult.declaration, lambdaDeclaration(methodName, closures.map { it.string }, exprResult.operation)),
+                lambdaOperation(env2.file.asType, methodName.string, closureOperations),
+                block(exprResult.declaration, lambdaDeclaration(methodName.string, closures.map { it.string }, exprResult.operation)),
                 env2
         )
     }
 
     fun generateDefExpr(name: List, expr: Expr, env: Env): GenerateResult = run {
-        val env2 = env.copy(vars = env.vars.putValue(name, Variable.Global(name, env.file)))
+        val env2 = env.copy(vars = env.vars + (name to Variable.Global(name, env.file)))
         val localEnv = env2.copy(def = name)
         val exprResult = generateExpr(expr, localEnv)
-        when (env.vars.getValue(name)) {
-            Maybe.None -> GenerateResult(
+        if (env.vars[name] == null) {
+            GenerateResult(
                     defOperation(name.asString, exprResult.operation, localEnv.file.asType),
                     block(exprResult.declaration, defDeclaration(name.asString, env.file.asType)),
                     env2
             )
-            is Maybe.Some -> GenerateResult(
+        } else {
+            GenerateResult(
                     generateIdentifierExpr(name, env).operation,
                     Declaration.empty,
                     env
@@ -178,12 +168,7 @@ object Generator {
     }
 
     fun generate(name: List, out: File, exprs: List) = run {
-        val internals = internals
-                .fold(TreeMap.empty(stringCompare)) { map, value ->
-                    val pair = value.cast<Pair>()
-                    map.putValue(pair.first, pair.second)
-                }
-
+        val internals = internals.map { it.first.asList to it.second.cast<Variable>() }.toMap()
         val env = Env(internals, List.Cons(name, List.Nil), List.Nil, Int(0))
         val result = generateExprs(exprs.asList, env)
         Definitions.generateFile.asFunction(name, out, result.operation, result.declaration)
@@ -217,14 +202,14 @@ object Generator {
 
         @MField("def-operation")
         @JvmField
-        val defOperation: Value = Function { name, operation, env ->
-            defOperation(name.asString, operation.asOperation, env.cast<Env>().file.asType)
+        val defOperation: Value = Function { name, operation, file ->
+            defOperation(name.asString, operation.asOperation, file.asType)
         }
 
         @MField("def-declaration")
         @JvmField
-        val defDeclaration: Value = Function { name, env ->
-            defDeclaration(name.asString, env.cast<Env>().file.asType)
+        val defDeclaration: Value = Function { name, file ->
+            defDeclaration(name.asString, file.asType)
         }
 
         @MField("lambda-operation")
@@ -295,7 +280,7 @@ object Generator {
 
         @MField("internal-variables")
         @JvmField
-        val internalVariables: Value = internals
+        val internalVariables: Value = List.valueOf(internals.asSequence())
 
         @MField("generate-file")
         @JvmField
@@ -306,6 +291,13 @@ object Generator {
                 clazz.generate(out.asFile.file)
                 List.Nil
             }
+        }
+
+        @MField("debug")
+        @JvmField
+        val debug: Value = Function { x ->
+            println(x)
+            x
         }
     }
 }

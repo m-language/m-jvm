@@ -14,23 +14,13 @@ sealed class List : Value, Iterable<Value> {
         }.iterator()
     }
 
-    override fun toString() = joinToString(" ", "(", ")")
+    final override fun toString() = joinToString(" ", "(", ")")
 
     /**
      * The non empty list.
      */
-    abstract class Cons : List() {
+    data class Cons(val car: Value, val cdr: List) : List() {
         override val type get() = Companion.type
-
-        /**
-         * The head of the list.
-         */
-        abstract val car: Value
-
-        /**
-         * The tail of the list.
-         */
-        abstract val cdr: List
 
         val cadr: Value get() = cdr.asCons.car
         val caddr: Value get() = cdr.asCons.cadr
@@ -38,17 +28,6 @@ sealed class List : Value, Iterable<Value> {
 
         companion object : Value {
             override val type = Symbol("cons")
-
-            operator fun invoke(car: Value, cdr: List) = Eager(car, cdr)
-            operator fun invoke(lazyCons: () -> Cons) = Lazy(lazyCons)
-        }
-
-        class Eager(override val car: Value, override val cdr: List) : Cons()
-
-        class Lazy(lazyCons: () -> Cons) : Cons() {
-            private val cons by lazy(lazyCons)
-            override val car get() = cons.car
-            override val cdr get() = cons.cdr
         }
     }
 
@@ -62,12 +41,9 @@ sealed class List : Value, Iterable<Value> {
     companion object : Value {
         override val type = Symbol("list")
 
-        fun valueOf(sequence: Sequence<Value>) = valueOf(sequence.iterator())
-        fun valueOf(iterable: Iterable<Value>) = valueOf(iterable.iterator())
-        fun valueOf(iterator: Iterator<Value>): List = when {
-            iterator.hasNext() -> Cons { Cons(iterator.next(), valueOf(iterator)) }
-            else -> Nil
-        }
+        fun valueOf(sequence: Sequence<Value>) = sequence
+                .toList()
+                .foldRight(Nil as List, ::Cons)
     }
 
     @Suppress("unused", "ObjectPropertyName")

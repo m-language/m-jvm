@@ -16,7 +16,7 @@ object Runtime {
     @Suppress("unused")
     @JvmStatic
     fun run(args: Array<String>, clazz: Class<*>) {
-        Definitions.args = List.valueOf(args.map(String::m))
+        Definitions.args = List.valueOf(args.asSequence().map(String::m))
 
         try {
             clazz.getMethod("run")(null)
