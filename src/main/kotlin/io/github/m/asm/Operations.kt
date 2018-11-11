@@ -32,14 +32,15 @@ fun lineNumber(number: Int) = Operation { visitLineNumber(number, mark()) }
 fun new(type: Type) = Operation { newInstance(type.asm) }
 
 fun pushArg(index: Int) = Operation { loadArg(index) }
+fun pushBoolean(boolean: Boolean) = Operation { push(boolean) }
 fun pushString(string: String) = Operation { push(string) }
 fun pushType(type: Type) = Operation { push(type.asm) }
 val pushThis = Operation { loadThis() }
 
-fun pushNew(type: Type, methodType: MethodType, args: List<Operation>) = block(
+fun pushNew(type: Type, methodType: MethodType, args: Operation) = block(
         new(type),
         dup,
-        block(args),
+        args,
         invokeConstructor(type, methodType)
 )
 
@@ -48,18 +49,6 @@ fun globalVariableOperation(name: String, file: Type) = getStaticField(file, nam
 fun reflectiveVariableOperation(name: String, file: Type) = globalVariableOperation(name, file)
 
 val nilOperation = getStaticField(Type.clazz(io.github.m.List.Definitions::class.java), "nil", valueType)
-
-fun symbolOperation(value: String) = pushNew(
-        Type.clazz(Symbol::class.java),
-        MethodType.constructor(listOf(Type.string), emptySet()),
-        listOf(pushString(value))
-)
-
-fun defOperation(name: String, op: Operation, main: Type) = block(
-        op,
-        setStaticField(main, name, valueType),
-        getStaticField(main, name, valueType)
-)
 
 fun ifOperation(cond: Operation, `true`: Operation, `false`: Operation): Operation = Operation {
     val endLabel = newLabel()
@@ -84,13 +73,10 @@ fun ifOperation(cond: Operation, `true`: Operation, `false`: Operation): Operati
     mark(endLabel)
 }
 
-fun applyOperation(fn: Operation, arg: Operation) = block(
-        fn,
-        arg,
-        invokeStatic(
-                Type.clazz(io.github.m.Function.Internal::class.java),
-                MethodType("apply", emptyList(), valueType, listOf(valueType, valueType), emptySet())
-        )
+fun defOperation(name: String, op: Operation, main: Type) = block(
+        op,
+        setStaticField(main, name, valueType),
+        getStaticField(main, name, valueType)
 )
 
 fun lambdaOperation(
@@ -119,3 +105,26 @@ fun lambdaOperation(
             AsmType.getType("(${valueType.descriptor})${valueType.descriptor}")
     )
 }
+
+fun symbolOperation(value: String) = pushNew(
+        Type.clazz(Symbol::class.java),
+        MethodType.constructor(listOf(Type.string), emptySet()),
+        pushString(value)
+)
+
+fun includeOperation(name: String) = block(
+        invokeStatic(
+                Type.clazz(QualifiedName.fromQualifiedString(name)),
+                MethodType("run", emptyList(), Type.void, emptyList(), emptySet())
+        ),
+        nilOperation
+)
+
+fun applyOperation(fn: Operation, arg: Operation) = block(
+        fn,
+        arg,
+        invokeStatic(
+                Type.clazz(io.github.m.Function.Internal::class.java),
+                MethodType("apply", emptyList(), valueType, listOf(valueType, valueType), emptySet())
+        )
+)

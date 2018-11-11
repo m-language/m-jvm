@@ -1,5 +1,7 @@
 package io.github.m
 
+import java.nio.file.Files
+
 /**
  * M wrapper class for files.
  */
@@ -7,6 +9,11 @@ data class File(val file: java.io.File) : Data {
     override val type get() = Companion.type
 
     override fun get(key: Symbol): Value = when (key.value) {
+        "child" -> Function { name -> Process { File(java.io.File(file, name.asString)) } }
+        "child-files" -> Process { List.valueOf(Files.newDirectoryStream(file.toPath()).asSequence().map { File(it.toFile()) }) }
+        "directory?" -> Process { Bool.valueOf(file.isDirectory) }
+        "name" -> Process { file.name.m }
+        "parent" -> Process { File(file.parentFile) }
         "read" -> Process {
             val bufferedReader = file.bufferedReader()
             val sequence = generateSequence<Value> {
@@ -17,9 +24,6 @@ data class File(val file: java.io.File) : Data {
             }
             List.valueOf(sequence)
         }
-        "name" -> Process { file.name.m }
-        "child" -> Function { name -> Process { File(java.io.File(file, name.asString)) } }
-        "child-names" -> Process { List.valueOf(file.listFiles().asSequence().map { it.name.m }) }
         else -> noField(key)
     }
 

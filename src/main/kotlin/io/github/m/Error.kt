@@ -6,7 +6,8 @@ package io.github.m
 sealed class Error(message: String) : java.lang.Error(message) {
     init {
         stackTrace = stackTrace
-                .filter { it?.fileName?.contains(".m") ?: false }
+                .filterNot { it?.methodName?.toLowerCase()?.contains("internal") ?: true }
+//                .filter { it?.fileName?.contains(".m") ?: false }
                 .map {
                     tailrec fun clean(name: String): String = if (name.contains("_"))
                         clean(name.substringBefore("_"))

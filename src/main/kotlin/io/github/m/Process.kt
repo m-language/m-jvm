@@ -77,7 +77,7 @@ interface Process : Value {
         @JvmField
         val runUnsafe: Value = Function { proc -> proc.asProcess() }
 
-        @MField("create-process")
+        @MField("function->process")
         @JvmField
         val createProcess: Value = Function { fn -> Process { fn.asFunction() } }
     }

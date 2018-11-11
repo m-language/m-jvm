@@ -5,6 +5,7 @@ package io.github.m.asm
 import io.github.m.Runtime
 import io.github.m.Value
 import io.github.m.cast
+import jdk.internal.org.objectweb.asm.commons.GeneratorAdapter
 
 val Value.asDeclaration get() = cast<Declaration>()
 
@@ -55,6 +56,7 @@ fun mainClass(
                     `return`
             )
     )
+    val hasRun = Field(Access().asPrivate().asStatic(), Type.boolean, "hasRun", type)
     val run = Method(
             Access().asPublic().asFinal().asStatic(),
             "run",
@@ -62,7 +64,19 @@ fun mainClass(
             Type.void,
             emptyList(),
             emptySet(),
-            `return`(operation)
+            `return`(Operation {
+                val endLabel = newLabel()
+
+                getStaticField(type, "hasRun", Type.boolean).generate(this)
+                ifZCmp(GeneratorAdapter.NE, endLabel)
+
+                pushBoolean(true).generate(this)
+                setStaticField(type, "hasRun", Type.boolean).generate(this)
+
+                operation.generate(this)
+
+                mark(endLabel)
+            })
     )
     return Class(
             Access().asPublic().asFinal(),
@@ -70,6 +84,6 @@ fun mainClass(
             emptyList(),
             Type.`object`,
             emptySet(),
-            block(declaration, main, run, ClassSource("${type.qualifiedName().name}.m"))
+            block(declaration, main, hasRun, run, ClassSource("${type.qualifiedName().name}.m"))
     )
 }

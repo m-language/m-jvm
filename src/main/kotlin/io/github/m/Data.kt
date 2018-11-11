@@ -1,5 +1,8 @@
 package io.github.m
 
+import io.github.m.asm.asQualifiedName
+import java.lang.reflect.Modifier
+
 /**
  * Representation of data in M.
  */
@@ -75,6 +78,21 @@ interface Data : Value {
         @JvmField
         val field: Value = Function { type, name, data ->
             data.asData(type.asSymbol)[name.asSymbol]
+        }
+
+        @MField("import")
+        @JvmStatic
+        val import = Function { type ->
+            val clazz = Class.forName(type.asSymbol.value)
+            Impl(
+                    Symbol(clazz.name),
+                    clazz.fields
+                            .asSequence()
+                            .filter { Modifier.isStatic(it.modifiers) }
+                            .filter { it.type == Value::class.java }
+                            .map { Symbol(it.name) to it.get(null) as Value }
+                            .toMap()
+            )
         }
     }
 }

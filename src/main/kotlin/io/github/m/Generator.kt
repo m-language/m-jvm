@@ -29,10 +29,7 @@ object Generator {
                 .filter { field -> field.isAnnotationPresent(MField::class.java) }
                 .map { field ->
                     val name = field.getAnnotation(MField::class.java).name.m
-                    val variable = Variable.Global(
-                            field.name.m,
-                            List.valueOf(QualifiedName.fromClass(it).list.asSequence().map(String::m))
-                    )
+                    val variable = Variable.Global(field.name.m, it.name.m)
                     Pair(name, variable)
                 }
                 .toList()
@@ -169,7 +166,7 @@ object Generator {
 
     fun generate(name: List, out: File, exprs: List) = run {
         val internals = internals.map { it.first.asList to it.second.cast<Variable>() }.toMap()
-        val env = Env(internals, List.Cons(name, List.Nil), List.Nil, Int(0))
+        val env = Env(internals, name, List.Nil, Int(0))
         val result = generateExprs(exprs.asList, env)
         Definitions.generateProgram.asFunction(name, out, result.operation, result.declaration)
     }
@@ -184,14 +181,14 @@ object Generator {
 
         @MField("global-variable-operation")
         @JvmField
-        val globalVariableOperation: Value = Function { name, file ->
-            globalVariableOperation(name.asString, file.asType)
+        val globalVariableOperation: Value = Function { name, path ->
+            globalVariableOperation(name.asString, path.asType)
         }
 
         @MField("reflective-variable-operation")
         @JvmField
-        val reflectiveVariableOperation: Value = Function { name, file ->
-            reflectiveVariableOperation(name.asString, file.asType)
+        val reflectiveVariableOperation: Value = Function { name, path ->
+            reflectiveVariableOperation(name.asString, path.asType)
         }
 
         @MField("if-operation")
@@ -208,14 +205,14 @@ object Generator {
 
         @MField("def-declaration")
         @JvmField
-        val defDeclaration: Value = Function { name, file ->
-            defDeclaration(name.asString, file.asType)
+        val defDeclaration: Value = Function { name, path ->
+            defDeclaration(name.asString, path.asType)
         }
 
         @MField("lambda-operation")
         @JvmField
-        val lambdaOperation: Value = Function { file, name, closures ->
-            lambdaOperation(file.asType, name.asString, closures.asList.map { it as Operation })
+        val lambdaOperation: Value = Function { path, name, closures ->
+            lambdaOperation(path.asType, name.asString, closures.asList.map { it as Operation })
         }
 
         @MField("lambda-declaration")
@@ -228,6 +225,18 @@ object Generator {
         @JvmField
         val symbolOperation: Value = Function { name ->
             symbolOperation(name.asString)
+        }
+
+        @MField("include-operation")
+        @JvmField
+        val includeOperation: Value = Function { name ->
+            includeOperation(name.asString)
+        }
+
+        @MField("include-declaration")
+        @JvmField
+        val includeDeclaration: Value = Function { _ ->
+            Declaration.empty
         }
 
         @MField("apply-operation")

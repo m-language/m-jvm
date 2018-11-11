@@ -6,7 +6,7 @@ import jdk.internal.org.objectweb.asm.commons.GeneratorAdapter
 /**
  * Class representing a method on the jvm.
  *
- * @param access     he access level of the method.
+ * @param access     The access level of the method.
  * @param methodType The type of the method.
  * @param operation  The operation that makes up the method.
  */
@@ -41,7 +41,7 @@ data class Method(
 
     companion object {
         /**
-         * Creates a def for a constructor.
+         * Creates a method for a constructor.
          */
         fun constructor(
                 access: Access,
@@ -61,7 +61,7 @@ data class Method(
         )
 
         /**
-         * Creates a def that is called upon the static initialization of an object.
+         * Creates a method that is called upon the static initialization of an object.
          */
         fun staticInit(operation: Operation) = Method(
                 Access().asPublic().asStatic(),
