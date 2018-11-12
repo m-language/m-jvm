@@ -1,6 +1,5 @@
 package io.github.m
 
-import io.github.m.asm.asQualifiedName
 import java.lang.reflect.Modifier
 
 /**
@@ -82,7 +81,7 @@ interface Data : Value {
 
         @MField("import")
         @JvmStatic
-        val import = Function { type ->
+        val import: Value = Function { type ->
             val clazz = Class.forName(type.asSymbol.value)
             Impl(
                     Symbol(clazz.name),

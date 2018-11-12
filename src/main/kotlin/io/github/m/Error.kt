@@ -6,7 +6,6 @@ package io.github.m
 sealed class Error(message: String) : java.lang.Error(message) {
     init {
         stackTrace = stackTrace
-                .filterNot { it?.methodName?.toLowerCase()?.contains("internal") ?: true }
 //                .filter { it?.fileName?.contains(".m") ?: false }
                 .map {
                     tailrec fun clean(name: String): String = if (name.contains("_"))
@@ -19,20 +18,6 @@ sealed class Error(message: String) : java.lang.Error(message) {
     }
 
     final override fun toString() = message ?: "null"
-
-    @Suppress("unused")
-    object Definitions {
-        @MField("error")
-        @JvmField
-        val error: Value = Function { message ->
-            throw Generic(message.asString)
-        }
-    }
-
-    /**
-     * Error that is thrown when no other error types match.
-     */
-    class Generic(message: String) : Error(message)
 
     /**
      * Error that is thrown when an M object is cast to an incompatible type.

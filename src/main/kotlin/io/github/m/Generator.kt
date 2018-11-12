@@ -13,7 +13,6 @@ object Generator {
             Char.Definitions::class.java,
             Symbol.Definitions::class.java,
             Data.Definitions::class.java,
-            Error.Definitions::class.java,
             Process.Definitions::class.java,
             File.Definitions::class.java,
             Undefined.Definitions::class.java,
