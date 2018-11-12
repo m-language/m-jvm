@@ -6,6 +6,7 @@ import io.github.m.*
 import jdk.internal.org.objectweb.asm.Handle
 import jdk.internal.org.objectweb.asm.Opcodes
 import jdk.internal.org.objectweb.asm.commons.GeneratorAdapter
+import java.lang.Class
 import jdk.internal.org.objectweb.asm.Type as AsmType
 
 val Value.asOperation get() = cast<Operation>()
@@ -112,13 +113,20 @@ fun symbolOperation(value: String) = pushNew(
         pushString(value)
 )
 
-fun includeOperation(name: String) = block(
-        invokeStatic(
-                Type.clazz(QualifiedName.fromQualifiedString(name)),
-                MethodType("run", emptyList(), Type.void, emptyList(), emptySet())
-        ),
-        nilOperation
-)
+fun importOperation(name: String): Operation {
+    val type = Type.clazz(QualifiedName.fromQualifiedString(name))
+    return block(
+            invokeStatic(
+                    type,
+                    MethodType("run", emptyList(), Type.void, emptyList(), emptySet())
+            ),
+            pushType(type),
+            invokeStatic(
+                    Type.clazz(io.github.m.Data.Internals::class.java),
+                    MethodType("import", emptyList(), valueType, listOf(Type.clazz(java.lang.Class::class.java)), emptySet())
+            )
+    )
+}
 
 fun applyOperation(fn: Operation, arg: Operation) = block(
         fn,

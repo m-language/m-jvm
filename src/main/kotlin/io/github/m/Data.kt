@@ -60,6 +60,20 @@ interface Data : Value {
     }
 
     @Suppress("unused")
+    object Internals {
+        @JvmStatic
+        fun import(clazz: Class<*>): Value = Impl(
+                Symbol(clazz.name),
+                clazz.fields
+                        .asSequence()
+                        .filter { Modifier.isStatic(it.modifiers) }
+                        .filter { it.type == Value::class.java }
+                        .map { Symbol(it.name) to it.get(null) as Value }
+                        .toMap()
+        )
+    }
+
+    @Suppress("unused")
     object Definitions {
         @MField("object")
         @JvmField
@@ -77,21 +91,6 @@ interface Data : Value {
         @JvmField
         val field: Value = Function { type, name, data ->
             data.asData(type.asSymbol)[name.asSymbol]
-        }
-
-        @MField("import")
-        @JvmStatic
-        val import: Value = Function { type ->
-            val clazz = Class.forName(type.asSymbol.value)
-            Impl(
-                    Symbol(clazz.name),
-                    clazz.fields
-                            .asSequence()
-                            .filter { Modifier.isStatic(it.modifiers) }
-                            .filter { it.type == Value::class.java }
-                            .map { Symbol(it.name) to it.get(null) as Value }
-                            .toMap()
-            )
         }
     }
 }

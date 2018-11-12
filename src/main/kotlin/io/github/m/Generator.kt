@@ -226,15 +226,15 @@ object Generator {
             symbolOperation(name.asString)
         }
 
-        @MField("include-operation")
+        @MField("import-operation")
         @JvmField
-        val includeOperation: Value = Function { name ->
-            includeOperation(name.asString)
+        val importOperation: Value = Function { name ->
+            importOperation(name.asString)
         }
 
-        @MField("include-declaration")
+        @MField("import-declaration")
         @JvmField
-        val includeDeclaration: Value = Function { _ ->
+        val importDeclaration: Value = Function @Suppress("RedundantLambdaArrow") { _ ->
             Declaration.empty
         }
 
