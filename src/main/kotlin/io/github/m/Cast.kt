@@ -22,6 +22,8 @@ inline val Value.asFunction get() = cast<Function>()
 
 inline val Value.asInt get() = cast<Int>()
 
+inline val Value.asNat get() = cast<Nat>()
+
 inline val Value.asList get() = cast<List>()
 
 inline val Value.asProcess get() = cast<Process>()

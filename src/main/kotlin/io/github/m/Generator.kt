@@ -3,12 +3,14 @@ package io.github.m
 import io.github.m.asm.*
 
 @Suppress("MemberVisibilityCanBePrivate")
+@UseExperimental(ExperimentalUnsignedTypes::class)
 object Generator {
     val internals: kotlin.collections.List<Pair> = listOf<java.lang.Class<*>>(
             Value.Definitions::class.java,
             Bool.Definitions::class.java,
             List.Definitions::class.java,
             Int.Definitions::class.java,
+            Nat.Definitions::class.java,
             Real.Definitions::class.java,
             Char.Definitions::class.java,
             Symbol.Definitions::class.java,
@@ -35,26 +37,20 @@ object Generator {
     }
 
     fun closures(expr: Expr, env: Env): Set<List> = when (expr) {
-        is Expr.Identifier -> {
-            val variable = env.vars[expr.name]
-            when (variable) {
-                null -> emptySet()
-                is Variable.Global -> emptySet()
-                is Variable.Local -> setOf(expr.name)
-            }
+        is Expr.Identifier -> when (env.vars[expr.name]) {
+            null -> emptySet()
+            is Variable.Global -> emptySet()
+            is Variable.Local -> setOf(expr.name)
         }
         is Expr.List -> expr.exprs.flatMap { closures(it.cast(), env) }.toSet()
     }
 
     fun generateIdentifierExpr(name: List, env: Env) =
             GenerateResult(
-                    run {
-                        val variable = env.vars[name]
-                        when (variable) {
-                            null -> reflectiveVariableOperation(name.string, env.path.asType)
-                            is Variable.Local -> localVariableOperation(variable.name.string, variable.index.value)
-                            is Variable.Global -> globalVariableOperation(variable.name.string, variable.path.asType)
-                        }
+                    when (val variable = env.vars[name]) {
+                        null -> reflectiveVariableOperation(name.string, env.path.asType)
+                        is Variable.Local -> localVariableOperation(variable.name.string, variable.index.value.toInt())
+                        is Variable.Global -> globalVariableOperation(variable.name.string, variable.path.asType)
                     },
                     Declaration.empty,
                     env
@@ -75,11 +71,11 @@ object Generator {
 
     fun generateLambdaExpr(name: List, expr: Expr, env: Env): GenerateResult = run {
         val methodName = Definitions.mangleLambdaName.asFunction(env.def, env.index).asList
-        val env2 = env.copy(index = env.index.add(Int(1)))
+        val env2 = env.copy(index = env.index.add(Nat(1.toUInt())))
         val closures = closures(expr, env).toList()
         val closureOperations = closures.map { generateIdentifierExpr(it, env2).operation }
         val (_, locals) = closures.plus(element = name).fold(0 to env.vars) { (index, map), name ->
-            index + 1 to map + (name to Variable.Local(name, Int(index)))
+            index + 1 to map + (name to Variable.Local(name, Nat(index.toUInt())))
         }
         val exprResult = generateExpr(expr, env2.copy(vars = locals, def = methodName))
         GenerateResult(
@@ -127,17 +123,14 @@ object Generator {
         }
     }
 
-    fun generateListExpr(expr: Expr.List, env: Env): GenerateResult = run {
-        val exprs = expr.exprs
-        when (exprs) {
-            is List.Nil -> generateNil(env)
-            is List.Cons -> when ((exprs.car as? Expr.Identifier)?.name?.asString) {
-                "if" -> generateIfExpr(exprs.cadr.cast(), exprs.caddr.cast(), exprs.cadddr.cast(), env)
-                "lambda" -> generateLambdaExpr(exprs.cadr.cast<Expr.Identifier>().name, exprs.caddr.cast(), env)
-                "def" -> generateDefExpr(exprs.cadr.cast<Expr.Identifier>().name, exprs.caddr.cast(), env)
-                "symbol" -> generateSymbolExpr(exprs.cadr.cast<Expr.Identifier>().name, env)
-                else -> generateApplyExpr(exprs.car.cast(), exprs.cdr.cast(), env)
-            }
+    fun generateListExpr(expr: Expr.List, env: Env): GenerateResult = when (val exprs = expr.exprs) {
+        is List.Nil -> generateNil(env)
+        is List.Cons -> when ((exprs.car as? Expr.Identifier)?.name?.asString) {
+            "if" -> generateIfExpr(exprs.cadr.cast(), exprs.caddr.cast(), exprs.cadddr.cast(), env)
+            "lambda" -> generateLambdaExpr(exprs.cadr.cast<Expr.Identifier>().name, exprs.caddr.cast(), env)
+            "def" -> generateDefExpr(exprs.cadr.cast<Expr.Identifier>().name, exprs.caddr.cast(), env)
+            "symbol" -> generateSymbolExpr(exprs.cadr.cast<Expr.Identifier>().name, env)
+            else -> generateApplyExpr(exprs.car.cast(), exprs.cdr.cast(), env)
         }
     }
 
@@ -145,7 +138,7 @@ object Generator {
         when (expr) {
             is Expr.Identifier -> generateIdentifierExpr(expr.name, env)
             is Expr.List -> generateListExpr(expr, env)
-        }.run { copy(operation = block(lineNumber(expr.line.value), operation)) }
+        }.run { copy(operation = block(lineNumber(expr.line.value.toInt()), operation)) }
     } catch (e: java.lang.Error) {
         throw Error.Internal(e.message + "\n    at line ${expr.line}", e)
     }
@@ -165,7 +158,7 @@ object Generator {
 
     fun generate(name: List, out: File, exprs: List) = run {
         val internals = internals.map { it.first.asList to it.second.cast<Variable>() }.toMap()
-        val env = Env(internals, name, List.Nil, Int(0))
+        val env = Env(internals, name, List.Nil, Nat(0.toUInt()))
         val result = generateExprs(exprs.asList, env)
         Definitions.generateProgram.asFunction(name, out, result.operation, result.declaration)
     }
@@ -175,7 +168,7 @@ object Generator {
         @MField("local-variable-operation")
         @JvmField
         val localVariableOperation: Value = Function { name, index ->
-            localVariableOperation(name.asString, index.asInt.value)
+            localVariableOperation(name.asString, index.asNat.value.toInt())
         }
 
         @MField("global-variable-operation")
@@ -271,7 +264,7 @@ object Generator {
         @MField("line-number-operation")
         @JvmField
         val lineNumberOperation: Value = Function { operation, line ->
-            block(lineNumber(line.asInt.value), operation.asOperation)
+            block(lineNumber(line.asNat.value.toInt()), operation.asOperation)
         }
 
         @MField("combine-declaration")
@@ -283,7 +276,7 @@ object Generator {
         @MField("mangle-lambda-name")
         @JvmField
         val mangleLambdaName: Value = Function { name, index ->
-            "${name.asString}_${index.asInt}".m
+            "${name.asString}_${index.asNat}".m
         }
 
         @MField("internal-variables")

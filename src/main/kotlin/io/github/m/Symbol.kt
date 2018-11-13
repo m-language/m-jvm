@@ -3,6 +3,7 @@ package io.github.m
 /**
  * M wrapper class for strings.
  */
+@UseExperimental(ExperimentalUnsignedTypes::class)
 data class Symbol(val value: String) : Value {
     override val type get() = Companion.type
 
@@ -33,9 +34,9 @@ data class Symbol(val value: String) : Value {
         @JvmField
         val symbolToChar: Value = Function { x -> Char(x.asSymbol.value.first()) }
 
-        @MField("symbol->int")
+        @MField("symbol->nat")
         @JvmField
-        val symbolToInt: Value = Function { x -> Int(x.asSymbol.value.toInt()) }
+        val symbolToNat: Value = Function { x -> Nat(x.asSymbol.value.toUInt()) }
 
         @MField("symbol->list")
         @JvmField

@@ -6,4 +6,4 @@ package io.github.m
 data class Env(val vars: Map<List, Variable>,
                val path: List,
                val def: List,
-               val index: Int)
+               val index: Nat)

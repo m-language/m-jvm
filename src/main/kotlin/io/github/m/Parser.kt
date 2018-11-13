@@ -9,6 +9,7 @@ import io.github.m.Pair as MPair
 /**
  * A parser for the M grammar.
  */
+@UseExperimental(ExperimentalUnsignedTypes::class)
 @Suppress("MemberVisibilityCanBePrivate")
 object Parser {
     interface Parser<out R, S, T> {
@@ -100,22 +101,22 @@ object Parser {
     fun isWhitespace(c: Char) = isNewline(c) || c in " \t"
     fun isNewline(c: Char) = c in "\r\n"
 
-    val newlineParser: Parser<Char, Int, Char> = mapParserState(predicateParser(io.github.m.Parser::isNewline)) { _, position -> position + 1 }
-    val whitespaceParser: Parser<Char, Int, Char> = alternativeParser(newlineParser, predicateParser { isWhitespace(it) })
+    val newlineParser: Parser<Char, UInt, Char> = mapParserState(predicateParser(io.github.m.Parser::isNewline)) { _, position -> position + 1.toUInt() }
+    val whitespaceParser: Parser<Char, UInt, Char> = alternativeParser(newlineParser, predicateParser { isWhitespace(it) })
 
-    fun <R> ignoreUnused(parser: Parser<R, Int, Char>) = combineParserRight(repeatParser(whitespaceParser), parser)
+    fun <R> ignoreUnused(parser: Parser<R, UInt, Char>) = combineParserRight(repeatParser(whitespaceParser), parser)
 
     fun isIdentifierCharacter(c: Char) = !(isWhitespace(c) || c == '(' || c == ')')
 
-    val identifierCharParser: Parser<Char, Int, Char> = predicateParser(io.github.m.Parser::isIdentifierCharacter)
-    val identifierParser: Parser<Identifier, Int, Char> = ignoreUnused(mapParserResult(providePastState(repeatParser1(identifierCharParser))) { (e, p) -> Identifier(e, p) })
+    val identifierCharParser: Parser<Char, UInt, Char> = predicateParser(io.github.m.Parser::isIdentifierCharacter)
+    val identifierParser: Parser<Identifier, UInt, Char> = ignoreUnused(mapParserResult(providePastState(repeatParser1(identifierCharParser))) { (e, p) -> Identifier(e, p) })
 
-    val openParenParser: Parser<Char, Int, Char> = ignoreUnused(predicateParser { it == '(' })
-    val closeParenParser: Parser<Char, Int, Char> = ignoreUnused(predicateParser { it == ')' })
+    val openParenParser: Parser<Char, UInt, Char> = ignoreUnused(predicateParser { it == '(' })
+    val closeParenParser: Parser<Char, UInt, Char> = ignoreUnused(predicateParser { it == ')' })
 
-    val listExprParser1: Parser<Sequence<Expr>, Int, Char> = combineParserRight(openParenParser, combineParserLeft(lazyParser { parser }, closeParenParser))
-    val listExprParser: Parser<List, Int, Char> = ignoreUnused(mapParserResult(providePastState(listExprParser1)) { (e, p) -> List(e, p) })
-    val exprParser: Parser<Expr, Int, Char> = alternativeParser(identifierParser, listExprParser)
+    val listExprParser1: Parser<Sequence<Expr>, UInt, Char> = combineParserRight(openParenParser, combineParserLeft(lazyParser { parser }, closeParenParser))
+    val listExprParser: Parser<List, UInt, Char> = ignoreUnused(mapParserResult(providePastState(listExprParser1)) { (e, p) -> List(e, p) })
+    val exprParser: Parser<Expr, UInt, Char> = alternativeParser(identifierParser, listExprParser)
 
-    val parser: Parser<Sequence<Expr>, Int, Char> = repeatParser(exprParser)
+    val parser: Parser<Sequence<Expr>, UInt, Char> = repeatParser(exprParser)
 }

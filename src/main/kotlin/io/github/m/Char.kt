@@ -3,6 +3,7 @@ package io.github.m
 /**
  * M wrapper class for characters.
  */
+@UseExperimental(ExperimentalUnsignedTypes::class)
 data class Char(val value: kotlin.Char) : Value {
     override val type get() = Companion.type
 
@@ -26,8 +27,8 @@ data class Char(val value: kotlin.Char) : Value {
         @JvmField
         val eqChar: Value = Function { x, y -> x.asChar.eq(y.asChar) }
 
-        @MField("char->int")
+        @MField("char->nat")
         @JvmField
-        val charToInt: Value = Function { x -> Int(x.asChar.value.toInt()) }
+        val charToNat: Value = Function { x -> Nat(x.asChar.value.toInt().toUInt()) }
     }
 }

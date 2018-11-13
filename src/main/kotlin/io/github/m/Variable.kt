@@ -4,7 +4,7 @@ package io.github.m
  * Class representing an M variable.
  */
 sealed class Variable : Value {
-    data class Local(val name: List, val index: Int) : Variable(), Data {
+    data class Local(val name: List, val index: Nat) : Variable(), Data {
         override val type get() = Companion.type
 
         override fun get(key: Symbol) = when (key.value) {
@@ -41,7 +41,7 @@ sealed class Variable : Value {
         @MField("local-variable")
         @JvmField
         val localVariable: Value = Function { name, index ->
-            Local(name.asList, index.asInt)
+            Local(name.asList, index.asNat)
         }
 
         @MField("global-variable")

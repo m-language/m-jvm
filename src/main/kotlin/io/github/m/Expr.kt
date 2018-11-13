@@ -5,11 +5,12 @@ import io.github.m.List as MList
 /**
  * Class representing an M expression.
  */
+@UseExperimental(ExperimentalUnsignedTypes::class)
 sealed class Expr : Value {
-    abstract val line: Int
+    abstract val line: Nat
 
-    data class Identifier(val name: MList, override val line: Int) : Expr(), Data {
-        constructor(name: Sequence<kotlin.Char>, line: kotlin.Int) : this(MList.valueOf(name.map { Char(it) }), Int(line))
+    data class Identifier(val name: MList, override val line: Nat) : Expr(), Data {
+        constructor(name: Sequence<kotlin.Char>, line: kotlin.UInt) : this(MList.valueOf(name.map { Char(it) }), Nat(line))
 
         override val type get() = Companion.type
 
@@ -26,8 +27,8 @@ sealed class Expr : Value {
         }
     }
 
-    data class List(val exprs: MList, override val line: Int) : Expr(), Data {
-        constructor(exprs: Sequence<Expr>, line: kotlin.Int) : this(MList.valueOf(exprs), Int(line))
+    data class List(val exprs: MList, override val line: Nat) : Expr(), Data {
+        constructor(exprs: Sequence<Expr>, line: kotlin.UInt) : this(MList.valueOf(exprs), Nat(line))
 
         override val type get() = Companion.type
 
@@ -49,13 +50,13 @@ sealed class Expr : Value {
         @MField("identifier-expr")
         @JvmField
         val identifierExpr: Value = Function { name, line ->
-            Identifier(name.asList, line.asInt)
+            Identifier(name.asList, line.asNat)
         }
 
         @MField("list-expr")
         @JvmField
         val listExpr: Value = Function { exprs, line ->
-            List(exprs.asList, line.asInt)
+            List(exprs.asList, line.asNat)
         }
     }
 }
