@@ -286,7 +286,7 @@ object Generator {
         @MField("generate-program")
         @JvmField
         val generateProgram: Value = Function { name, out, operation, declaration ->
-            val clazzName = QualifiedName(listOf(name.asString))
+            val clazzName = QualifiedName.fromQualifiedString(name.asString)
             val clazz = mainClass(Type.clazz(clazzName), operation.asOperation, declaration.asDeclaration)
             Process {
                 clazz.generate(out.asFile.file)

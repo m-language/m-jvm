@@ -55,9 +55,9 @@ data class Class(
      * Writes the bytes of this class to a file in the given [directory].
      */
     fun generate(directory: File): File {
-        val file = File(directory, "${name.toQualifiedString()}.class")
+        val file = File(directory, "${name.toPathString()}.class")
         val path = file.toPath()
-        directory.mkdirs()
+        file.parentFile.mkdirs()
         if (file.exists()) Files.delete(path)
         Files.write(path, generate(), StandardOpenOption.CREATE)
         return file
