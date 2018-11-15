@@ -1,6 +1,7 @@
 package io.github.m
 
-import io.github.m.asm.*
+import java.nio.file.Files
+import java.nio.file.StandardOpenOption
 
 @Suppress("MemberVisibilityCanBePrivate")
 @UseExperimental(ExperimentalUnsignedTypes::class)
@@ -22,7 +23,9 @@ object Generator {
             Generator.Definitions::class.java,
             Expr.Definitions::class.java,
             Pair.Definitions::class.java,
-            Variable.Definitions::class.java
+            Variable.Definitions::class.java,
+            Operation.Definitions::class.java,
+            Declaration.Definitions::class.java
     ).flatMap {
         it
                 .fields
@@ -48,23 +51,23 @@ object Generator {
     fun generateIdentifierExpr(name: List, env: Env) =
             GenerateResult(
                     when (val variable = env.vars[name]) {
-                        null -> reflectiveVariableOperation(name.string, env.path.asType)
-                        is Variable.Local -> localVariableOperation(variable.name.string, variable.index.value.toInt())
-                        is Variable.Global -> globalVariableOperation(variable.name.string, variable.path.asType)
+                        is Variable.Local -> Operation.LocalVariable(variable.name, variable.index)
+                        is Variable.Global -> Operation.GlobalVariable(variable.name, variable.path)
+                        null -> Operation.ReflectiveVariable(name, env.path)
                     },
-                    Declaration.empty,
+                    Declaration.None,
                     env
             )
 
-    fun generateNil(env: Env) = GenerateResult(nilOperation, Declaration.empty, env)
+    fun generateNil(env: Env) = GenerateResult(Operation.Nil, Declaration.None, env)
 
     fun generateIfExpr(cond: Expr, `true`: Expr, `false`: Expr, env: Env): GenerateResult = run {
         val condResult = generateExpr(cond, env)
         val trueResult = generateExpr(`true`, condResult.env)
         val falseResult = generateExpr(`false`, trueResult.env)
         GenerateResult(
-                ifOperation(condResult.operation, trueResult.operation, falseResult.operation),
-                block(condResult.declaration, trueResult.declaration, falseResult.declaration),
+                Operation.If(condResult.operation, trueResult.operation, falseResult.operation),
+                Declaration.Combine(condResult.declaration, Declaration.Combine(trueResult.declaration, falseResult.declaration)),
                 falseResult.env
         )
     }
@@ -72,15 +75,15 @@ object Generator {
     fun generateLambdaExpr(name: List, expr: Expr, env: Env): GenerateResult = run {
         val methodName = Definitions.mangleLambdaName.asFunction(env.def, env.index).asList
         val env2 = env.copy(index = env.index.add(Nat(1.toUInt())))
-        val closures = closures(expr, env).toList()
+        val closures = closures(expr, env).asSequence()
         val closureOperations = closures.map { generateIdentifierExpr(it, env2).operation }
         val (_, locals) = closures.plus(element = name).fold(0 to env.vars) { (index, map), name ->
             index + 1 to map + (name to Variable.Local(name, Nat(index.toUInt())))
         }
         val exprResult = generateExpr(expr, env2.copy(vars = locals, def = methodName))
         GenerateResult(
-                lambdaOperation(env2.path.asType, methodName.string, closureOperations),
-                block(exprResult.declaration, lambdaDeclaration(methodName.string, closures.map { it.string }, exprResult.operation)),
+                Operation.Lambda(env2.path, methodName, List.valueOf(closureOperations)),
+                Declaration.Combine(exprResult.declaration, Declaration.Lambda(methodName, List.valueOf(closures), exprResult.operation)),
                 env2
         )
     }
@@ -91,21 +94,21 @@ object Generator {
         val exprResult = generateExpr(expr, localEnv)
         if (env.vars[name] == null) {
             GenerateResult(
-                    defOperation(name.asString, exprResult.operation, localEnv.path.asType),
-                    block(exprResult.declaration, defDeclaration(name.asString, env.path.asType)),
+                    Operation.Def(name, exprResult.operation, localEnv.path),
+                    Declaration.Combine(exprResult.declaration, Declaration.Def(name, env.path)),
                     env2
             )
         } else {
             GenerateResult(
                     generateIdentifierExpr(name, env).operation,
-                    Declaration.empty,
+                    Declaration.None,
                     env
             )
         }
     }
 
     fun generateSymbolExpr(name: List, env: Env): GenerateResult =
-            GenerateResult(symbolOperation(name.asString), Declaration.empty, env)
+            GenerateResult(Operation.Symbol(name), Declaration.None, env)
 
     tailrec fun generateApplyExpr(fn: Expr, args: List, env: Env): GenerateResult = when (args) {
         is List.Nil -> generateApplyExpr(fn, List.Cons(Expr.List(List.Nil, fn.line), List.Nil), env)
@@ -115,8 +118,8 @@ object Generator {
                 val fnResult = generateExpr(fn, env)
                 val argResult = generateExpr(args.car.cast(), fnResult.env)
                 GenerateResult(
-                        applyOperation(fnResult.operation, argResult.operation),
-                        block(fnResult.declaration, argResult.declaration),
+                        Operation.Apply(fnResult.operation, argResult.operation),
+                        Declaration.Combine(fnResult.declaration, argResult.declaration),
                         argResult.env
                 )
             }
@@ -138,19 +141,19 @@ object Generator {
         when (expr) {
             is Expr.Identifier -> generateIdentifierExpr(expr.name, env)
             is Expr.List -> generateListExpr(expr, env)
-        }.run { copy(operation = block(lineNumber(expr.line.value.toInt()), operation)) }
+        }.run { copy(operation = Operation.LineNumber(operation, expr.line)) }
     } catch (e: java.lang.Error) {
         throw Error.Internal(e.message + "\n    at line ${expr.line}", e)
     }
 
     fun generateExprs(exprs: List, env: Env): GenerateResult = when (exprs) {
-        List.Nil -> GenerateResult(Operation.empty, Declaration.empty, env)
+        List.Nil -> GenerateResult(Operation.Nil, Declaration.None, env)
         is List.Cons -> {
             val generateResultCar = generateExpr(exprs.car.cast(), env)
             val generateResultCdr = generateExprs(exprs.cdr, generateResultCar.env)
             GenerateResult(
-                    block(generateResultCar.operation, pop, generateResultCdr.operation),
-                    block(generateResultCar.declaration, generateResultCdr.declaration),
+                    Operation.Combine(generateResultCar.operation, generateResultCdr.operation),
+                    Declaration.Combine(generateResultCar.declaration, generateResultCdr.declaration),
                     generateResultCdr.env
             )
         }
@@ -165,114 +168,6 @@ object Generator {
 
     @Suppress("unused")
     object Definitions {
-        @MField("local-variable-operation")
-        @JvmField
-        val localVariableOperation: Value = Function { name, index ->
-            localVariableOperation(name.asString, index.asNat.value.toInt())
-        }
-
-        @MField("global-variable-operation")
-        @JvmField
-        val globalVariableOperation: Value = Function { name, path ->
-            globalVariableOperation(name.asString, path.asType)
-        }
-
-        @MField("reflective-variable-operation")
-        @JvmField
-        val reflectiveVariableOperation: Value = Function { name, path ->
-            reflectiveVariableOperation(name.asString, path.asType)
-        }
-
-        @MField("if-operation")
-        @JvmField
-        val ifOperation: Value = Function { cond, `true`, `false` ->
-            ifOperation(cond.asOperation, `true`.asOperation, `false`.asOperation)
-        }
-
-        @MField("def-operation")
-        @JvmField
-        val defOperation: Value = Function { name, operation, file ->
-            defOperation(name.asString, operation.asOperation, file.asType)
-        }
-
-        @MField("def-declaration")
-        @JvmField
-        val defDeclaration: Value = Function { name, path ->
-            defDeclaration(name.asString, path.asType)
-        }
-
-        @MField("lambda-operation")
-        @JvmField
-        val lambdaOperation: Value = Function { path, name, closures ->
-            lambdaOperation(path.asType, name.asString, closures.asList.map { it as Operation })
-        }
-
-        @MField("lambda-declaration")
-        @JvmField
-        val lambdaDeclaration: Value = Function { name, closures, operation ->
-            lambdaDeclaration(name.asString, closures.asList.map(Value::asString), operation.asOperation)
-        }
-
-        @MField("symbol-operation")
-        @JvmField
-        val symbolOperation: Value = Function { name ->
-            symbolOperation(name.asString)
-        }
-
-        @MField("import-operation")
-        @JvmField
-        val importOperation: Value = Function { name ->
-            importOperation(name.asString)
-        }
-
-        @MField("import-declaration")
-        @JvmField
-        val importDeclaration: Value = Function @Suppress("RedundantLambdaArrow") { _ ->
-            Declaration.empty
-        }
-
-        @MField("apply-operation")
-        @JvmField
-        val applyOperation: Value = Function { fn, arg ->
-            applyOperation(fn.asOperation, arg.asOperation)
-        }
-
-        @MField("nil-operation")
-        @JvmField
-        val nilOperation: Value = io.github.m.asm.nilOperation
-
-        @MField("no-operation")
-        @JvmField
-        val noOperation: Value = Operation.empty
-
-        @MField("no-declaration")
-        @JvmField
-        val noDeclaration: Value = Declaration.empty
-
-        @MField("combine-operation")
-        @JvmField
-        val combineOperation: Value = Function { operation1, operation2 ->
-            block(operation1.asOperation, operation2.asOperation)
-        }
-
-        @MField("ignore-result-operation")
-        @JvmField
-        val ignoreResultOperation: Value = Function { operation ->
-            block(operation.asOperation, pop)
-        }
-
-        @MField("line-number-operation")
-        @JvmField
-        val lineNumberOperation: Value = Function { operation, line ->
-            block(lineNumber(line.asNat.value.toInt()), operation.asOperation)
-        }
-
-        @MField("combine-declaration")
-        @JvmField
-        val combineDeclaration: Value = Function { declaration1, declaration2 ->
-            block(declaration1.asDeclaration, declaration2.asDeclaration)
-        }
-
         @MField("mangle-lambda-name")
         @JvmField
         val mangleLambdaName: Value = Function { name, index ->
@@ -286,10 +181,13 @@ object Generator {
         @MField("generate-program")
         @JvmField
         val generateProgram: Value = Function { name, out, operation, declaration ->
-            val clazzName = QualifiedName.fromQualifiedString(name.asString)
-            val clazz = mainClass(Type.clazz(clazzName), operation.asOperation, declaration.asDeclaration)
+            val clazz = Declaration.mainClass(name.asString, operation.asOperation, declaration.asDeclaration)
             Process {
-                clazz.generate(out.asFile.file)
+                val file = java.io.File(out.asFile.file, "${name.asString.replace('.', '/')}.class")
+                val path = file.toPath()
+                file.parentFile.mkdirs()
+                if (file.exists()) Files.delete(path)
+                Files.write(path, clazz, StandardOpenOption.CREATE)
                 List.Nil
             }
         }

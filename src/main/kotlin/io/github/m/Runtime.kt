@@ -38,6 +38,6 @@ object Runtime {
          */
         @MField("args")
         @JvmField
-        var args: Value = Undefined
+        var args: Value = List.Nil
     }
 }

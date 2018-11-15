@@ -36,6 +36,10 @@ inline val Value.asReal get() = cast<Real>()
 
 inline val Value.asSymbol get() = cast<Symbol>()
 
+inline val Value.asOperation get() = cast<Operation>()
+
+inline val Value.asDeclaration get() = cast<Declaration>()
+
 inline fun <reified T : Value> Value.cast() = try {
     this as T
 } catch (e: ClassCastException) {

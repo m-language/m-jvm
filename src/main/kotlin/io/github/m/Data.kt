@@ -1,6 +1,7 @@
 package io.github.m
 
 import java.lang.reflect.Modifier
+import kotlin.Int
 
 /**
  * Representation of data in M.
@@ -43,6 +44,20 @@ interface Data : Value {
     }
 
     /**
+     * An abstract implementation of data.
+     *
+     * @param type   The type of the data.
+     * @param fields A map of fields representing the data.
+     */
+    abstract class Abstract(final override val type: Symbol, val fields: Map<String, Value>) : Data {
+        constructor(type: String, vararg fields: kotlin.Pair<String, Value>) : this(Symbol(type), fields.toMap())
+        override fun get(key: Symbol) = fields[key.value] ?: noField(key)
+        override fun toString() = "$type$fields"
+        override fun equals(other: Any?) = Impl(type, fields.mapKeys { Symbol(it.key) }) == other
+        override fun hashCode() = Impl(type, fields.mapKeys { Symbol(it.key) }).hashCode()
+    }
+
+    /**
      * A generic implementation of derived data.
      *
      * @param data  The data to derive.
@@ -57,20 +72,6 @@ interface Data : Value {
 
     companion object : Value {
         override val type = Symbol("data")
-    }
-
-    @Suppress("unused")
-    object Internals {
-        @JvmStatic
-        fun import(clazz: Class<*>): Value = Impl(
-                Symbol(clazz.name),
-                clazz.fields
-                        .asSequence()
-                        .filter { Modifier.isStatic(it.modifiers) }
-                        .filter { it.type == Value::class.java }
-                        .map { Symbol(it.name) to it.get(null) as Value }
-                        .toMap()
-        )
     }
 
     @Suppress("unused")

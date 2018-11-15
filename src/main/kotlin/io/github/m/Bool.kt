@@ -39,10 +39,4 @@ sealed class Bool(val value: Boolean) : Value {
         @JvmField
         val `false`: Value = False
     }
-
-    @Suppress("unused")
-    object Internal {
-        @JvmStatic
-        fun toPrimitiveBool(value: Value) = value.asBool.value
-    }
 }

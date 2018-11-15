@@ -71,17 +71,4 @@ interface Function : Value {
         override fun invoke(arg: Value): Value = Impl3 { arg1, arg2, arg3 -> fn(arg, arg1, arg2, arg3) }
         override fun invoke(arg1: Value, arg2: Value, arg3: Value, arg4: Value) = fn(arg1, arg2, arg3, arg4)
     }
-
-    @Suppress("unused")
-    object Internal {
-        @JvmStatic
-        fun apply(function: Value, arg: Value) =
-                try {
-                    function.asFunction(arg)
-                } catch (e: Error) {
-                    throw e
-                } catch (e: Throwable) {
-                    throw Error.Internal(e)
-                }
-    }
 }
