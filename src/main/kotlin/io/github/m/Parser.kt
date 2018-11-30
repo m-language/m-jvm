@@ -9,8 +9,8 @@ import io.github.m.Pair as MPair
 /**
  * A parser for the M grammar.
  */
-@UseExperimental(ExperimentalUnsignedTypes::class)
 @Suppress("MemberVisibilityCanBePrivate")
+@ExperimentalUnsignedTypes
 object Parser {
     interface Parser<out R, S, T> {
         operator fun invoke(input: Sequence<T>, state: S): Result<R, S, T>
@@ -145,9 +145,9 @@ object Parser {
     val identifierLiteralParser: Parser<Sequence<Char>, UInt, Char> = combineParserRight(charParser('"'), combineParserLeft(repeatParser(alternativeParser(identifierLiteralEscapeParser, identifierLiteralCharParser)), charParser('"')))
     val identifierCharParser: Parser<Char, UInt, Char> = predicateParser(::isIdentifierCharacter)
     private val identifierParser1 = providePastState(alternativeParser(identifierLiteralParser, repeatParser1(identifierCharParser)))
-    val identifierParser: Parser<Expr, UInt, Char> = mapParserValue(identifierParser1) { (e, p) -> Identifier(e, p) }
+    val identifierParser: Parser<Expr, UInt, Char> = mapParserValue(identifierParser1) { (e, p) -> Identifier(e.map(::MChar), Nat(p)) }
     private val listExprParser1: Parser<Sequence<Expr>, UInt, Char> = combineParserRight(charParser('('), combineParserLeft(lazyParser { parser }, ignoreUnused(charParser(')'))))
-    val listExprParser: Parser<Expr, UInt, Char> = mapParserValue(providePastState(listExprParser1)) { (e, p) -> List(e, p) }
+    val listExprParser: Parser<Expr, UInt, Char> = mapParserValue(providePastState(listExprParser1)) { (e, p) -> List(e, Nat(p)) }
     val exprParser: Parser<Expr, UInt, Char> = ignoreUnused(alternativeParser(identifierParser, listExprParser))
     val parser: Parser<Sequence<Expr>, UInt, Char> = repeatParser(exprParser)
 }

@@ -5,33 +5,27 @@ package io.github.m
  */
 @FunctionalInterface
 interface Function : Value {
-    @JvmDefault
-    override val type
-        get() = Companion.type
-
     /**
      * Invokes the function with an argument of nil.
      */
     @JvmDefault
     operator fun invoke() = invoke(List.Nil)
 
+    /**
+     * Invokes the function given an [arg].
+     */
     operator fun invoke(arg: Value): Value
 
     @JvmDefault
-    operator fun invoke(arg1: Value, arg2: Value) = this(arg1).asFunction(arg2)
+    operator fun invoke(arg1: Value, arg2: Value) = (this(arg1) as Function)(arg2)
 
     @JvmDefault
-    operator fun invoke(arg1: Value, arg2: Value, arg3: Value) = this(arg1, arg2).asFunction(arg3)
+    operator fun invoke(arg1: Value, arg2: Value, arg3: Value) = (this(arg1, arg2) as Function)(arg3)
 
     @JvmDefault
-    operator fun invoke(arg1: Value, arg2: Value, arg3: Value, arg4: Value) = this(arg1, arg2, arg3).asFunction(arg4)
+    operator fun invoke(arg1: Value, arg2: Value, arg3: Value, arg4: Value) = (this(arg1, arg2, arg3) as Function)(arg4)
 
-    companion object : Value {
-        /**
-         * The type of all functions.
-         */
-        override val type = Symbol("function")
-
+    companion object {
         @Suppress("NOTHING_TO_INLINE")
         inline operator fun invoke(noinline fn: () -> Value) = Impl0(fn)
 

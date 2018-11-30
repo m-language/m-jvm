@@ -1,47 +1,22 @@
 package io.github.m
 
-import java.lang.reflect.Modifier
-import kotlin.Int
-
 /**
- * Representation of data in M.
+ * M wrapper class for data.
  */
-interface Data : Value {
+@ExperimentalUnsignedTypes
+interface Data : Pair {
     /**
-     * Gets the value of a field.
-     *
-     * @param key The key for the field.
+     * The type of the data.
      */
-    operator fun get(key: Symbol): Value
+    val type: String
 
     /**
-     * Utility def for failing if a field does not exist.
-     *
-     * @param key The key for the field.
+     * Returns the value of the field with [name].
      */
-    @JvmDefault
-    fun noField(key: Symbol): Nothing = throw Error.NoField(key, type)
+    fun get(name: String): Value?
 
-    /**
-     * Derives a data object with a key and value.
-     *
-     * @param key   The key for the derived field.
-     * @param value The value for the derived field.
-     */
-    @JvmDefault
-    fun derive(key: Symbol, value: Value): Data = Derive(this, key, value)
-
-    /**
-     * A generic implementation of data.
-     *
-     * @param type   The type of the data.
-     * @param fields A map of fields representing the data.
-     */
-    data class Impl(override val type: Symbol, val fields: Map<Symbol, Value>) : Data {
-        override fun get(key: Symbol) = fields[key] ?: noField(key)
-        override fun derive(key: Symbol, value: Value) = copy(fields = fields + (key to value))
-        override fun toString() = "$type$fields"
-    }
+    override val left get() = Symbol(type)
+    override val right get() = Function { name -> get((name as Symbol).value) ?: throw Error("No field $name") }
 
     /**
      * An abstract implementation of data.
@@ -49,49 +24,9 @@ interface Data : Value {
      * @param type   The type of the data.
      * @param fields A map of fields representing the data.
      */
-    abstract class Abstract(final override val type: Symbol, val fields: Map<String, Value>) : Data {
-        constructor(type: String, vararg fields: kotlin.Pair<String, Value>) : this(Symbol(type), fields.toMap())
-        override fun get(key: Symbol) = fields[key.value] ?: noField(key)
+    abstract class Abstract(final override val type: String, val fields: Map<String, Value>) : Data {
+        constructor(type: String, vararg fields: kotlin.Pair<String, Value>) : this(type, fields.toMap())
+        override fun get(name: String) = fields[name]
         override fun toString() = "$type$fields"
-        override fun equals(other: Any?) = Impl(type, fields.mapKeys { Symbol(it.key) }) == other
-        override fun hashCode() = Impl(type, fields.mapKeys { Symbol(it.key) }).hashCode()
-    }
-
-    /**
-     * A generic implementation of derived data.
-     *
-     * @param data  The data to derive.
-     * @param key   The key for the derived field.
-     * @param value The value for the derived field.
-     */
-    data class Derive(val data: Data, val key: Symbol, val value: Value) : Data {
-        override val type get() = data.type
-        override fun get(key: Symbol) = if (key == this.key) value else data[key]
-        override fun toString() = "$data${key to value}"
-    }
-
-    companion object : Value {
-        override val type = Symbol("data")
-    }
-
-    @Suppress("unused")
-    object Definitions {
-        @MField("object")
-        @JvmField
-        val `object`: Value = Function { type ->
-            Impl(type.asSymbol, emptyMap())
-        }
-
-        @MField("derive")
-        @JvmField
-        val derive: Value = Function { type, key, value, data ->
-            data.asData(type.asSymbol).derive(key.asSymbol, value)
-        }
-
-        @MField("field")
-        @JvmField
-        val field: Value = Function { type, name, data ->
-            data.asData(type.asSymbol)[name.asSymbol]
-        }
     }
 }

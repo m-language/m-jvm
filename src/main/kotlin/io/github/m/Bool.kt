@@ -1,42 +1,18 @@
 package io.github.m
 
 /**
- * M wrapper class for booleans.
+ * M wrapper class for bools.
  */
-sealed class Bool(val value: Boolean) : Value {
-    override val type get() = Companion.type
-
-    override fun toString(): String = java.lang.Boolean.toString(value)
-
-    companion object : Value {
-        /**
-         * The type of all booleans.
-         */
-        override val type = Symbol("bool")
-
-        @Suppress("NOTHING_TO_INLINE")
-        @JvmStatic
-        inline fun valueOf(b: Boolean) = if (b) True else False
+sealed class Bool : Value {
+    object True : Bool() {
+        override fun toString() = "true"
     }
 
-    /**
-     * The singleton true object.
-     */
-    object True : Bool(true)
+    object False : Bool() {
+        override fun toString() = "false"
+    }
 
-    /**
-     * The singleton false object.
-     */
-    object False : Bool(false)
-
-    @Suppress("unused")
-    object Definitions {
-        @MField("true")
-        @JvmField
-        val `true`: Value = True
-
-        @MField("false")
-        @JvmField
-        val `false`: Value = False
+    companion object {
+        operator fun invoke(boolean: Boolean) = if (boolean) True else False
     }
 }

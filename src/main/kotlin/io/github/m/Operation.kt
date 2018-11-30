@@ -9,10 +9,10 @@ import jdk.internal.org.objectweb.asm.commons.Method
 /**
  * An operation for a method.
  */
+@ExperimentalUnsignedTypes
 interface Operation : Value {
     fun GeneratorAdapter.generate()
 
-    @UseExperimental(ExperimentalUnsignedTypes::class)
     data class LocalVariable(val name: List, val index: Nat) : Data.Abstract("local-variable-operation", "name" to name, "index" to index), Operation {
         override fun GeneratorAdapter.generate() {
             loadArg(index.value.toInt())
@@ -21,13 +21,13 @@ interface Operation : Value {
 
     data class GlobalVariable(val name: List, val path: List) : Data.Abstract("global-variable-operation", "name" to name, "path" to path), Operation {
         override fun GeneratorAdapter.generate() {
-            getStatic(Type.getType("L${path.asString.replace('.', '/')};"), name.asString, Type.getType("Lio/github/m/Value;"))
+            getStatic(Type.getType("L${path.toString.replace('.', '/')};"), name.toString, Type.getType("Lio/github/m/Value;"))
         }
     }
 
     data class ReflectiveVariable(val name: List, val path: List) : Data.Abstract("reflective-variable-operation", "name" to name, "path" to path), Operation {
         override fun GeneratorAdapter.generate() {
-            getStatic(Type.getType("L${path.asString.replace('.', '/')};"), name.asString, Type.getType("Lio/github/m/Value;"))
+            getStatic(Type.getType("L${path.toString.replace('.', '/')};"), name.toString, Type.getType("Lio/github/m/Value;"))
         }
     }
 
@@ -56,14 +56,14 @@ interface Operation : Value {
     data class Def(val name: List, val value: Operation, val path: List) : Data.Abstract("def-operation", "name" to name, "value" to value, "path" to path), Operation {
         override fun GeneratorAdapter.generate() {
             value.apply { generate() }
-            putStatic(Type.getType("L${path.asString.replace('.', '/')};"), name.asString, Type.getType("Lio/github/m/Value;"))
-            getStatic(Type.getType("L${path.asString.replace('.', '/')};"), name.asString, Type.getType("Lio/github/m/Value;"))
+            putStatic(Type.getType("L${path.toString.replace('.', '/')};"), name.toString, Type.getType("Lio/github/m/Value;"))
+            getStatic(Type.getType("L${path.toString.replace('.', '/')};"), name.toString, Type.getType("Lio/github/m/Value;"))
         }
     }
 
     data class Lambda(val path: List, val name: List, val closures: List) : Data.Abstract("lambda-operation", "path" to path, "name" to name, "closures" to closures), Operation {
         override fun GeneratorAdapter.generate() {
-            closures.forEach { it.asOperation.apply { generate() } }
+            closures.forEach { (it as Operation).apply { generate() } }
             val closureTypes = (0 until closures.count()).joinToString("", "", "") { "Lio/github/m/Value;" }
             visitInvokeDynamicInsn(
                     "invoke",
@@ -77,8 +77,8 @@ interface Operation : Value {
                     Type.getType("(Lio/github/m/Value;)Lio/github/m/Value;"),
                     Handle(
                             Opcodes.H_INVOKESTATIC,
-                            path.asString.replace('.', '/'),
-                            name.asString,
+                            path.toString.replace('.', '/'),
+                            name.toString,
                             "(${closureTypes}Lio/github/m/Value;)Lio/github/m/Value;"
                     ),
                     Type.getType("(Lio/github/m/Value;)Lio/github/m/Value;")
@@ -90,22 +90,10 @@ interface Operation : Value {
         override fun GeneratorAdapter.generate() {
             newInstance(Type.getType("Lio/github/m/Symbol;"))
             dup()
-            push(name.asString)
+            push(name.toString)
             invokeConstructor(
                     Type.getType("Lio/github/m/Symbol;"),
                     Method.getMethod("void <init> (java.lang.String)")
-            )
-        }
-    }
-
-    data class Import(val name: List) : Data.Abstract("import-operation", "name" to name), Operation {
-        override fun GeneratorAdapter.generate() {
-            val type = Type.getType("L${name.asString.replace('.', '/')};")
-            invokeStatic(type, Method.getMethod("void run ()"))
-            push(type)
-            invokeStatic(
-                    Type.getType("Lio/github/m/Internals;"),
-                    Method.getMethod("io.github.m.Value import (java.lang.Class)")
             )
         }
     }
@@ -129,7 +117,6 @@ interface Operation : Value {
         }
     }
 
-    @UseExperimental(ExperimentalUnsignedTypes::class)
     data class LineNumber(val operation: Operation, val line: Nat) : Data.Abstract("line-number-operation", "operation" to operation, "line" to line), Operation {
         override fun GeneratorAdapter.generate() {
             visitLineNumber(line.value.toInt(), mark())
@@ -141,60 +128,5 @@ interface Operation : Value {
         override fun GeneratorAdapter.generate() {
             getStatic(Type.getType("Lio/github/m/Internals;"), "nil", Type.getType("Lio/github/m/Value;"))
         }
-    }
-
-    @Suppress("unused")
-    object Definitions {
-        @MField("local-variable-operation")
-        @JvmField
-        val localVariableOperation: Value = Function { name, index -> LocalVariable(name.asList, index.asNat) }
-
-        @MField("global-variable-operation")
-        @JvmField
-        val globalVariableOperation: Value = Function { name, path -> GlobalVariable(name.asList, path.asList) }
-
-        @MField("reflective-variable-operation")
-        @JvmField
-        val reflectiveVariableOperation: Value = Function { name, path -> ReflectiveVariable(name.asList, path.asList) }
-
-        @MField("if-operation")
-        @JvmField
-        val ifOperation: Value = Function { cond, `true`, `false` -> If(cond.asOperation, `true`.asOperation, `false`.asOperation) }
-
-        @MField("def-operation")
-        @JvmField
-        val defOperation: Value = Function { name, value, path -> Def(name.asList, value.asOperation, path.asList) }
-
-        @MField("lambda-operation")
-        @JvmField
-        val lambdaOperation: Value = Function { path, name, closures -> Lambda(path.asList, name.asList, closures.asList) }
-
-        @MField("symbol-operation")
-        @JvmField
-        val symbolOperation: Value = Function { name -> Symbol(name.asList) }
-
-        @MField("import-operation")
-        @JvmField
-        val importOperation: Value = Function { name -> Import(name.asList) }
-
-        @MField("apply-operation")
-        @JvmField
-        val applyOperation: Value = Function { fn, arg -> Apply(fn.asOperation, arg.asOperation) }
-
-        @MField("combine-operation")
-        @JvmField
-        val combineOperation: Value = Function { first, second -> Combine(first.asOperation, second.asOperation) }
-
-        @MField("line-number-operation")
-        @JvmField
-        val lineNumberOperation: Value = Function { operation, line -> LineNumber(operation.asOperation, line.asNat) }
-
-        @MField("nil-operation")
-        @JvmField
-        val nilOperation: Value = Nil
-    }
-
-    companion object : Value {
-        override val type = Symbol("operation")
     }
 }

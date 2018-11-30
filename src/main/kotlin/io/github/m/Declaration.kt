@@ -9,14 +9,15 @@ import jdk.internal.org.objectweb.asm.commons.Method
 /**
  * A declaration for a class.
  */
+@ExperimentalUnsignedTypes
 interface Declaration : Value {
     fun ClassWriter.generate()
 
-    data class Def(val name: List, val path: List) : Data.Abstract("def-declaration", "name" to name, "path" to path), Declaration {
+    data class Def(val name: List, val path: List, val value: Operation) : Data.Abstract("def-declaration", "name" to name, "path" to path, "value" to value), Declaration {
         override fun ClassWriter.generate() {
             val field = visitField(
                     Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC,
-                    name.asString,
+                    name.toString,
                     "Lio/github/m/Value;",
                     null,
                     null
@@ -29,18 +30,12 @@ interface Declaration : Value {
     data class Lambda(val name: List, val closures: List, val value: Operation) : Data.Abstract("lambda-declaration", "name" to name, "closures" to closures, "value" to value), Declaration {
         override fun ClassWriter.generate() {
             val args = (0..closures.count()).joinToString(", ", "(", ")") { "io.github.m.Value" }
-            val type = Method.getMethod("io.github.m.Value ${name.asString} $args")
+            val type = Method.getMethod("io.github.m.Value ${name.toString} $args")
             GeneratorAdapter(Opcodes.ACC_PRIVATE + Opcodes.ACC_STATIC + Opcodes.ACC_SYNTHETIC, type, null, null, this).apply {
                 value.apply { generate() }
                 returnValue()
                 endMethod()
             }
-        }
-    }
-
-    data class Import(val name: List) : Data.Abstract("import-declaration", "name" to name), Declaration {
-        override fun ClassWriter.generate() {
-
         }
     }
 
@@ -57,32 +52,7 @@ interface Declaration : Value {
         }
     }
 
-    @Suppress("unused")
-    object Definitions {
-        @MField("def-declaration")
-        @JvmField
-        val defDeclaration: Value = Function { name, path -> Def(name.asList, path.asList) }
-
-        @MField("lambda-declaration")
-        @JvmField
-        val lambdaDeclaration: Value = Function { name, closures, value -> Lambda(name.asList, closures.asList, value.asOperation) }
-
-        @MField("import-declaration")
-        @JvmField
-        val importDeclaration: Value = Function { name -> Import(name.asList) }
-
-        @MField("combine-declaration")
-        @JvmField
-        val combineDeclaration: Value = Function { first, second -> Combine(first.asDeclaration, second.asDeclaration) }
-
-        @MField("no-declaration")
-        @JvmField
-        val noDeclaration: Value = None
-    }
-
-    companion object : Value {
-        override val type get() = Symbol("declaration")
-
+    companion object {
         fun mainClass(
                 name: String,
                 operation: Operation,
@@ -116,9 +86,10 @@ interface Declaration : Value {
             }
 
             GeneratorAdapter(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC + Opcodes.ACC_FINAL, Method.getMethod("void main (java.lang.String[])"), null, null, this).apply {
+                visitLineNumber(1, newLabel())
                 loadArg(0)
                 push(type)
-                invokeStatic(Type.getType("Lio/github/m/Runtime;"), Method.getMethod("void run (java.lang.String[], java.lang.Class)"))
+                invokeStatic(Type.getType("Lio/github/m/Internals;"), Method.getMethod("void run (java.lang.String[], java.lang.Class)"))
                 returnValue()
                 endMethod()
             }

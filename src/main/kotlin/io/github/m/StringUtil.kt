@@ -2,6 +2,8 @@
 
 package io.github.m
 
-val String.m get(): List = List.valueOf(asSequence().map(::Char))
+@ExperimentalUnsignedTypes
+val String.toList get(): List = List.valueOf(asSequence().map(::Char))
 
-val Value.asString get() = String(asList.toList().map { it.asChar.value }.toCharArray())
+@ExperimentalUnsignedTypes
+val Value.toString get() = String((this as List).toList().map { (it as Char).value }.toCharArray())

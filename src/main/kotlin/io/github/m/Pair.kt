@@ -3,25 +3,21 @@ package io.github.m
 /**
  * Class representing an M pair.
  */
-data class Pair(val first: Value, val second: Value) : Data {
-    override val type get() = Companion.type
+interface Pair : Value {
+    /**
+     * The left value of the pair.
+     */
+    val left: Value
 
-    override fun get(key: Symbol) = when (key.value) {
-        "first" -> first
-        "second" -> second
-        else -> noField(key)
-    }
+    /**
+     * The right value of the pair.
+     */
+    val right: Value
 
-    companion object : Value {
-        override val type = Symbol("pair")
-    }
-
-    @Suppress("unused")
-    object Definitions {
-        @MField("pair")
-        @JvmField
-        val pair: Value = Function { first, second ->
-            Pair(first, second)
-        }
+    /**
+     * Default implementation of a pair.
+     */
+    data class Impl(override val left: Value, override val right: Value) : Pair {
+        override fun toString() = "($left, $right)"
     }
 }
