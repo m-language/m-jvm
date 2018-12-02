@@ -55,6 +55,7 @@ object Generator {
                         is Variable.Local -> Operation.LocalVariable(variable.name, variable.index)
                         is Variable.Global -> Operation.GlobalVariable(variable.name, variable.path)
                         null -> Operation.ReflectiveVariable(name, env.path)
+//                            throw Exception("Could not find ${name.toString}")
                     },
                     Declaration.None,
                     env
@@ -143,8 +144,8 @@ object Generator {
             is Expr.Identifier -> generateIdentifierExpr(expr.name, env)
             is Expr.List -> generateListExpr(expr, env)
         }.run { copy(operation = Operation.LineNumber(operation, expr.line)) }
-    } catch (e: java.lang.Error) {
-        throw Error(e.message + "\n    at line ${expr.line}", e)
+    } catch (e: Exception) {
+        throw Exception(e.message + "\n    at line ${expr.line}")
     }
 
     fun generateExprs(exprs: List, env: Env): GenerateResult = when (exprs) {

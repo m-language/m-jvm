@@ -16,6 +16,8 @@ sealed class List : Iterable<Value>, Value {
 
     final override fun toString() = joinToString(" ", "(", ")")
 
+    fun reverse() = List.valueOf(reversed().asSequence())
+
     /**
      * The non empty list.
      */
@@ -25,6 +27,7 @@ sealed class List : Iterable<Value>, Value {
         val cadr get() = (cdr as Cons).car
         val caddr get() = (cdr as Cons).cadr
         val cadddr get() = (cdr as Cons).caddr
+        val cddr get() = (cdr as Cons).cdr
     }
 
     /**
