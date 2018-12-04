@@ -4,7 +4,6 @@ package io.github.m
  * M error definitions.
  */
 @Suppress("unused")
-@ExperimentalUnsignedTypes
 object Errors {
     @MField("error")
     @JvmField

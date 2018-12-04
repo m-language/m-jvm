@@ -65,4 +65,14 @@ interface Function : Value {
         override fun invoke(arg: Value): Value = Impl3 { arg1, arg2, arg3 -> fn(arg, arg1, arg2, arg3) }
         override fun invoke(arg1: Value, arg2: Value, arg3: Value, arg4: Value) = fn(arg1, arg2, arg3, arg4)
     }
+
+    /**
+     * M function definitions.
+     */
+    @Suppress("unused")
+    object Definitions {
+        @MField("function->process")
+        @JvmField
+        val toProcess: Value = Function { fn -> Process { (fn as Function)() } }
+    }
 }

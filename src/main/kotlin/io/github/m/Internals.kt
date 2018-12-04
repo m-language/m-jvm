@@ -6,7 +6,6 @@ import java.lang.reflect.InvocationTargetException
  * Internal definitions used by the M runtime.
  */
 @Suppress("unused")
-@ExperimentalUnsignedTypes
 object Internals {
     /**
      * Converts an M [bool] to a java bool.
@@ -60,9 +59,9 @@ object Internals {
                             name
                         StackTraceElement(it.className, clean(it.methodName), it.fileName, it.lineNumber)
                     }
-//                    .filterNot { it.className?.contains("io.github.m") ?: false }
-//                    .dropLast(1)
-//                    .dropLastWhile { it.fileName?.contains(".m")?.not() ?: true }
+                    .filterNot { it.className?.contains("io.github.m") ?: false }
+                    .dropLast(1)
+                    .dropLastWhile { it.fileName?.contains(".m")?.not() ?: true }
                     .toTypedArray()
             throw e
         }

@@ -15,4 +15,18 @@ sealed class Bool : Value {
     companion object {
         operator fun invoke(boolean: Boolean) = if (boolean) True else False
     }
+
+    /**
+     * M bool definitions.
+     */
+    @Suppress("unused")
+    object Definitions {
+        @MField("true")
+        @JvmField
+        val `true`: Value = Bool.True
+
+        @MField("false")
+        @JvmField
+        val `false`: Value = Bool.False
+    }
 }

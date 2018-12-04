@@ -8,7 +8,6 @@ import kotlin.Char
 @Suppress("MemberVisibilityCanBePrivate")
 @ExperimentalUnsignedTypes
 object Parser {
-
     data class Result(val rest: Seq<Char>, val expr: Expr)
 
     const val newlines = "\r\n"

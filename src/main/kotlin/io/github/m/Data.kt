@@ -3,7 +3,6 @@ package io.github.m
 /**
  * M wrapper class for data.
  */
-@ExperimentalUnsignedTypes
 interface Data : Pair {
     /**
      * The type of the data.

@@ -6,24 +6,24 @@ import java.nio.file.StandardOpenOption
 @ExperimentalUnsignedTypes
 object Generator {
     val internals: Map<String, Variable> = listOf<java.lang.Class<*>>(
-            Bools::class.java,
-            Chars::class.java,
-            Declarations::class.java,
+            Bool.Definitions::class.java,
+            Char.Definitions::class.java,
+            Declaration.Definitions::class.java,
             Errors::class.java,
-            Files::class.java,
-            Functions::class.java,
+            File.Definitions::class.java,
+            Function.Definitions::class.java,
             Generator::class.java,
-            Ints::class.java,
+            Int.Definitions::class.java,
             Internals::class.java,
-            Lists::class.java,
-            Nats::class.java,
-            Operations::class.java,
-            Pairs::class.java,
-            Processes::class.java,
-            Reals::class.java,
+            List.Definitions::class.java,
+            Nat.Definitions::class.java,
+            Operation.Definitions::class.java,
+            Pair.Definitions::class.java,
+            Process.Definitions::class.java,
+            Real.Definitions::class.java,
             Runtime::class.java,
-            Symbols::class.java,
-            Variables::class.java
+            Symbol.Definitions::class.java,
+            Variable.Definitions::class.java
     ).flatMap {
         it
                 .fields

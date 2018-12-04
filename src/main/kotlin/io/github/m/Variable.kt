@@ -22,4 +22,18 @@ sealed class Variable : Data {
             else -> null
         }
     }
+
+    /**
+     * M variable definitions.
+     */
+    @Suppress("unused")
+    object Definitions {
+        @MField("local-variable")
+        @JvmField
+        val local: Value = Function { name, index -> Variable.Local(name as List, index as Nat) }
+
+        @MField("global-variable")
+        @JvmField
+        val global: Value = Function { name, file -> Variable.Global(name as List, file as List) }
+    }
 }
