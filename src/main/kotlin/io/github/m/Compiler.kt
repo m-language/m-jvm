@@ -12,8 +12,8 @@ object Compiler {
     fun main(args: Array<String>) = compile(File(args[0]), File(args[1]))
 
     private fun compile(`in`: File, out: File) {
-        val text = List.valueOf(`in`.readLines().joinToString("\n", "", "").asSequence().map(::Char))
-        val exprs = Parser.parse(text, 1.toUInt(), List.Nil)
-        (Generator.generate(`in`.nameWithoutExtension.toList, File(out), exprs) as Process)()
+        val text = Seq.valueOf(`in`.readLines().joinToString("\n", "", "").asSequence())
+        val exprs = Parser.parse(text)
+        Generator.generate(`in`.nameWithoutExtension, File(out), exprs)
     }
 }

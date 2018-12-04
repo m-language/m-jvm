@@ -60,9 +60,9 @@ object Internals {
                             name
                         StackTraceElement(it.className, clean(it.methodName), it.fileName, it.lineNumber)
                     }
-                    .filterNot { it.className?.contains("io.github.m") ?: false }
-                    .dropLast(1)
-                    .dropLastWhile { it.fileName?.contains(".m")?.not() ?: true }
+//                    .filterNot { it.className?.contains("io.github.m") ?: false }
+//                    .dropLast(1)
+//                    .dropLastWhile { it.fileName?.contains(".m")?.not() ?: true }
                     .toTypedArray()
             throw e
         }

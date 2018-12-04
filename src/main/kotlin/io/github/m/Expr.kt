@@ -6,26 +6,15 @@ import io.github.m.List as MList
  * Class representing an M expression.
  */
 @ExperimentalUnsignedTypes
-sealed class Expr : Data {
-    abstract val line: Nat
+sealed class Expr {
+    abstract val start: Position
+    abstract val end: Position
 
-    data class Identifier(val name: MList, override val line: Nat) : Expr() {
-        override fun toString() = name.toString
-        override val type = "identifier-expr"
-        override fun get(name: String) = when (name) {
-            "name"-> this.name
-            "line" -> this.line
-            else -> null
-        }
+    data class Identifier(val name: String, override val start: Position, override val end: Position) : Expr() {
+        override fun toString() = name.replace("\r", "\\r").replace("\n", "\\n")
     }
 
-    data class List(val exprs: MList, override val line: Nat) : Expr() {
+    data class List(val exprs: kotlin.collections.List<Expr>, override val start: Position, override val end: Position) : Expr() {
         override fun toString() = exprs.joinToString(" ", "(", ")")
-        override val type = "list-expr"
-        override fun get(name: String) = when (name) {
-            "exprs" -> this.exprs
-            "line" -> this.line
-            else -> null
-        }
     }
 }
