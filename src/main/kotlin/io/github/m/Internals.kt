@@ -1,6 +1,6 @@
 package io.github.m
 
-import java.lang.reflect.InvocationTargetException
+import java.lang.Exception
 
 /**
  * Internal definitions used by the M runtime.
@@ -8,7 +8,7 @@ import java.lang.reflect.InvocationTargetException
 @Suppress("unused")
 object Internals {
     /**
-     * Converts an M [bool] to a java bool.
+     * Converts [io.github.m.Bool] to [java.lang.Boolean].
      */
     @JvmStatic
     fun toPrimitiveBool(bool: Value) = bool as Bool === Bool.True
@@ -20,36 +20,23 @@ object Internals {
     val nil: Value = List.Nil
 
     /**
-     * Applies an M [function] to its [arg].
+     * Applies an M [function] to an [argument].
      */
     @JvmStatic
-    fun apply(function: Value, arg: Value) = (function as Function)(arg)
+    fun apply(function: Value, argument: Value) = (function as Function)(argument)
 
     /**
-     * The list of arguments passed to an M program. This value should only
-     * be set once when [Runtime.run] is called.
-     */
-    @MField("args")
-    @JvmField
-    var args: Value = List.Nil
-
-    /**
-     * The implementation of the main definition for an M program with top level
-     * expressions.
+     * The implementation of the main definition for an M program.
      *
      * @param args  The array of arguments passed to the program.
      * @param clazz The class to run.
      */
     @JvmStatic
     fun run(args: Array<String>, clazz: Class<*>) {
-        this.args = List.valueOf(args.asSequence().map(String::toList))
-
         try {
-            try {
-                clazz.getMethod("run")(null)
-            } catch (e: InvocationTargetException) {
-                throw e.targetException
-            }
+            val function = clazz.getField("").get(null) as? Function ?: throw Exception("Could not find main function")
+            val process = function(List.valueOf(args.asSequence().map(String::toList))) as? Process ?: throw Exception("Main must create a process")
+            process()
         } catch (e: Throwable) {
             e.stackTrace = e.stackTrace
                     .map {

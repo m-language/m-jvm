@@ -1,7 +1,7 @@
 package io.github.m
 
 /**
- * M implementation for functions.
+ * M implementation of functions.
  */
 @FunctionalInterface
 interface Function : Value {
@@ -25,6 +25,9 @@ interface Function : Value {
     @JvmDefault
     operator fun invoke(arg1: Value, arg2: Value, arg3: Value, arg4: Value) = (this(arg1, arg2, arg3) as Function)(arg4)
 
+    @JvmDefault
+    operator fun invoke(arg1: Value, arg2: Value, arg3: Value, arg4: Value, arg5: Value) = (this(arg1, arg2, arg3, arg4) as Function)(arg5)
+
     companion object {
         @Suppress("NOTHING_TO_INLINE")
         inline operator fun invoke(noinline fn: () -> Value) = Impl0(fn)
@@ -40,6 +43,9 @@ interface Function : Value {
 
         @Suppress("NOTHING_TO_INLINE")
         inline operator fun invoke(noinline fn: (Value, Value, Value, Value) -> Value) = Impl4(fn)
+
+        @Suppress("NOTHING_TO_INLINE")
+        inline operator fun invoke(noinline fn: (Value, Value, Value, Value, Value) -> Value) = Impl5(fn)
     }
 
     class Impl0(val fn: () -> Value) : Function {
@@ -64,6 +70,11 @@ interface Function : Value {
     class Impl4(val fn: (Value, Value, Value, Value) -> Value) : Function {
         override fun invoke(arg: Value): Value = Impl3 { arg1, arg2, arg3 -> fn(arg, arg1, arg2, arg3) }
         override fun invoke(arg1: Value, arg2: Value, arg3: Value, arg4: Value) = fn(arg1, arg2, arg3, arg4)
+    }
+
+    class Impl5(val fn: (Value, Value, Value, Value, Value) -> Value) : Function {
+        override fun invoke(arg: Value): Value = Impl4 { arg1, arg2, arg3, arg4 -> fn(arg, arg1, arg2, arg3, arg4) }
+        override fun invoke(arg1: Value, arg2: Value, arg3: Value, arg4: Value, arg5: Value) = fn(arg1, arg2, arg3, arg4, arg5)
     }
 
     /**

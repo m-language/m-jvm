@@ -6,21 +6,25 @@ package io.github.m
 @ExperimentalUnsignedTypes
 sealed class Variable : Data {
     data class Local(val name: List, val index: Nat) : Variable() {
-        override val type = "local-variable"
-        override fun get(name: String) = when (name) {
+        override val type = Symbol("local-variable")
+        override fun get(name: Symbol) = when (name.value) {
             "name" -> this.name
             "index" -> this.index
             else -> null
         }
+
+        override fun toString() = "${name.toString}@$index"
     }
 
     data class Global(val name: List, val path: List) : Variable() {
-        override val type = "global-variable"
-        override fun get(name: String) = when (name) {
+        override val type = Symbol("global-variable")
+        override fun get(name: Symbol) = when (name.value) {
             "name" -> this.name
             "path" -> this.path
             else -> null
         }
+
+        override fun toString() = "${path.toString}.${name.toString}"
     }
 
     /**

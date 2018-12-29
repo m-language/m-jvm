@@ -8,61 +8,63 @@ import kotlin.Char
 @Suppress("MemberVisibilityCanBePrivate")
 @ExperimentalUnsignedTypes
 object Parser {
-    data class Result(val rest: Seq<Char>, val expr: Expr)
+    data class Result(val rest: Sequence<Char>, val expr: Expr)
 
     const val newlines = "\r\n"
     const val whitespace = " \t\u000A\u000C$newlines"
     const val separators = "();\"$whitespace"
     val escapeMap = mapOf('b' to '\b', 't' to '\t', 'n' to '\n', 'r' to '\r', 'v' to '\u000A', 'f' to '\u000C')
 
-    tailrec fun parseComment(input: Seq.Cons<Char>, position: Position): Result = when (input.car) {
-        in newlines -> parseExpr(input, position)
-        else -> parseComment(input.cdr as Seq.Cons, position)
+    tailrec fun parseComment(input: Sequence<Char>, path: String, position: Position): Result = when (input.car) {
+        in newlines -> parseExpr(input, path, position)
+        else -> parseComment(input.cdr, path, position)
     }
 
-    tailrec fun parseIdentifierLiteralExpr(input: Seq.Cons<Char>, start: Position, end: Position, acc: Seq<Char>): Result = when (input.car) {
-        '"' -> Result(input.cdr, Expr.Identifier(String(acc.reversed().toCharArray()), start, end.nextChar()))
+    tailrec fun parseIdentifierLiteralExpr(input: Sequence<Char>, path: String, start: Position, end: Position, acc: Sequence<Char>): Result = when (input.car) {
+        '"' -> Result(input.cdr, Expr.Identifier(String(acc.reversed().toCharArray()), path, start, end.nextChar()))
         '\\' -> {
-            val char = (input.cdr as Seq.Cons).car
-            parseIdentifierLiteralExpr(input.cdr.cdr as Seq.Cons, start, end.nextChar().nextChar(), Seq.Cons((escapeMap[char] ?: char), acc))
+            val char = input.cdr.car
+            parseIdentifierLiteralExpr(input.cdr.cdr, path, start, end.nextChar().nextChar(), (escapeMap[char]
+                    ?: char).cons(acc))
         }
-        in newlines -> parseIdentifierLiteralExpr(input.cdr as Seq.Cons, start, end.nextLine(), Seq.Cons(input.car, acc))
-        else -> parseIdentifierLiteralExpr(input.cdr as Seq.Cons, start, end.nextChar(), Seq.Cons(input.car, acc))
+        in newlines -> parseIdentifierLiteralExpr(input.cdr, path, start, end.nextLine(), input.car.cons(acc))
+        else -> parseIdentifierLiteralExpr(input.cdr, path, start, end.nextChar(), input.car.cons(acc))
     }
 
-    tailrec fun parseIdentifierExpr(input: Seq.Cons<Char>, start: Position, end: Position, acc: Seq<Char>): Result = when (input.car) {
-        in separators -> Result(input, Expr.Identifier(String(acc.reversed().toCharArray()), start, end))
-        else -> parseIdentifierExpr(input.cdr as Seq.Cons, start, end.nextChar(), Seq.Cons(input.car, acc))
+    tailrec fun parseIdentifierExpr(input: Sequence<Char>, path: String, start: Position, end: Position, acc: Sequence<Char>): Result = when (input.car) {
+        in separators -> Result(input, Expr.Identifier(String(acc.reversed().toCharArray()), path, start, end))
+        else -> parseIdentifierExpr(input.cdr, path, start, end.nextChar(), input.car.cons(acc))
     }
 
-    tailrec fun parseListExpr(input: Seq.Cons<Char>, start: Position, end: Position, acc: Seq<Expr>): Result = when (input.car) {
-        ')' -> Result(input.cdr, Expr.List(acc.reversed(), start, end.nextChar()))
+    tailrec fun parseListExpr(input: Sequence<Char>, path: String, start: Position, end: Position, acc: Sequence<Expr>): Result = when (input.car) {
+        ')' -> Result(input.cdr, Expr.List(acc.reversed(), path, start, end.nextChar()))
         else -> {
-            val (rest, expr) = parseExpr(input, end)
-            parseListExpr(rest as Seq.Cons, start, expr.end, Seq.Cons(expr, acc))
+            val (rest, expr) = parseExpr(input, path, end)
+            parseListExpr(rest, path, start, expr.end, expr.cons(acc))
         }
     }
 
-    tailrec fun parseExpr(input: Seq.Cons<Char>, position: Position): Result = when (input.car) {
-        '(' -> parseListExpr(input.cdr as Seq.Cons, position, position, Seq.Nil)
-        '"' -> parseIdentifierLiteralExpr(input.cdr as Seq.Cons, position, position, Seq.Nil)
-        ';' -> parseComment(input.cdr as Seq.Cons, position)
-        in newlines -> parseExpr(input.cdr as Seq.Cons, position.nextLine())
-        in whitespace -> parseExpr(input.cdr as Seq.Cons, position.nextChar())
-        else -> parseIdentifierExpr(input, position, position, Seq.Nil)
+    tailrec fun parseExpr(input: Sequence<Char>, path: String, position: Position): Result = when (input.car) {
+        '(' -> parseListExpr(input.cdr, path, position, position, nil())
+        '"' -> parseIdentifierLiteralExpr(input.cdr, path, position, position, nil())
+        ';' -> parseComment(input.cdr, path, position)
+        in newlines -> parseExpr(input.cdr, path, position.nextLine())
+        in whitespace -> parseExpr(input.cdr, path, position.nextChar())
+        else -> parseIdentifierExpr(input, path, position, position, nil())
     }
 
-    tailrec fun parse(input: Seq<Char>, position: Position, acc: Seq<Expr>): Seq<Expr> = when (input) {
-        Seq.Nil -> Seq.valueOf(acc.reversed().asSequence())
-        is Seq.Cons -> {
-            val (input1, expr1) = parseExpr(input, position)
-            parse(input1, expr1.end, Seq.Cons(expr1, acc))
+    tailrec fun parse(input: Sequence<Char>, path: String, position: Position, acc: Sequence<Expr>): Sequence<Expr> =
+            if (input.none()) {
+                acc.reversed().asSequence()
+            } else {
+                val (input1, expr1) = parseExpr(input, path, position)
+                parse(input1, path, expr1.end, expr1.cons(acc))
+            }
+
+    fun parse(file: File, path: String, init: Boolean): Sequence<Expr> = when {
+        file.isDirectory -> file.childFiles().asSequence().flatMap {
+            parse(it, if (init) "" else "$path${file.name}.", false)
         }
+        else -> parse(file.read().asCons(), "$path${file.nameWithoutExtension}", Position(1U, 1U), nil()).asSequence()
     }
-
-    fun parse(input: Seq<Char>): Seq<Expr> = parse(
-            input.toList().foldRight(Seq.Nil as Seq<Char>) { car, cdr -> Seq.Cons(car, cdr) },
-            Position(1U, 1U),
-            Seq.Nil
-    )
 }

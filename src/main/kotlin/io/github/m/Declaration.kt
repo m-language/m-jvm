@@ -13,7 +13,10 @@ import jdk.internal.org.objectweb.asm.commons.Method
 interface Declaration : Value {
     fun ClassWriter.generate()
 
-    data class Def(val name: List, val path: List, val value: Operation) : Data.Abstract("def-declaration", "name" to name, "path" to path, "value" to value), Declaration {
+    val path: List
+    val init: Operation
+
+    data class Def(val name: List, override val path: List, val value: Operation) : Data.Abstract("def-declaration", "name" to name, "path" to path, "value" to value), Declaration {
         override fun ClassWriter.generate() {
             val field = visitField(
                     Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC,
@@ -25,9 +28,16 @@ interface Declaration : Value {
 
             field.visitEnd()
         }
+
+        override val init get() = object : Operation {
+            override fun GeneratorAdapter.generate() {
+                value.apply { generate() }
+                putStatic(Type.getType("L${path.toString.replace('.', '/')};"), name.toString, Type.getType("Lio/github/m/Value;"))
+            }
+        }
     }
 
-    data class Lambda(val name: List, val closures: List, val value: Operation) : Data.Abstract("lambda-declaration", "name" to name, "closures" to closures, "value" to value), Declaration {
+    data class Lambda(val name: List, override val path: List, val closures: List, val value: Operation) : Data.Abstract("lambda-declaration", "name" to name, "path" to path, "closures" to closures, "value" to value), Declaration {
         override fun ClassWriter.generate() {
             val args = (0..closures.count()).joinToString(", ", "(", ")") { "io.github.m.Value" }
             val type = Method.getMethod("io.github.m.Value ${name.toString} $args")
@@ -37,64 +47,47 @@ interface Declaration : Value {
                 endMethod()
             }
         }
-    }
 
-    data class Combine(val first: Declaration, val second: Declaration) : Data.Abstract("combine-declaration", "first" to first, "second" to second), Declaration {
-        override fun ClassWriter.generate() {
-            first.apply { generate() }
-            second.apply { generate() }
-        }
-    }
+        override val init get() = object : Operation {
+            override fun GeneratorAdapter.generate() {
 
-    object None : Data.Abstract("no-declaration"), Declaration {
-        override fun ClassWriter.generate() {
-
+            }
         }
     }
 
     companion object {
-        fun mainClass(
+        fun clazz(
                 name: String,
-                operation: Operation,
-                declaration: Declaration
-        ): ByteArray = ClassWriter(ClassWriter.COMPUTE_FRAMES).run {
+                declarations: Sequence<Declaration>
+        ): ByteArray = object : ClassWriter(ClassWriter.COMPUTE_FRAMES) { }.run {
             val pathName = name.replace('.', '/')
             val type = Type.getType("L$pathName;")
             visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC + Opcodes.ACC_FINAL, pathName, null, "Ljava/lang/Object;", null)
 
-            declaration.apply { generate() }
+            declarations.forEach {
+                it.apply { generate() }
+            }
 
-            val run = visitField(Opcodes.ACC_PRIVATE + Opcodes.ACC_STATIC, "_run_", "Z", null, null)
-            run.visitEnd()
-
-            GeneratorAdapter(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC + Opcodes.ACC_FINAL, Method.getMethod("void run ()"), null, null, this).apply {
-                val endLabel = newLabel()
-
-                getStatic(type, "_run_", Type.BOOLEAN_TYPE)
-                ifZCmp(GeneratorAdapter.NE, endLabel)
-
-                push(true)
-                putStatic(type, "_run_", Type.BOOLEAN_TYPE)
-
-                operation.apply { generate() }
-                pop()
-
-                mark(endLabel)
+            GeneratorAdapter(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC + Opcodes.ACC_FINAL, Method.getMethod("void <clinit> ()"), null, null, this).apply {
+                declarations.forEach {
+                    it.init.apply { generate() }
+                }
 
                 returnValue()
                 endMethod()
             }
 
-            GeneratorAdapter(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC + Opcodes.ACC_FINAL, Method.getMethod("void main (java.lang.String[])"), null, null, this).apply {
-                visitLineNumber(1, newLabel())
-                loadArg(0)
-                push(type)
-                invokeStatic(Type.getType("Lio/github/m/Internals;"), Method.getMethod("void run (java.lang.String[], java.lang.Class)"))
-                returnValue()
-                endMethod()
+            if (declarations.any { it is Declaration.Def && it.name == List.Nil }) {
+                GeneratorAdapter(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC + Opcodes.ACC_FINAL, Method.getMethod("void main (java.lang.String[])"), null, null, this).apply {
+                    loadArg(0)
+                    push(type)
+                    invokeStatic(Type.getType("Lio/github/m/Internals;"), Method.getMethod("void run (java.lang.String[], java.lang.Class)"))
+                    returnValue()
+                    endMethod()
+                }
             }
 
-            visitSource("$name.m", null)
+            visitSource("${name.substringAfterLast('.')}.m", null)
 
             visitEnd()
             toByteArray()
@@ -112,14 +105,6 @@ interface Declaration : Value {
 
         @MField("lambda-declaration")
         @JvmField
-        val lambda: Value = Function { name, closures, value -> Declaration.Lambda(name as List, closures as List, value as Operation) }
-
-        @MField("combine-declaration")
-        @JvmField
-        val combine: Value = Function { first, second -> Declaration.Combine(first as Declaration, second as Declaration) }
-
-        @MField("no-declaration")
-        @JvmField
-        val none: Value = Declaration.None
+        val lambda: Value = Function { name, path, closures, value -> Declaration.Lambda(name as List, path as List, closures as List, value as Operation) }
     }
 }

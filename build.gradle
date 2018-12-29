@@ -19,7 +19,7 @@ dependencies {
 }
 
 task fatJar(type: Jar) {
-    manifest { attributes 'Main-Class': 'io.github.m.jvm.Main' }
+    manifest { attributes 'Main-Class': 'io.github.m.Compiler' }
     baseName = project.name
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar

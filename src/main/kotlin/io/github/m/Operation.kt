@@ -25,12 +25,6 @@ interface Operation : Value {
         }
     }
 
-    data class ReflectiveVariable(val name: List, val path: List) : Data.Abstract("reflective-variable-operation", "name" to name, "path" to path), Operation {
-        override fun GeneratorAdapter.generate() {
-            getStatic(Type.getType("L${path.toString.replace('.', '/')};"), name.toString, Type.getType("Lio/github/m/Value;"))
-        }
-    }
-
     data class If(val cond: Operation, val `true`: Operation, val `false`: Operation) : Data.Abstract("if-operation", "cond" to cond, "true" to `true`, "false" to `false`), Operation {
         override fun GeneratorAdapter.generate() {
             val endLabel = newLabel()
@@ -53,10 +47,8 @@ interface Operation : Value {
         }
     }
 
-    data class Def(val name: List, val value: Operation, val path: List) : Data.Abstract("def-operation", "name" to name, "value" to value, "path" to path), Operation {
+    data class Def(val name: List, val path: List, val value: Operation) : Data.Abstract("def-operation", "name" to name, "value" to value, "path" to path), Operation {
         override fun GeneratorAdapter.generate() {
-            value.apply { generate() }
-            putStatic(Type.getType("L${path.toString.replace('.', '/')};"), name.toString, Type.getType("Lio/github/m/Value;"))
             getStatic(Type.getType("L${path.toString.replace('.', '/')};"), name.toString, Type.getType("Lio/github/m/Value;"))
         }
     }
@@ -143,17 +135,13 @@ interface Operation : Value {
         @JvmField
         val globalVariable: Value = Function { name, path -> Operation.GlobalVariable(name as List, path as List) }
 
-        @MField("reflective-variable-operation")
-        @JvmField
-        val reflectiveVariable: Value = Function { name, path -> Operation.ReflectiveVariable(name as List, path as List) }
-
         @MField("if-operation")
         @JvmField
         val `if`: Value = Function { cond, `true`, `false` -> Operation.If(cond as Operation, `true` as Operation, `false` as Operation) }
 
         @MField("def-operation")
         @JvmField
-        val def: Value = Function { name, value, path -> Operation.Def(name as List, value as Operation, path as List) }
+        val def: Value = Function { name, path, value -> Operation.Def(name as List, path as List, value as Operation) }
 
         @MField("lambda-operation")
         @JvmField

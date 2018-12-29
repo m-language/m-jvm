@@ -4,6 +4,21 @@ package io.github.m
  * M wrapper class for files
  */
 data class File(val value: java.io.File) : Value {
+    constructor(name: String) : this(java.io.File(name))
+
+    val isDirectory get() = value.isDirectory
+    val name get() = value.name
+    val nameWithoutExtension get() = value.nameWithoutExtension
+
+    fun child(name: String) = File(java.io.File(value, name))
+    fun childFiles() = value.listFiles().asSequence().map { File(it) }
+
+    fun read() = run {
+        val reader = value.bufferedReader()
+        generateSequence { if (reader.ready()) reader.read() else null }
+                .map { it.toChar() }
+    }
+
     override fun toString() = value.toString()
 
     /**
@@ -15,39 +30,28 @@ data class File(val value: java.io.File) : Value {
         @JvmField
         val localFile: Value = File(java.io.File("."))
 
-        @MField("file.child")
-        @JvmField
-        val child: Value = Function { file, name -> Process { File(java.io.File((file as File).value, name.toString)) } }
-
         @MField("file.child-files")
         @JvmField
-        val childFiles: Value = Function { file -> Process { List.valueOf(java.nio.file.Files.newDirectoryStream((file as File).value.toPath()).asSequence().map { File(it.toFile()) }) } }
+        val childFiles: Value = Function { file -> Process { List.valueOf((file as File).childFiles()) } }
 
         @MField("file.directory?")
         @JvmField
-        val isDirectory: Value = Function { file -> Process { Bool((file as File).value.isDirectory) } }
-
-        @MField("file.name")
-        @JvmField
-        val name: Value = Function { file -> Process { (file as File).value.name.toList } }
-
-        @MField("file.parent")
-        @JvmField
-        val parent: Value = Function { file -> Process { File((file as File).value.parentFile) } }
+        val isDirectory: Value = Function { file -> Process { Bool((file as File).isDirectory) } }
 
         @MField("file.read")
         @JvmField
-        val read: Value = Function { file ->
-            Process {
-                val bufferedReader = (file as File).value.bufferedReader()
-                val sequence = generateSequence<Value> {
-                    if (bufferedReader.ready())
-                        Char(bufferedReader.read().toChar())
-                    else
-                        null
-                }
-                List.valueOf(sequence)
-            }
-        }
+        val read: Value = Function { file -> Process { List.valueOf((file as File).read().map { Char(it) }) } }
+
+        @MField("file.name")
+        @JvmField
+        val name: Value = Function { file -> (file as File).name.toList }
+
+        @MField("file.name-without-extension")
+        @JvmField
+        val nameWithoutExtension: Value = Function { file -> (file as File).nameWithoutExtension.toList }
+
+        @MField("file.child")
+        @JvmField
+        val child: Value = Function { file, name -> (file as File).child(name.toString) }
     }
 }
