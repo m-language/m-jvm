@@ -40,7 +40,7 @@ data class File(val value: java.io.File) : Value {
 
         @MField("file.read")
         @JvmField
-        val read: Value = Function { file -> Process { List.valueOf((file as File).read().map { Char(it) }) } }
+        val read: Value = Function { file -> Process { List.valueOf((file as File).read().map(::Char)) } }
 
         @MField("file.name")
         @JvmField

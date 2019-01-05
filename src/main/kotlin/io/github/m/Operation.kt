@@ -93,10 +93,11 @@ interface Operation : Value {
     data class Apply(val fn: Operation, val arg: Operation) : Data.Abstract("apply-operation", "fn" to fn, "arg" to arg), Operation {
         override fun GeneratorAdapter.generate() {
             fn.apply { generate() }
+            checkCast(Type.getType("Lio/github/m/Function;"))
             arg.apply { generate() }
-            invokeStatic(
-                    Type.getType("Lio/github/m/Internals;"),
-                    Method.getMethod("io.github.m.Value apply (io.github.m.Value, io.github.m.Value)")
+            invokeInterface(
+                    Type.getType("Lio/github/m/Function;"),
+                    Method.getMethod("io.github.m.Value invoke (io.github.m.Value)")
             )
         }
     }
@@ -129,39 +130,57 @@ interface Operation : Value {
     object Definitions {
         @MField("local-variable-operation")
         @JvmField
-        val localVariable: Value = Function { name, index -> Operation.LocalVariable(name as List, index as Nat) }
+        val localVariable: Value = Function { name, index ->
+            Operation.LocalVariable(List.from(name), Nat.from(index))
+        }
 
         @MField("global-variable-operation")
         @JvmField
-        val globalVariable: Value = Function { name, path -> Operation.GlobalVariable(name as List, path as List) }
+        val globalVariable: Value = Function { name, path ->
+            Operation.GlobalVariable(List.from(name), List.from(path))
+        }
 
         @MField("if-operation")
         @JvmField
-        val `if`: Value = Function { cond, `true`, `false` -> Operation.If(cond as Operation, `true` as Operation, `false` as Operation) }
+        val `if`: Value = Function { cond, `true`, `false` ->
+            Operation.If(cond as Operation, `true` as Operation, `false` as Operation)
+        }
 
         @MField("def-operation")
         @JvmField
-        val def: Value = Function { name, path, value -> Operation.Def(name as List, path as List, value as Operation) }
+        val def: Value = Function { name, path, value ->
+            Operation.Def(List.from(name), List.from(path), value as Operation)
+        }
 
         @MField("lambda-operation")
         @JvmField
-        val lambda: Value = Function { path, name, closures -> Operation.Lambda(path as List, name as List, closures as List) }
+        val lambda: Value = Function { path, name, closures ->
+            Operation.Lambda(List.from(path), List.from(name), List.from(closures))
+        }
 
         @MField("symbol-operation")
         @JvmField
-        val symbol: Value = Function { name -> Operation.Symbol(name as List) }
+        val symbol: Value = Function { name ->
+            Operation.Symbol(List.from(name))
+        }
 
         @MField("apply-operation")
         @JvmField
-        val apply: Value = Function { fn, arg -> Operation.Apply(fn as Operation, arg as Operation) }
+        val apply: Value = Function { fn, arg ->
+            Operation.Apply(fn as Operation, arg as Operation)
+        }
 
         @MField("combine-operation")
         @JvmField
-        val combine: Value = Function { first, second -> Operation.Combine(first as Operation, second as Operation) }
+        val combine: Value = Function { first, second ->
+            Operation.Combine(first as Operation, second as Operation)
+        }
 
         @MField("line-number-operation")
         @JvmField
-        val lineNumber: Value = Function { operation, line -> Operation.LineNumber(operation as Operation, line as Nat) }
+        val lineNumber: Value = Function { operation, line ->
+            Operation.LineNumber(operation as Operation, Nat.from(line))
+        }
 
         @MField("nil-operation")
         @JvmField

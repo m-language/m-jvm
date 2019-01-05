@@ -33,10 +33,10 @@ interface Data : Pair {
         @MField("data")
         @JvmField
         val data: Value = Function { type, fields ->
-            val fieldsMap = (fields as List)
+            val fieldsMap = List.from(fields)
                     .map {
-                        it as Pair
-                        it.left as Symbol to it.right
+                        val pair = Pair.from(it)
+                        pair.left as Symbol to pair.right
                     }
                     .toMap()
             object : Abstract((type as Symbol), fieldsMap) { }

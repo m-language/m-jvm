@@ -3,8 +3,20 @@ package io.github.m
 /**
  * M wrapper class for chars.
  */
-data class Char(val value: kotlin.Char) : Value {
+data class Char(val value: kotlin.Char) : List {
     override fun toString() = value.toString()
+
+    override fun invoke(arg: Value) = when (value.toInt()) {
+        0 -> List.nil(arg)
+        else -> List.cons(List.nil, Char(value - 1))(arg)
+    }
+
+    @ExperimentalUnsignedTypes
+    override fun iterator() = Nat(value.toInt().toUInt()).iterator()
+
+    companion object {
+        fun from(value: Value) = value as? Char ?: Char(List.from(value).count().toChar())
+    }
 
     /**
      * M char definitions.
@@ -13,11 +25,11 @@ data class Char(val value: kotlin.Char) : Value {
     object Definitions {
         @MField("char.=")
         @JvmField
-        val eq: Value = Function { x, y -> Bool((x as Char).value == (y as Char).value) }
+        val eq: Value = Function { x, y -> Bool(Char.from(x).value == Char.from(y).value) }
 
         @MField("char->nat")
         @JvmField
         @ExperimentalUnsignedTypes
-        val toNat: Value = Function { x -> Nat((x as Char).value.toInt().toUInt()) }
+        val toNat: Value = Function { x -> Nat(Char.from(x).value.toInt().toUInt()) }
     }
 }

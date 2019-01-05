@@ -15,10 +15,11 @@ object Parser {
     const val separators = "();\"$whitespace"
     val escapeMap = mapOf('b' to '\b', 't' to '\t', 'n' to '\n', 'r' to '\r', 'v' to '\u000A', 'f' to '\u000C')
 
-    tailrec fun parseComment(input: Sequence<Char>, path: String, position: Position): Result = when (input.car) {
-        in newlines -> parseExpr(input, path, position)
-        else -> parseComment(input.cdr, path, position)
-    }
+    tailrec fun parseComment(input: Sequence<Char>, path: String, position: Position): Result =
+            if (input.none() || input.car in newlines)
+                parseExpr(input, path, position)
+            else
+                parseComment(input.cdr, path, position)
 
     tailrec fun parseIdentifierLiteralExpr(input: Sequence<Char>, path: String, start: Position, end: Position, acc: Sequence<Char>): Result = when (input.car) {
         '"' -> Result(input.cdr, Expr.Identifier(String(acc.reversed().toCharArray()), path, start, end.nextChar()))

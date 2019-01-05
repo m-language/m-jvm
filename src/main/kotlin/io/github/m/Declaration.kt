@@ -77,7 +77,7 @@ interface Declaration : Value {
                 endMethod()
             }
 
-            if (declarations.any { it is Declaration.Def && it.name == List.Nil }) {
+            if (declarations.any { it is Declaration.Def && it.name == List.nil }) {
                 GeneratorAdapter(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC + Opcodes.ACC_FINAL, Method.getMethod("void main (java.lang.String[])"), null, null, this).apply {
                     loadArg(0)
                     push(type)
@@ -101,10 +101,14 @@ interface Declaration : Value {
     object Definitions {
         @MField("def-declaration")
         @JvmField
-        val def: Value = Function { name, path, value -> Declaration.Def(name as List, path as List, value as Operation) }
+        val def: Value = Function { name, path, value ->
+            Declaration.Def(List.from(name), List.from(path), value as Operation)
+        }
 
         @MField("lambda-declaration")
         @JvmField
-        val lambda: Value = Function { name, path, closures, value -> Declaration.Lambda(name as List, path as List, closures as List, value as Operation) }
+        val lambda: Value = Function { name, path, closures, value ->
+            Declaration.Lambda(List.from(name), List.from(path), List.from(closures), value as Operation)
+        }
     }
 }

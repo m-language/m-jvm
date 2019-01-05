@@ -8,22 +8,16 @@ import java.lang.Exception
 @Suppress("unused")
 object Internals {
     /**
-     * Converts [io.github.m.Bool] to [java.lang.Boolean].
+     * Converts a [io.github.m.Bool] to a [java.lang.Boolean].
      */
     @JvmStatic
-    fun toPrimitiveBool(bool: Value) = bool as Bool === Bool.True
+    fun toPrimitiveBool(bool: Value) = Bool.from(bool) === Bool.True
 
     /**
      * The singleton empty list.
      */
     @JvmField
-    val nil: Value = List.Nil
-
-    /**
-     * Applies an M [function] to an [argument].
-     */
-    @JvmStatic
-    fun apply(function: Value, argument: Value) = (function as Function)(argument)
+    val nil: Value = List.nil
 
     /**
      * The implementation of the main definition for an M program.
@@ -46,9 +40,8 @@ object Internals {
                             name
                         StackTraceElement(it.className, clean(it.methodName), it.fileName, it.lineNumber)
                     }
-                    .filterNot { it.className?.contains("io.github.m") ?: false }
-                    .dropLast(1)
-                    .dropLastWhile { it.fileName?.contains(".m")?.not() ?: true }
+//                    .dropLast(1)
+//                    .dropLastWhile { it.fileName?.contains(".m")?.not() ?: true }
                     .toTypedArray()
             throw e
         }

@@ -9,7 +9,7 @@ interface Function : Value {
      * Invokes the function with an argument of nil.
      */
     @JvmDefault
-    operator fun invoke() = invoke(List.Nil)
+    operator fun invoke() = invoke(List.nil)
 
     /**
      * Invokes the function given an [arg].

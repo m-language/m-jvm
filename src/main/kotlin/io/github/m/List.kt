@@ -3,36 +3,17 @@ package io.github.m
 /**
  * M implementation of lists.
  */
-sealed class List : Iterable<Value>, Value {
-    override fun iterator() = run {
-        var list = this@List
-        generateSequence {
-            (list as? Cons)?.run {
-                list = cdr
-                car
-            }
-        }.iterator()
-    }
-
-    final override fun toString() = joinToString(" ", "(", ")")
-
-    /**
-     * The non empty list.
-     */
-    data class Cons(val car: Value, val cdr: List) : List(), Pair {
-        override val left get() = car
-        override val right get() = cdr
-    }
-
-    /**
-     * The empty list.
-     */
-    object Nil : List()
-
+interface List : Iterable<Value>, Function {
     companion object {
+        val nil = Bool.False
+
+        fun cons(a: Value, b: List) = Pair.Impl(a, b)
+
+        fun from(value: Value): List = value as? List ?: (value as Function)(Function { a, b, _ -> cons(a, from(b)) }, nil) as List
+
         fun valueOf(sequence: Sequence<Value>) = sequence
                 .toList()
-                .foldRight(Nil as List, ::Cons)
+                .foldRight(nil as List, ::cons)
     }
 
     /**
@@ -40,24 +21,25 @@ sealed class List : Iterable<Value>, Value {
      */
     @Suppress("unused")
     object Definitions {
+        @Suppress("RedundantCompanionReference")
         @MField("nil")
         @JvmField
-        val nil: Value = List.Nil
+        val nil: Value = Companion.nil
 
         @MField("nil?")
         @JvmField
-        val isNil: Value = Function { arg -> Bool(arg === List.Nil) }
+        val isNil: Value = Function { arg -> (arg as Function)(Function { _, _, _ -> Bool.False }, Bool.True) }
 
         @MField("cons")
         @JvmField
-        val cons: Value = Function { car, cdr -> List.Cons(car, cdr as List) }
+        val cons: Value = Function { car, cdr -> List.cons(car, List.from(cdr)) }
 
         @MField("car")
         @JvmField
-        val car: Value = Function { arg -> (arg as List.Cons).car }
+        val car: Value = Function { arg -> (arg as Function)(Bool.True) }
 
         @MField("cdr")
         @JvmField
-        val cdr: Value = Function { arg -> (arg as List.Cons).cdr }
+        val cdr: Value = Function { arg -> (arg as Function)(Bool.False) }
     }
 }

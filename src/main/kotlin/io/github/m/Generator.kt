@@ -26,13 +26,11 @@ object Generator {
             File.Definitions::class.java,
             Function.Definitions::class.java,
             Generator.Definitions::class.java,
-            Int.Definitions::class.java,
             List.Definitions::class.java,
             Nat.Definitions::class.java,
             Operation.Definitions::class.java,
             Pair.Definitions::class.java,
             Process.Definitions::class.java,
-            Real.Definitions::class.java,
             Runtime::class.java,
             Symbol.Definitions::class.java,
             Variable.Definitions::class.java
@@ -67,8 +65,8 @@ object Generator {
                 null -> if (env.exprs.none()) {
                     throw java.lang.Exception("Could not find $name")
                 } else {
-                    val next = generateExpr(env.exprs.car, env.copy(exprs = env.exprs.cdr, locals = emptyMap(), def = ""))
-                    val result = generateIdentifierExpr(name, next.env.copy(locals = env.locals))
+                    val next = generateExpr(env.exprs.car, env.copy(exprs = env.exprs.cdr, locals = emptyMap(), def = "", index = 0U))
+                    val result = generateIdentifierExpr(name, env.copy(exprs = next.env.exprs, globals = next.env.globals))
                     Result(
                             Operation.Combine(next.operation, result.operation),
                             next.declarations + result.declarations,
@@ -197,7 +195,7 @@ object Generator {
         @MField("mangle-lambda-name")
         @JvmField
         val mangleLambdaName: Value = Function { name, index ->
-            Generator.mangleLambdaName((name as List).toString, (index as Nat).value).toList
+            Generator.mangleLambdaName(List.from(name).toString, Nat.from(index).value).toList
         }
 
         @MField("internal-variables")
@@ -208,8 +206,8 @@ object Generator {
         @JvmField
         val generateProgram: Value = Function { out, operation, declarations ->
             Process {
-                Generator.generateProgram(out as File, operation as Operation, (declarations as List).asSequence().map { it as Declaration })
-                List.Nil
+                Generator.generateProgram(out as File, operation as Operation, List.from(declarations).asSequence().map { it as Declaration })
+                List.nil
             }
         }
 

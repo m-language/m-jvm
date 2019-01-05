@@ -3,7 +3,7 @@ package io.github.m
 /**
  * Class representing an M pair.
  */
-interface Pair : Value {
+interface Pair : Function, List {
     /**
      * The left value of the pair.
      */
@@ -14,11 +14,33 @@ interface Pair : Value {
      */
     val right: Value
 
+    override fun invoke(arg: Value): Value = when (arg) {
+        Bool.True -> left
+        Bool.False -> right
+        else -> (arg as Function)(left, right)
+    }
+
+    override fun iterator() = iterator {
+        var list: Value = this@Pair
+        while (list is Pair) {
+            yield(list.left)
+            list = list.right
+        }
+        yieldAll((list as List).iterator())
+    }
+
     /**
      * Default implementation of a pair.
      */
     data class Impl(override val left: Value, override val right: Value) : Pair {
         override fun toString() = "($left, $right)"
+    }
+
+    companion object {
+        fun from(value: Value) = value as? Pair ?: run {
+            value as Function
+            Impl(value(Bool.True), value(Bool.False))
+        }
     }
 
     /**
@@ -32,10 +54,10 @@ interface Pair : Value {
 
         @MField("left")
         @JvmField
-        val left: Value = Function { pair -> (pair as Pair).left }
+        val left: Value = Function { pair -> Pair.from(pair).left }
 
         @MField("right")
         @JvmField
-        val right: Value = Function { pair -> (pair as Pair).right }
+        val right: Value = Function { pair -> Pair.from(pair).right }
     }
 }
