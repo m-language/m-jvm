@@ -63,7 +63,7 @@ object Generator {
                 is Variable.Local -> Result(Operation.LocalVariable(variable.name, variable.index), nil(), env)
                 is Variable.Global -> Result(Operation.GlobalVariable(variable.name, variable.path), nil(), env)
                 null -> if (env.exprs.none()) {
-                    throw java.lang.Exception("Could not find $name")
+                    throw Exception("Could not find $name")
                 } else {
                     val next = generateExpr(env.exprs.car, env.copy(exprs = env.exprs.cdr, locals = emptyMap(), def = "", index = 0U))
                     val result = generateIdentifierExpr(name, env.copy(exprs = next.env.exprs, globals = next.env.globals))
@@ -98,7 +98,7 @@ object Generator {
                 .withIndex()
                 .map { (index, name) -> name to Variable.Local(name.toList, Nat(index.toUInt())) }
                 .toMap()
-            val result = generateExpr(expr, newEnv.copy(locals = locals, def = mangledName))
+        val result = generateExpr(expr, newEnv.copy(locals = locals, def = mangledName))
         Result(
                 Operation.Lambda(expr.path.toList, mangledName.toList, List.valueOf(closureOperations)),
                 Declaration.Lambda(mangledName.toList, expr.path.toList, List.valueOf(closures.map(String::toList)), result.operation).cons(result.declarations),
@@ -107,7 +107,7 @@ object Generator {
     }
 
     fun generateDefExpr(name: String, expr: Expr, env: Env): Result = if (env[name] != null) {
-        generateIdentifierExpr(name, env)
+        if (name in internals.keys) generateIdentifierExpr(name, env) else throw Exception("$name has already been defined")
     } else {
         val newEnv = env.copy(globals = env.globals + (name to Variable.Global(name.toList, expr.path.toList)))
         val result = generateExpr(expr, newEnv.copy(def = name))
