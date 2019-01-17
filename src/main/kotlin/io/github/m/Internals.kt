@@ -20,6 +20,12 @@ object Internals {
     val nil: Value = List.nil
 
     /**
+     * Creates a process which always returns [value].
+     */
+    @JvmStatic
+    fun `do`(value: Value): Value = Process.Do(value)
+
+    /**
      * The implementation of the main definition for an M program.
      *
      * @param args  The array of arguments passed to the program.
@@ -30,7 +36,7 @@ object Internals {
         try {
             val function = clazz.getField("").get(null) as? Function ?: throw Exception("Could not find main function")
             val process = function(List.valueOf(args.asSequence().map(String::toList))) as? Process ?: throw Exception("Main must create a process")
-            process()
+            process.run()
         } catch (e: Throwable) {
             e.stackTrace = e.stackTrace
                     .map {

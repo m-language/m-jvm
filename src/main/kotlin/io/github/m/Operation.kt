@@ -78,6 +78,16 @@ interface Operation : Value {
         }
     }
 
+    data class Do(val operation: Operation) : Data.Abstract("do-operation", "operation" to operation), Operation {
+        override fun GeneratorAdapter.generate() {
+            operation.run { generate() }
+            invokeStatic(
+                    Type.getType("Lio/github/m/Internals;"),
+                    Method.getMethod("io.github.m.Value do (io.github.m.Value)")
+            )
+        }
+    }
+
     data class Symbol(val name: List) : Data.Abstract("symbol-operation", "name" to name), Operation {
         override fun GeneratorAdapter.generate() {
             newInstance(Type.getType("Lio/github/m/Symbol;"))
@@ -156,6 +166,12 @@ interface Operation : Value {
         @JvmField
         val lambda: Value = Function { path, name, closures ->
             Operation.Lambda(List.from(path), List.from(name), List.from(closures))
+        }
+
+        @MField("do-operation")
+        @JvmField
+        val `do`: Value = Function { operation ->
+            Operation.Do(operation as Operation)
         }
 
         @MField("symbol-operation")
