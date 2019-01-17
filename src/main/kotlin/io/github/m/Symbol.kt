@@ -25,14 +25,14 @@ data class Symbol(val value: String) : List {
     object Definitions {
         @MField("symbol.=")
         @JvmField
-        val eq: Value = Function { x, y -> Bool(Symbol.from(x).value == Symbol.from(y).value) }
+        val eq: Value = Value { x, y -> Bool(Symbol.from(x).value == Symbol.from(y).value) }
 
         @MField("symbol.+")
         @JvmField
-        val add: Value = Function { x, y -> Symbol(Symbol.from(x).value + Symbol.from(y).value) }
+        val add: Value = Value { x, y -> Symbol(Symbol.from(x).value + Symbol.from(y).value) }
 
         @MField("symbol->list")
         @JvmField
-        val toList: Value = Function { x -> Symbol.from(x).value.toList }
+        val toList: Value = Value { x -> Symbol.from(x).value.toList }
     }
 }

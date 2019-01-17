@@ -4,10 +4,10 @@ package io.github.m
  * M implementation of IO processes.
  */
 @FunctionalInterface
-interface Process : Function {
+interface Process : Value {
     fun run(): Value
 
-    override fun invoke(arg: Value) = ThenRunWith(this, arg as Function)
+    override fun invoke(arg: Value) = ThenRunWith(this, arg)
 
     companion object {
         @Suppress("NOTHING_TO_INLINE")
@@ -34,11 +34,11 @@ interface Process : Function {
         }
     }
 
-    class RunWith(val process: Process, val function: Function) : Process {
+    class RunWith(val process: Process, val function: Value) : Process {
         override fun run(): Value = function(process.run())
     }
 
-    class ThenRunWith(val process: Process, val function: Function) : Process {
+    class ThenRunWith(val process: Process, val function: Value) : Process {
         override fun run(): Value = (function(process.run()) as Process).run()
 
 //        private tailrec fun rec(process: Process): Value = when (process) {
@@ -54,18 +54,18 @@ interface Process : Function {
     object Definitions {
         @MField("return")
         @JvmField
-        val `return`: Value = Function { value -> Process.Do(value) }
+        val `return`: Value = Value { value -> Process.Do(value) }
 
         @MField("then-run-with")
         @JvmField
-        val thenRunWith: Value = Function { proc, fn -> Process.ThenRunWith(proc as Process, fn as Function) }
+        val thenRunWith: Value = Value { proc, fn -> Process.ThenRunWith(proc as Process, fn) }
 
         @MField("then-run")
         @JvmField
-        val thenRun: Value = Function { proc1, proc2 -> Process.ThenRun(proc1 as Process, proc2 as Process) }
+        val thenRun: Value = Value { proc1, proc2 -> Process.ThenRun(proc1 as Process, proc2 as Process) }
 
         @MField("run-with")
         @JvmField
-        val runWith: Value = Function { proc, fn -> Process.RunWith(proc as Process, fn as Function) }
+        val runWith: Value = Value { proc, fn -> Process.RunWith(proc as Process, fn) }
     }
 }

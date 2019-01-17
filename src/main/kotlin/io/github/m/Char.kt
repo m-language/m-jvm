@@ -25,11 +25,11 @@ data class Char(val value: kotlin.Char) : List {
     object Definitions {
         @MField("char.=")
         @JvmField
-        val eq: Value = Function { x, y -> Bool(Char.from(x).value == Char.from(y).value) }
+        val eq: Value = Value { x, y -> Bool(Char.from(x).value == Char.from(y).value) }
 
         @MField("char->nat")
         @JvmField
         @ExperimentalUnsignedTypes
-        val toNat: Value = Function { x -> Nat(Char.from(x).value.toInt().toUInt()) }
+        val toNat: Value = Value { x -> Nat(Char.from(x).value.toInt().toUInt()) }
     }
 }

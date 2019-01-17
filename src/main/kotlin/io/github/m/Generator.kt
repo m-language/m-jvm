@@ -24,7 +24,6 @@ object Generator {
             Declaration.Definitions::class.java,
             Errors::class.java,
             File.Definitions::class.java,
-            Function.Definitions::class.java,
             Generator.Definitions::class.java,
             List.Definitions::class.java,
             Nat.Definitions::class.java,
@@ -204,7 +203,7 @@ object Generator {
     object Definitions {
         @MField("mangle-lambda-name")
         @JvmField
-        val mangleLambdaName: Value = Function { name, index ->
+        val mangleLambdaName: Value = Value { name, index ->
             Generator.mangleLambdaName(List.from(name).toString, Nat.from(index).value).toList
         }
 
@@ -214,7 +213,7 @@ object Generator {
 
         @MField("generate-program")
         @JvmField
-        val generateProgram: Value = Function { out, operation, declarations ->
+        val generateProgram: Value = Value { out, operation, declarations ->
             Process {
                 Generator.generateProgram(out as File, operation as Operation, List.from(declarations).asSequence().map { it as Declaration })
                 List.nil
@@ -223,7 +222,7 @@ object Generator {
 
         @MField("debug")
         @JvmField
-        val debug: Value = Function { x ->
+        val debug: Value = Value { x ->
             println(x)
             x
         }

@@ -34,13 +34,13 @@ sealed class Variable : Data {
     object Definitions {
         @MField("local-variable")
         @JvmField
-        val local: Value = Function { name, index ->
+        val local: Value = Value { name, index ->
             Variable.Local(List.from(name), Nat.from(index))
         }
 
         @MField("global-variable")
         @JvmField
-        val global: Value = Function { name, file ->
+        val global: Value = Value { name, file ->
             Variable.Global(List.from(name), List.from(file))
         }
     }

@@ -15,7 +15,7 @@ interface Data : Pair {
     fun get(name: Symbol): Value?
 
     override val left get() = type
-    override val right get() = Function { name -> get(name as Symbol) ?: throw Error("No field $name") }
+    override val right get() = Value { name -> get(name as Symbol) ?: throw Error("No field $name") }
 
     /**
      * An abstract implementation of data.
@@ -32,7 +32,7 @@ interface Data : Pair {
     object Definitions {
         @MField("data")
         @JvmField
-        val data: Value = Function { type, fields ->
+        val data: Value = Value { type, fields ->
             val fieldsMap = List.from(fields)
                     .map {
                         val pair = Pair.from(it)

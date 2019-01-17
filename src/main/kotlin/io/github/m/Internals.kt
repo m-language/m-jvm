@@ -34,7 +34,7 @@ object Internals {
     @JvmStatic
     fun run(args: Array<String>, clazz: Class<*>) {
         try {
-            val function = clazz.getField("").get(null) as? Function ?: throw Exception("Could not find main function")
+            val function = clazz.getField("").get(null) as? Value ?: throw Exception("Could not find main function")
             val process = function(List.valueOf(args.asSequence().map(String::toList))) as? Process ?: throw Exception("Main must create a process")
             process.run()
         } catch (e: Throwable) {

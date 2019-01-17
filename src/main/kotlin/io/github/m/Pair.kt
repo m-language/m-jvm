@@ -3,7 +3,7 @@ package io.github.m
 /**
  * Class representing an M pair.
  */
-interface Pair : Function, List {
+interface Pair : List {
     /**
      * The left value of the pair.
      */
@@ -17,7 +17,7 @@ interface Pair : Function, List {
     override fun invoke(arg: Value): Value = when (arg) {
         Bool.True -> left
         Bool.False -> right
-        else -> (arg as Function)(left, right)
+        else -> arg(left, right)
     }
 
     override fun iterator() = iterator {
@@ -37,10 +37,7 @@ interface Pair : Function, List {
     }
 
     companion object {
-        fun from(value: Value) = value as? Pair ?: run {
-            value as Function
-            Impl(value(Bool.True), value(Bool.False))
-        }
+        fun from(value: Value) = value as? Pair ?: Impl(value(Bool.True), value(Bool.False))
     }
 
     /**
@@ -50,14 +47,14 @@ interface Pair : Function, List {
     object Definitions {
         @MField("pair")
         @JvmField
-        val pair: Value = Function { left, right -> Pair.Impl(left, right) }
+        val pair: Value = Value { left, right -> Pair.Impl(left, right) }
 
         @MField("left")
         @JvmField
-        val left: Value = Function { pair -> Pair.from(pair).left }
+        val left: Value = Value { pair -> Pair.from(pair).left }
 
         @MField("right")
         @JvmField
-        val right: Value = Function { pair -> Pair.from(pair).right }
+        val right: Value = Value { pair -> Pair.from(pair).right }
     }
 }

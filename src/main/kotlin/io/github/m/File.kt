@@ -19,6 +19,8 @@ data class File(val value: java.io.File) : Value {
                 .map { it.toChar() }
     }
 
+    override fun invoke(arg: Value) = this
+
     override fun toString() = value.toString()
 
     /**
@@ -32,26 +34,26 @@ data class File(val value: java.io.File) : Value {
 
         @MField("file.child-files")
         @JvmField
-        val childFiles: Value = Function { file -> Process { List.valueOf((file as File).childFiles()) } }
+        val childFiles: Value = Value { file -> Process { List.valueOf((file as File).childFiles()) } }
 
         @MField("file.directory?")
         @JvmField
-        val isDirectory: Value = Function { file -> Process { Bool((file as File).isDirectory) } }
+        val isDirectory: Value = Value { file -> Process { Bool((file as File).isDirectory) } }
 
         @MField("file.read")
         @JvmField
-        val read: Value = Function { file -> Process { List.valueOf((file as File).read().map(::Char)) } }
+        val read: Value = Value { file -> Process { List.valueOf((file as File).read().map(::Char)) } }
 
         @MField("file.name")
         @JvmField
-        val name: Value = Function { file -> (file as File).name.toList }
+        val name: Value = Value { file -> (file as File).name.toList }
 
         @MField("file.name-without-extension")
         @JvmField
-        val nameWithoutExtension: Value = Function { file -> (file as File).nameWithoutExtension.toList }
+        val nameWithoutExtension: Value = Value { file -> (file as File).nameWithoutExtension.toList }
 
         @MField("file.child")
         @JvmField
-        val child: Value = Function { file, name -> (file as File).child(name.toString) }
+        val child: Value = Value { file, name -> (file as File).child(name.toString) }
     }
 }

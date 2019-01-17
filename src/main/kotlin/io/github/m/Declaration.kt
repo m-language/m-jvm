@@ -30,6 +30,7 @@ interface Declaration : Value {
         }
 
         override val init get() = object : Operation {
+            override fun invoke(arg: Value) = arg
             override fun GeneratorAdapter.generate() {
                 value.apply { generate() }
                 putStatic(Type.getType("L${path.toString.replace('.', '/')};"), name.toString, Type.getType("Lio/github/m/Value;"))
@@ -49,6 +50,7 @@ interface Declaration : Value {
         }
 
         override val init get() = object : Operation {
+            override fun invoke(arg: Value) = arg
             override fun GeneratorAdapter.generate() {
 
             }
@@ -101,13 +103,13 @@ interface Declaration : Value {
     object Definitions {
         @MField("def-declaration")
         @JvmField
-        val def: Value = Function { name, path, value ->
+        val def: Value = Value { name, path, value ->
             Declaration.Def(List.from(name), List.from(path), value as Operation)
         }
 
         @MField("lambda-declaration")
         @JvmField
-        val lambda: Value = Function { name, path, closures, value ->
+        val lambda: Value = Value { name, path, closures, value ->
             Declaration.Lambda(List.from(name), List.from(path), List.from(closures), value as Operation)
         }
     }

@@ -3,13 +3,13 @@ package io.github.m
 /**
  * M implementation of lists.
  */
-interface List : Iterable<Value>, Function {
+interface List : Iterable<Value>, Value {
     companion object {
         val nil = Bool.False
 
         fun cons(a: Value, b: List) = Pair.Impl(a, b)
 
-        fun from(value: Value): List = value as? List ?: (value as Function)(Function { a, b, _ -> cons(a, from(b)) }, nil) as List
+        fun from(value: Value): List = value as? List ?: value(Value { a, b, _ -> cons(a, from(b)) }, nil) as List
 
         fun valueOf(sequence: Sequence<Value>) = sequence
                 .toList()
@@ -28,18 +28,18 @@ interface List : Iterable<Value>, Function {
 
         @MField("nil?")
         @JvmField
-        val isNil: Value = Function { arg -> (arg as Function)(Function { _, _, _ -> Bool.False }, Bool.True) }
+        val isNil: Value = Value { arg -> arg(Value { _, _, _ -> Bool.False }, Bool.True) }
 
         @MField("cons")
         @JvmField
-        val cons: Value = Function { car, cdr -> List.cons(car, List.from(cdr)) }
+        val cons: Value = Value { car, cdr -> List.cons(car, List.from(cdr)) }
 
         @MField("car")
         @JvmField
-        val car: Value = Function { arg -> (arg as Function)(Bool.True) }
+        val car: Value = Value { arg -> arg(Bool.True) }
 
         @MField("cdr")
         @JvmField
-        val cdr: Value = Function { arg -> (arg as Function)(Bool.False) }
+        val cdr: Value = Value { arg -> arg(Bool.False) }
     }
 }

@@ -7,5 +7,5 @@ package io.github.m
 object Errors {
     @MField("error")
     @JvmField
-    val error: Value = Function { arg -> throw Error(List.from(arg).toString) }
+    val error: Value = Value { arg -> throw Error(List.from(arg).toString) }
 }
