@@ -51,5 +51,6 @@ object Internals {
                     .toTypedArray()
             throw e
         }
+        System.out.flush()
     }
 }

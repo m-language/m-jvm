@@ -23,15 +23,15 @@ interface Process : Value {
     }
 
     class ThenRun(val a: Process, val b: Process) : Process {
-        override fun run(): Value = runAll(this)
+        override fun run(): Value = run { a.run(); b.run() }
 
-        private tailrec fun runAll(process: Process): Value = when (process) {
-            is ThenRun -> {
-                process.a()
-                runAll(process.b)
-            }
-            else -> process()
-        }
+//        private tailrec fun runAll(process: Process): Value = when (process) {
+//            is ThenRun -> {
+//                process.a()
+//                runAll(process.b)
+//            }
+//            else -> process()
+//        }
     }
 
     class RunWith(val process: Process, val function: Value) : Process {

@@ -33,7 +33,11 @@ interface Pair : List {
      * Default implementation of a pair.
      */
     data class Impl(override val left: Value, override val right: Value) : Pair {
-        override fun toString() = "($left, $right)"
+        override fun toString() =
+                if (all { it is Char })
+                    joinToString(prefix = "", postfix = "", separator = "")
+                else
+                    joinToString(prefix = "(", postfix = ")", separator = " ")
     }
 
     companion object {

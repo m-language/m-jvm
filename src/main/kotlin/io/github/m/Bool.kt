@@ -14,7 +14,7 @@ sealed class Bool : Value {
         override fun iterator() = emptySequence<Value>().iterator()
         override fun invoke(arg: Value) = Value { arg2 -> this(arg, arg2) }
         override fun invoke(arg1: Value, arg2: Value) = arg2
-        override fun toString() = "false"
+        override fun toString() = "()"
     }
 
     companion object {

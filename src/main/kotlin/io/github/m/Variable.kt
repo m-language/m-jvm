@@ -24,7 +24,7 @@ sealed class Variable : Data {
             else -> null
         }
 
-        override fun toString() = "${path.toString}.${name.toString}"
+        override fun toString() = "${path.toString}/${name.toString}"
     }
 
     /**

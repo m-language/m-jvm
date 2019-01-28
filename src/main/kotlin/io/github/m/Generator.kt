@@ -30,7 +30,7 @@ object Generator {
             Operation.Definitions::class.java,
             Pair.Definitions::class.java,
             Process.Definitions::class.java,
-            Runtime::class.java,
+            Stdio.Definitions::class.java,
             Symbol.Definitions::class.java,
             Variable.Definitions::class.java
     ).flatMap {
@@ -186,7 +186,7 @@ object Generator {
         java.nio.file.Files.write(path, bytes, StandardOpenOption.CREATE)
     }
 
-    fun generateProgram(out: File, @Suppress("UNUSED_PARAMETER") operation: Operation, declarations: Sequence<Declaration>) {
+    fun writeProgram(out: File, @Suppress("UNUSED_PARAMETER") operation: Operation, declarations: Sequence<Declaration>) {
         declarations
                 .groupBy { it.path.toString }
                 .forEach { path, decls -> write(Declaration.clazz(path, decls.asSequence()), out, path) }
@@ -196,7 +196,7 @@ object Generator {
         val exprs = Parser.parse(`in`, "", true).asCons()
         val env = Env(exprs, emptyMap(), internals, "", 0U)
         val result = generate(env)
-        generateProgram(out, result.operation, result.declarations)
+        writeProgram(out, result.operation, result.declarations)
     }
 
     @Suppress("unused")
@@ -211,11 +211,11 @@ object Generator {
         @JvmField
         val internalVariables: Value = List.valueOf(internals.entries.map { Pair.Impl(it.key.toList, it.value) }.asSequence())
 
-        @MField("generate-program")
+        @MField("write-program")
         @JvmField
-        val generateProgram: Value = Value { out, operation, declarations ->
+        val writeProgram: Value = Value { out, operation, declarations ->
             Process {
-                Generator.generateProgram(out as File, operation as Operation, List.from(declarations).asSequence().map { it as Declaration })
+                Generator.writeProgram(out as File, operation as Operation, List.from(declarations).asSequence().map { it as Declaration })
                 List.nil
             }
         }
