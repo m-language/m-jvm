@@ -15,7 +15,7 @@ data class Symbol(val value: String) : List {
     override fun iterator() = value.asSequence().map(::Char).iterator()
 
     companion object {
-        fun from(value: Value) = value as? Symbol ?: Symbol(List.from(value).joinToString("", "", ""))
+        fun from(value: Value) = value as? Symbol ?: Symbol(String(List.from(value).map { Char.from(it).value }.toCharArray()))
     }
 
     /**

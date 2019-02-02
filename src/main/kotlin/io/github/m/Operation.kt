@@ -111,11 +111,11 @@ interface Operation : Value {
         }
     }
 
-    data class Combine(val first: Operation, val second: Operation) : Data.Abstract("combine-operation", "first" to first, "second" to second), Operation {
+    data class Combine(val _first: Operation, val _second: Operation) : Data.Abstract("combine-operation", "first" to _first, "second" to _second), Operation {
         override fun GeneratorAdapter.generate() {
-            first.apply { generate() }
+            _first.apply { generate() }
             pop()
-            second.apply { generate() }
+            _second.apply { generate() }
         }
     }
 

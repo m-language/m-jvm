@@ -22,6 +22,7 @@ object Generator {
             Char.Definitions::class.java,
             Data.Definitions::class.java,
             Declaration.Definitions::class.java,
+            Either.Definitions::class.java,
             Errors::class.java,
             File.Definitions::class.java,
             Generator.Definitions::class.java,
