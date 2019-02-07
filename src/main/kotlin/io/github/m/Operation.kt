@@ -53,7 +53,7 @@ interface Operation : Value {
         }
     }
 
-    data class Lambda(val path: List, val name: List, val closures: List) : Data.Abstract("lambda-operation", "path" to path, "name" to name, "closures" to closures), Operation {
+    data class Fn(val path: List, val name: List, val closures: List) : Data.Abstract("fn-operation", "path" to path, "name" to name, "closures" to closures), Operation {
         override fun GeneratorAdapter.generate() {
             closures.forEach { (it as Operation).apply { generate() } }
             val closureTypes = (0 until closures.count()).joinToString("", "", "") { "Lio/github/m/Value;" }
@@ -78,12 +78,12 @@ interface Operation : Value {
         }
     }
 
-    data class Do(val operation: Operation) : Data.Abstract("do-operation", "operation" to operation), Operation {
+    data class Impure(val operation: Operation) : Data.Abstract("impure-operation", "operation" to operation), Operation {
         override fun GeneratorAdapter.generate() {
             operation.run { generate() }
             invokeStatic(
                     Type.getType("Lio/github/m/Internals;"),
-                    Method.getMethod("io.github.m.Value do (io.github.m.Value)")
+                    Method.getMethod("io.github.m.Value impure (io.github.m.Value)")
             )
         }
     }
@@ -161,16 +161,16 @@ interface Operation : Value {
             Operation.Def(List.from(name), List.from(path), value as Operation)
         }
 
-        @MField("lambda-operation")
+        @MField("fn-operation")
         @JvmField
-        val lambda: Value = Value { path, name, closures ->
-            Operation.Lambda(List.from(path), List.from(name), List.from(closures))
+        val fn: Value = Value { path, name, closures ->
+            Operation.Fn(List.from(path), List.from(name), List.from(closures))
         }
 
-        @MField("do-operation")
+        @MField("impure-operation")
         @JvmField
-        val `do`: Value = Value { operation ->
-            Operation.Do(operation as Operation)
+        val impure: Value = Value { operation ->
+            Operation.Impure(operation as Operation)
         }
 
         @MField("symbol-operation")

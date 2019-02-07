@@ -100,8 +100,8 @@ object Generator {
                 .toMap()
         val result = generateExpr(expr, newEnv.copy(locals = locals, def = mangledName))
         Result(
-                Operation.Lambda(expr.path.toList, mangledName.toList, List.valueOf(closureOperations)),
-                Declaration.Lambda(mangledName.toList, expr.path.toList, List.valueOf(closures.map(String::toList)), result.operation).cons(result.declarations),
+                Operation.Fn(expr.path.toList, mangledName.toList, List.valueOf(closureOperations)),
+                Declaration.Fn(mangledName.toList, expr.path.toList, List.valueOf(closures.map(String::toList)), result.operation).cons(result.declarations),
                 result.env.copy(locals = newEnv.locals, def = newEnv.def, index = newEnv.index)
         )
     }
@@ -121,7 +121,7 @@ object Generator {
     fun generateDoExpr(expr: Expr, env: Env): Result = run {
         val result = generateExpr(expr, env)
         Result(
-                Operation.Do(result.operation),
+                Operation.Impure(result.operation),
                 result.declarations,
                 result.env
         )
@@ -140,7 +140,7 @@ object Generator {
                     argResult.env
             )
         }
-        else -> generateApplyExpr(Expr.List(listOf(fn, args.first()), fn.path, fn.start, fn.end), args.drop(1), env)
+        else -> generateApplyExpr(Expr.List(listOf(Expr.Identifier("ap", fn.path, fn.start, fn.end), fn, args.first()), fn.path, fn.start, fn.end), args.drop(1), env)
     }
 
     fun generateListExpr(expr: Expr.List, env: Env): Result = if (expr.exprs.isEmpty()) {
@@ -149,11 +149,12 @@ object Generator {
         val exprs = expr.exprs
         when ((exprs.first() as? Expr.Identifier)?.name) {
             "if" -> generateIfExpr(exprs[1], exprs[2], exprs[3], env)
-            "lambda" -> generateLambdaExpr((exprs[1] as Expr.Identifier).name, exprs[2], env)
             "def" -> generateDefExpr((exprs[1] as Expr.Identifier).name, exprs[2], env)
-            "do" -> generateDoExpr(exprs[1], env)
+            "fn" -> generateLambdaExpr((exprs[1] as Expr.Identifier).name, exprs[2], env)
+            "impure" -> generateDoExpr(exprs[1], env)
             "symbol" -> generateSymbolExpr((exprs[1] as Expr.Identifier).name, env)
-            else -> generateApplyExpr(exprs.first(), exprs.drop(1), env)
+            "ap" -> generateApplyExpr(exprs[1], exprs.drop(2), env)
+            else -> throw Exception("Macro ${exprs.first()}")
         }
     }
 
@@ -202,9 +203,9 @@ object Generator {
 
     @Suppress("unused")
     object Definitions {
-        @MField("mangle-lambda-name")
+        @MField("mangle-fn-name")
         @JvmField
-        val mangleLambdaName: Value = Value { name, index ->
+        val mangleFnName: Value = Value { name, index ->
             Generator.mangleLambdaName(List.from(name).toString, Nat.from(index).value).toList
         }
 

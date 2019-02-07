@@ -38,7 +38,7 @@ interface Declaration : Value {
         }
     }
 
-    data class Lambda(val name: List, override val path: List, val closures: List, val value: Operation) : Data.Abstract("lambda-declaration", "name" to name, "path" to path, "closures" to closures, "value" to value), Declaration {
+    data class Fn(val name: List, override val path: List, val closures: List, val value: Operation) : Data.Abstract("fn-declaration", "name" to name, "path" to path, "closures" to closures, "value" to value), Declaration {
         override fun ClassWriter.generate() {
             val args = (0..closures.count()).joinToString(", ", "(", ")") { "io.github.m.Value" }
             val type = Method.getMethod("io.github.m.Value ${name.toString} $args")
@@ -107,10 +107,10 @@ interface Declaration : Value {
             Declaration.Def(List.from(name), List.from(path), value as Operation)
         }
 
-        @MField("lambda-declaration")
+        @MField("fn-declaration")
         @JvmField
-        val lambda: Value = Value { name, path, closures, value ->
-            Declaration.Lambda(List.from(name), List.from(path), List.from(closures), value as Operation)
+        val fn: Value = Value { name, path, closures, value ->
+            Declaration.Fn(List.from(name), List.from(path), List.from(closures), value as Operation)
         }
     }
 }

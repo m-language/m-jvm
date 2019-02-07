@@ -23,7 +23,7 @@ object Internals {
      * Creates a process which always returns [value].
      */
     @JvmStatic
-    fun `do`(value: Value): Value = Process.Do(value)
+    fun impure(value: Value): Value = Process.Do(value)
 
     /**
      * The implementation of the main definition for an M program.
