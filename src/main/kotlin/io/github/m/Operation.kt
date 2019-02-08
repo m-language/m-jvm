@@ -21,7 +21,33 @@ interface Operation : Value {
 
     data class GlobalVariable(val name: List, val path: List) : Data.Abstract("global-variable-operation", "name" to name, "path" to path), Operation {
         override fun GeneratorAdapter.generate() {
-            getStatic(Type.getType("L${path.toString.replace('.', '/')};"), name.toString, Type.getType("Lio/github/m/Value;"))
+            internals[name.toString]?.invoke(this) ?: getStatic(Type.getType("L${path.toString.replace('.', '/')};"), name.toString, Type.getType("Lio/github/m/Value;"))
+        }
+
+        companion object {
+            val internals: Map<String, (GeneratorAdapter) -> Unit> = listOf<java.lang.Class<*>>(
+                    Bool.Definitions::class.java,
+                    Char.Definitions::class.java,
+                    Data.Definitions::class.java,
+                    Declaration.Definitions::class.java,
+                    Either.Definitions::class.java,
+                    Errors::class.java,
+                    File.Definitions::class.java,
+                    Generator.Definitions::class.java,
+                    List.Definitions::class.java,
+                    Nat.Definitions::class.java,
+                    Operation.Definitions::class.java,
+                    Pair.Definitions::class.java,
+                    Process.Definitions::class.java,
+                    Stdio.Definitions::class.java,
+                    io.github.m.Symbol.Definitions::class.java
+            ).flatMap {
+                val type = Type.getType(it.name.replace('.', '/'))
+                it.fields.asSequence()
+                        .filter { field -> field.isAnnotationPresent(MField::class.java) }
+                        .map { field -> field.getAnnotation(MField::class.java).name to { ge: GeneratorAdapter -> ge.getStatic(type, field.name, Type.getType("Lio/github/m/Value;")) } }
+                        .toList()
+            }.toMap()
         }
     }
 

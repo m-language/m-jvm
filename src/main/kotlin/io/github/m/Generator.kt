@@ -17,36 +17,6 @@ object Generator {
                       val declarations: Sequence<Declaration>,
                       val env: Env)
 
-    val internals: Map<String, Variable.Global> = listOf<java.lang.Class<*>>(
-            Bool.Definitions::class.java,
-            Char.Definitions::class.java,
-            Data.Definitions::class.java,
-            Declaration.Definitions::class.java,
-            Either.Definitions::class.java,
-            Errors::class.java,
-            File.Definitions::class.java,
-            Generator.Definitions::class.java,
-            List.Definitions::class.java,
-            Nat.Definitions::class.java,
-            Operation.Definitions::class.java,
-            Pair.Definitions::class.java,
-            Process.Definitions::class.java,
-            Stdio.Definitions::class.java,
-            Symbol.Definitions::class.java,
-            Variable.Definitions::class.java
-    ).flatMap {
-        it
-                .fields
-                .asSequence()
-                .filter { field -> field.isAnnotationPresent(MField::class.java) }
-                .map { field ->
-                    val name = field.getAnnotation(MField::class.java).name
-                    val variable = Variable.Global(field.name.toList, it.name.toList)
-                    name to variable
-                }
-                .toList()
-    }.toMap()
-
     fun mangleLambdaName(name: String, index: UInt) = "${name}_$index"
 
     fun closures(expr: Expr, env: Env): Set<String> = when (expr) {
@@ -107,7 +77,7 @@ object Generator {
     }
 
     fun generateDefExpr(name: String, expr: Expr, env: Env): Result = if (env[name] != null) {
-        if (name in internals.keys) generateIdentifierExpr(name, env) else throw Exception("$name has already been defined")
+        throw Exception("$name has already been defined")
     } else {
         val newEnv = env.copy(globals = env.globals + (name to Variable.Global(name.toList, expr.path.toList)))
         val result = generateExpr(expr, newEnv.copy(def = name))
@@ -196,7 +166,7 @@ object Generator {
 
     fun generate(`in`: File, out: File) {
         val exprs = Parser.parse(`in`, "", true).asCons()
-        val env = Env(exprs, emptyMap(), internals, "", 0U)
+        val env = Env(exprs, emptyMap(), emptyMap(), "", 0U)
         val result = generate(env)
         writeProgram(out, result.operation, result.declarations)
     }
@@ -208,10 +178,6 @@ object Generator {
         val mangleFnName: Value = Value { name, index ->
             Generator.mangleLambdaName(List.from(name).toString, Nat.from(index).value).toList
         }
-
-        @MField("internal-variables")
-        @JvmField
-        val internalVariables: Value = List.valueOf(internals.entries.map { Pair.Impl(it.key.toList, it.value) }.asSequence())
 
         @MField("write-program")
         @JvmField
