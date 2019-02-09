@@ -1,7 +1,7 @@
 package io.github.m
 
+import io.github.m.List.Nil
 import java.lang.Exception
-import kotlin.reflect.jvm.jvmName
 
 /**
  * Internal definitions used by the M runtime.
@@ -18,7 +18,7 @@ object Internals {
      * The singleton empty list.
      */
     @JvmField
-    val nil: Value = List.nil
+    val nil: Value = Nil
 
     /**
      * Creates a process which always returns [value].

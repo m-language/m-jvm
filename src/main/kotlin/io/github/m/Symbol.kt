@@ -3,16 +3,12 @@ package io.github.m
 /**
  * M wrapper class for strings.
  */
-data class Symbol(val value: String) : List {
+data class Symbol(val value: String) : Value {
     override fun toString() = value
 
     override fun invoke(arg: Value) =
-            if (value.isEmpty())
-                List.nil(arg)
-            else
-                List.cons(Char(value[0]), Symbol(value.drop(1)))(arg)
-
-    override fun iterator() = value.asSequence().map(::Char).iterator()
+            if (value.isEmpty()) List.Nil(arg)
+            else Pair.Impl(Char(value[0]), Symbol(value.drop(1)))(arg)
 
     companion object {
         fun from(value: Value) = value as? Symbol ?: Symbol(String(List.from(value).map { Char.from(it).value }.toCharArray()))

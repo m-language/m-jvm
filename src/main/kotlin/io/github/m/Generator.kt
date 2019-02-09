@@ -1,5 +1,6 @@
 package io.github.m
 
+import io.github.m.List.Nil
 import java.nio.file.StandardOpenOption
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -187,7 +188,7 @@ object Generator {
         val writeProgram: Value = Value { out, operation, declarations ->
             Process {
                 Generator.writeProgram(out as File, operation as Operation, List.from(declarations).asSequence().map { it as Declaration })
-                List.nil
+                Nil
             }
         }
 

@@ -3,17 +3,31 @@ package io.github.m
 /**
  * M implementation of lists.
  */
-interface List : Iterable<Value>, Value {
+sealed class List : Iterable<Value>, Value {
+    override fun iterator() = iterator {
+        var list: List = this@List
+        while (list is Cons) {
+            yield(list.car)
+            list = list.cdr
+        }
+    }
+
+    object Nil : List() {
+        override fun invoke(arg: Value) = Bool.False(arg)
+        override fun toString() = "()"
+    }
+
+    data class Cons(val car: Value, val cdr: List) : List() {
+        override fun invoke(arg: Value) = Pair.Impl(car, cdr)(arg)
+        override fun toString() = joinToString(" ", "(", ")")
+    }
+
     companion object {
-        val nil = Bool.False
-
-        fun cons(a: Value, b: List) = Pair.Impl(a, b)
-
-        fun from(value: Value): List = value as? List ?: value(Value { a, b, _ -> cons(a, from(b)) }, nil) as List
+        fun from(value: Value): List = value as? List ?: value(Value { a, b, _ -> Cons(a, from(b)) }, Nil) as List
 
         fun valueOf(sequence: Sequence<Value>) = sequence
                 .toList()
-                .foldRight(nil as List, ::cons)
+                .foldRight(Nil as List) { a, b -> Cons(a, b) }
     }
 
     /**
@@ -24,7 +38,7 @@ interface List : Iterable<Value>, Value {
         @Suppress("RedundantCompanionReference")
         @MField("nil")
         @JvmField
-        val nil: Value = Companion.nil
+        val nil: Value = Nil
 
         @MField("nil?")
         @JvmField
@@ -32,7 +46,7 @@ interface List : Iterable<Value>, Value {
 
         @MField("cons")
         @JvmField
-        val cons: Value = Value { car, cdr -> List.cons(car, List.from(cdr)) }
+        val cons: Value = Value { car, cdr -> Cons(car, List.from(cdr)) }
 
         @MField("car")
         @JvmField

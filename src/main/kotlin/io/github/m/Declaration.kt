@@ -1,5 +1,6 @@
 package io.github.m
 
+import io.github.m.List.Nil
 import jdk.internal.org.objectweb.asm.ClassWriter
 import jdk.internal.org.objectweb.asm.Opcodes
 import jdk.internal.org.objectweb.asm.Type
@@ -79,7 +80,7 @@ interface Declaration : Value {
                 endMethod()
             }
 
-            if (declarations.any { it is Declaration.Def && it.name == List.nil }) {
+            if (declarations.any { it is Declaration.Def && it.name == Nil }) {
                 GeneratorAdapter(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC + Opcodes.ACC_FINAL, Method.getMethod("void main (java.lang.String[])"), null, null, this).apply {
                     loadArg(0)
                     push(type)

@@ -3,7 +3,7 @@ package io.github.m
 /**
  * Class representing an M pair.
  */
-interface Pair : List {
+interface Pair : Value {
     /**
      * The first value of the pair.
      */
@@ -20,24 +20,11 @@ interface Pair : List {
         else -> arg(first, second)
     }
 
-    override fun iterator() = iterator {
-        var list: Value = this@Pair
-        while (list is Pair) {
-            yield(list.first)
-            list = list.second
-        }
-        yieldAll((list as List).iterator())
-    }
-
     /**
      * Default implementation of a pair.
      */
     data class Impl(override val first: Value, override val second: Value) : Pair {
-        override fun toString() =
-                if (all { it is Char })
-                    joinToString(prefix = "", postfix = "", separator = "")
-                else
-                    joinToString(prefix = "(", postfix = ")", separator = " ")
+        override fun toString() = "($first, $second)"
     }
 
     companion object {
