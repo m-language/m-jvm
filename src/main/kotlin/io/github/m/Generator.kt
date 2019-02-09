@@ -17,6 +17,8 @@ object Generator {
                       val declarations: Sequence<Declaration>,
                       val env: Env)
 
+    class Failure(message: String) : Exception(message)
+
     fun mangleLambdaName(name: String, index: UInt) = "${name}_$index"
 
     fun closures(expr: Expr, env: Env): Set<String> = when (expr) {
@@ -133,9 +135,10 @@ object Generator {
             is Expr.Identifier -> generateIdentifierExpr(expr.name, env)
             is Expr.List -> generateListExpr(expr, env)
         }.run { copy(operation = Operation.LineNumber(operation, Nat(expr.start.line))) }
-    } catch (e: Exception) {
-        e.stackTrace += StackTraceElement(expr.path, env.def, "${expr.path.substringAfterLast('.')}.m", expr.start.line.toInt())
+    } catch (e: Failure) {
         throw e
+    } catch (e: Exception) {
+        throw Failure("${e.message} at ${expr.path}.${env.def}(${expr.path.substringAfterLast('.')}.m:${expr.start.line})")
     }
 
     fun generate(env: Env): Result = if (env.exprs.none()) {

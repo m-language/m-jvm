@@ -31,7 +31,6 @@ interface Operation : Value {
                     Data.Definitions::class.java,
                     Declaration.Definitions::class.java,
                     Either.Definitions::class.java,
-                    Errors::class.java,
                     File.Definitions::class.java,
                     Generator.Definitions::class.java,
                     List.Definitions::class.java,

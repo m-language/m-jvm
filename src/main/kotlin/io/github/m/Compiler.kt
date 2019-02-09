@@ -10,6 +10,10 @@ object Compiler {
     fun main(args: Array<String>) {
         val `in` = File(args[0])
         val out = File(args[1])
-        Generator.generate(`in`, out)
+        try {
+            Generator.generate(`in`, out)
+        } catch (e: Generator.Failure) {
+            System.err.println(e.message)
+        }
     }
 }
