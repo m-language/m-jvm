@@ -1,6 +1,7 @@
 package io.github.m
 
 import java.lang.Exception
+import kotlin.reflect.jvm.jvmName
 
 /**
  * Internal definitions used by the M runtime.
@@ -35,7 +36,8 @@ object Internals {
     fun run(args: Array<String>, clazz: Class<*>) {
         try {
             val function = clazz.getField("").get(null) as? Value ?: throw Exception("Could not find main function")
-            val process = function(List.valueOf(args.asSequence().map(String::toList))) as? Process ?: throw Exception("Main must create a process")
+            val value  = function(List.valueOf(args.asSequence().map(String::toList)))
+            val process = value as? Process ?: throw Exception("Main must create a process, (found ${value::class.java.name})")
             process.run()
         } catch (e: Throwable) {
             e.stackTrace = e.stackTrace

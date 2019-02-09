@@ -55,10 +55,10 @@ interface Pair : List {
 
         @MField("first")
         @JvmField
-        val first: Value = Value { pair -> Pair.from(pair).first }
+        val first: Value = Value { pair -> from(pair).first }
 
         @MField("second")
         @JvmField
-        val second: Value = Value { pair -> Pair.from(pair).second }
+        val second: Value = Value { pair -> from(pair).second }
     }
 }
