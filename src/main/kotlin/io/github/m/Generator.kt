@@ -103,7 +103,6 @@ object Generator {
     fun generateSymbolExpr(name: String, env: Env): Result = Result(Operation.Symbol(name.toList), nil(), env)
 
     tailrec fun generateApplyExpr(fn: Expr, args: kotlin.collections.List<Expr>, env: Env): Result = when (args.size) {
-        0 -> generateApplyExpr(fn, listOf(Expr.List(emptyList(), fn.path, fn.start, fn.end)), env)
         1 -> {
             val fnResult = generateExpr(fn, env)
             val argResult = generateExpr(args.first(), fnResult.env)
