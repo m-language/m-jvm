@@ -113,7 +113,7 @@ object Generator {
                     argResult.env
             )
         }
-        else -> generateApplyExpr(Expr.List(listOf(Expr.Identifier("ap", fn.path, fn.start, fn.end), fn, args.first()), fn.path, fn.start, fn.end), args.drop(1), env)
+        else -> generateApplyExpr(Expr.List(listOf(fn, args.first()), fn.path, fn.start, fn.end), args.drop(1), env)
     }
 
     fun generateListExpr(expr: Expr.List, env: Env): Result = if (expr.exprs.isEmpty()) {
@@ -126,8 +126,7 @@ object Generator {
             "fn" -> generateLambdaExpr((exprs[1] as Expr.Identifier).name, exprs[2], env)
             "impure" -> generateDoExpr(exprs[1], env)
             "symbol" -> generateSymbolExpr((exprs[1] as Expr.Identifier).name, env)
-            "ap" -> generateApplyExpr(exprs[1], exprs.drop(2), env)
-            else -> throw Exception("Macro ${exprs.first()}")
+            else -> generateApplyExpr(exprs[0], exprs.drop(1), env)
         }
     }
 
