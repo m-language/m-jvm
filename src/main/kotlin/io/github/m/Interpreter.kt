@@ -14,7 +14,6 @@ object Interpreter {
 
         fun load(declarations: Sequence<Declaration>): Heap = run {
             val bytes = Generator.generateProgram(Operation.Nil, declarations)
-            bytes.forEach { path, b -> java.io.File("bin/interpreter/$path.class").apply { parentFile.mkdirs() }.writeBytes(b) }
             val newDefinitions = bytes
                     .map { (path, bytes) -> load(path, bytes) }
                     .map { clazz -> fields(clazz) }
@@ -44,7 +43,6 @@ object Interpreter {
      * M interpreter definitions.
      */
     @Suppress("unused")
-
     @ExperimentalUnsignedTypes
     object Definitions {
         @MField("interpret-declaration")
