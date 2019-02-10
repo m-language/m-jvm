@@ -162,11 +162,16 @@ object Generator {
         java.nio.file.Files.write(path, bytes, StandardOpenOption.CREATE)
     }
 
-    fun writeProgram(out: File, @Suppress("UNUSED_PARAMETER") operation: Operation, declarations: Sequence<Declaration>) {
-        declarations
-                .groupBy { it.path.toString }
-                .forEach { path, decls -> write(Declaration.clazz(path, decls.asSequence()), out, path) }
-    }
+    fun generateProgram(@Suppress("UNUSED_PARAMETER") operation: Operation, declarations: Sequence<Declaration>) =
+            declarations
+                    .groupBy { it.path.toString }
+                    .map { (path, decls) -> path to Declaration.clazz(path, decls.asSequence()) }
+                    .toMap()
+
+    fun writeProgram(out: File, @Suppress("UNUSED_PARAMETER") operation: Operation, declarations: Sequence<Declaration>) =
+            generateProgram(operation, declarations).forEach { (path, bytes) ->
+                write(bytes, out, path)
+            }
 
     fun generate(`in`: File, out: File) {
         val exprs = Parser.parse(`in`, "", true).asCons()

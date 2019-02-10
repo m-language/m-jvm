@@ -9,10 +9,10 @@ import jdk.internal.org.objectweb.asm.commons.Method
 /**
  * An operation for a method.
  */
-@ExperimentalUnsignedTypes
 interface Operation : Value {
     fun GeneratorAdapter.generate()
 
+    @ExperimentalUnsignedTypes
     data class LocalVariable(val name: List, val index: Nat) : Data.Abstract("local-variable-operation", "name" to name, "index" to index), Operation {
         override fun GeneratorAdapter.generate() {
             loadArg(index.value.toInt())
@@ -21,32 +21,8 @@ interface Operation : Value {
 
     data class GlobalVariable(val name: List, val path: List) : Data.Abstract("global-variable-operation", "name" to name, "path" to path), Operation {
         override fun GeneratorAdapter.generate() {
-            internals[name.toString]?.invoke(this) ?: getStatic(Type.getType("L${path.toString.replace('.', '/')};"), name.toString, Type.getType("Lio/github/m/Value;"))
-        }
-
-        companion object {
-            val internals: Map<String, (GeneratorAdapter) -> Unit> = listOf<java.lang.Class<*>>(
-                    Bool.Definitions::class.java,
-                    Char.Definitions::class.java,
-                    Data.Definitions::class.java,
-                    Declaration.Definitions::class.java,
-                    Either.Definitions::class.java,
-                    File.Definitions::class.java,
-                    Generator.Definitions::class.java,
-                    List.Definitions::class.java,
-                    Nat.Definitions::class.java,
-                    Operation.Definitions::class.java,
-                    Pair.Definitions::class.java,
-                    Process.Definitions::class.java,
-                    Stdio.Definitions::class.java,
-                    io.github.m.Symbol.Definitions::class.java
-            ).flatMap {
-                val type = Type.getType(it.name.replace('.', '/'))
-                it.fields.asSequence()
-                        .filter { field -> field.isAnnotationPresent(MField::class.java) }
-                        .map { field -> field.getAnnotation(MField::class.java).name to { ge: GeneratorAdapter -> ge.getStatic(type, field.name, Type.getType("Lio/github/m/Value;")) } }
-                        .toList()
-            }.toMap()
+            val type = Type.getType("L${path.toString.replace('.', '/')};")
+            getStatic(type, name.toString.normalize(), Type.getType("Lio/github/m/Value;"))
         }
     }
 
@@ -74,7 +50,7 @@ interface Operation : Value {
 
     data class Def(val name: List, val path: List, val value: Operation) : Data.Abstract("def-operation", "name" to name, "value" to value, "path" to path), Operation {
         override fun GeneratorAdapter.generate() {
-            getStatic(Type.getType("L${path.toString.replace('.', '/')};"), name.toString, Type.getType("Lio/github/m/Value;"))
+            getStatic(Type.getType("L${path.toString.replace('.', '/')};"), name.toString.normalize(), Type.getType("Lio/github/m/Value;"))
         }
     }
 
@@ -95,7 +71,7 @@ interface Operation : Value {
                     Handle(
                             Opcodes.H_INVOKESTATIC,
                             path.toString.replace('.', '/'),
-                            name.toString,
+                            name.toString.normalize(),
                             "(${closureTypes}Lio/github/m/Value;)Lio/github/m/Value;"
                     ),
                     Type.getType("(Lio/github/m/Value;)Lio/github/m/Value;")
@@ -144,6 +120,7 @@ interface Operation : Value {
         }
     }
 
+    @ExperimentalUnsignedTypes
     data class LineNumber(val operation: Operation, val line: Nat) : Data.Abstract("line-number-operation", "operation" to operation, "line" to line), Operation {
         override fun GeneratorAdapter.generate() {
             visitLineNumber(line.value.toInt(), mark())
@@ -161,6 +138,7 @@ interface Operation : Value {
      * M operation definitions.
      */
     @Suppress("unused")
+    @ExperimentalUnsignedTypes
     object Definitions {
         @MField("local-variable-operation")
         @JvmField
