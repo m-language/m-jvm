@@ -4,7 +4,6 @@ package io.github.m
  * The entry point for the M compiler, which takes an input file and an output
  * file as arguments.
  */
-@ExperimentalUnsignedTypes
 object Compiler {
     @JvmStatic
     fun main(args: Array<String>) {

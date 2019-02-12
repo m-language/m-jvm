@@ -30,5 +30,13 @@ data class Symbol(val value: String) : Value {
         @MField("symbol->list")
         @JvmField
         val toList: Value = Value { x -> from(x).value.toList }
+
+        @MField("normalize")
+        @JvmField
+        val normalize: Value = Value { x -> Symbol(Symbol.from(x).value.normalize()) }
+
+        @MField("unnormalize")
+        @JvmField
+        val unnormalize: Value = Value { x -> Symbol(Symbol.from(x).value.unnormalize()) }
     }
 }

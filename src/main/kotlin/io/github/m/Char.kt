@@ -3,14 +3,14 @@ package io.github.m
 /**
  * M wrapper class for chars.
  */
+@UseExperimental(ExperimentalUnsignedTypes::class)
 data class Char(val value: kotlin.Char) : Value {
     override fun toString() = value.toString()
 
-    @ExperimentalUnsignedTypes
     override fun invoke(arg: Value) = Nat(value.toInt().toUInt())(arg)
 
     companion object {
-        fun from(value: Value) = value as? Char ?: Char(List.from(value).count().toChar())
+        fun from(value: Value) = value as? Char ?: Char(Nat.from(value).value.toInt().toChar())
     }
 
     /**
@@ -24,7 +24,6 @@ data class Char(val value: kotlin.Char) : Value {
 
         @MField("char->nat")
         @JvmField
-        @ExperimentalUnsignedTypes
         val toNat: Value = Value { x -> Nat(from(x).value.toInt().toUInt()) }
     }
 }

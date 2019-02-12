@@ -9,10 +9,10 @@ import jdk.internal.org.objectweb.asm.commons.Method
 /**
  * An operation for a method.
  */
+@UseExperimental(ExperimentalUnsignedTypes::class)
 interface Operation : Value {
     fun GeneratorAdapter.generate()
 
-    @ExperimentalUnsignedTypes
     data class LocalVariable(val name: List, val index: Nat) : Data.Abstract("local-variable-operation", "name" to name, "index" to index), Operation {
         override fun GeneratorAdapter.generate() {
             loadArg(index.value.toInt())
@@ -21,7 +21,7 @@ interface Operation : Value {
 
     data class GlobalVariable(val name: List, val path: List) : Data.Abstract("global-variable-operation", "name" to name, "path" to path), Operation {
         override fun GeneratorAdapter.generate() {
-            val type = Type.getType("L${path.toString.replace('.', '/')};")
+            val type = Type.getType("L${path.toString};")
             getStatic(type, name.toString.normalize(), Type.getType("Lio/github/m/Value;"))
         }
     }
@@ -50,7 +50,7 @@ interface Operation : Value {
 
     data class Def(val name: List, val path: List, val value: Operation) : Data.Abstract("def-operation", "name" to name, "value" to value, "path" to path), Operation {
         override fun GeneratorAdapter.generate() {
-            getStatic(Type.getType("L${path.toString.replace('.', '/')};"), name.toString.normalize(), Type.getType("Lio/github/m/Value;"))
+            getStatic(Type.getType("L${path.toString};"), name.toString.normalize(), Type.getType("Lio/github/m/Value;"))
         }
     }
 
@@ -70,7 +70,7 @@ interface Operation : Value {
                     Type.getType("(Lio/github/m/Value;)Lio/github/m/Value;"),
                     Handle(
                             Opcodes.H_INVOKESTATIC,
-                            path.toString.replace('.', '/'),
+                            path.toString,
                             name.toString.normalize(),
                             "(${closureTypes}Lio/github/m/Value;)Lio/github/m/Value;"
                     ),
@@ -120,7 +120,6 @@ interface Operation : Value {
         }
     }
 
-    @ExperimentalUnsignedTypes
     data class LineNumber(val operation: Operation, val line: Nat) : Data.Abstract("line-number-operation", "operation" to operation, "line" to line), Operation {
         override fun GeneratorAdapter.generate() {
             visitLineNumber(line.value.toInt(), mark())
@@ -138,7 +137,6 @@ interface Operation : Value {
      * M operation definitions.
      */
     @Suppress("unused")
-    @ExperimentalUnsignedTypes
     object Definitions {
         @MField("local-variable-operation")
         @JvmField

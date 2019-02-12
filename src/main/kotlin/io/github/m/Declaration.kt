@@ -33,17 +33,15 @@ interface Declaration : Value {
             field.visitEnd()
         }
 
-        @ExperimentalUnsignedTypes
         override val init get() = object : Operation {
             override fun invoke(arg: Value) = arg
             override fun GeneratorAdapter.generate() {
                 internals[name.toString]?.invoke(this) ?: value.apply { generate() }
-                putStatic(Type.getType("L${path.toString.replace('.', '/')};"), name.toString.normalize(), Type.getType("Lio/github/m/Value;"))
+                putStatic(Type.getType("L${path.toString};"), name.toString.normalize(), Type.getType("Lio/github/m/Value;"))
             }
         }
 
         companion object {
-            @ExperimentalUnsignedTypes
             val internals: Map<String, (GeneratorAdapter) -> Unit> = listOf<java.lang.Class<*>>(
                     Bool.Definitions::class.java,
                     Char.Definitions::class.java,
@@ -92,12 +90,11 @@ interface Declaration : Value {
 
     companion object {
         fun clazz(
-                name: String,
+                path: String,
                 declarations: Sequence<Declaration>
         ): ByteArray = object : ClassWriter(ClassWriter.COMPUTE_FRAMES) { }.run {
-            val pathName = name.replace('.', '/')
-            val type = Type.getType("L$pathName;")
-            visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC + Opcodes.ACC_FINAL, pathName, null, "java/lang/Object", null)
+            val type = Type.getType("L$path;")
+            visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC + Opcodes.ACC_FINAL, path, null, "java/lang/Object", null)
 
             declarations.forEach {
                 it.apply { generate() }
@@ -122,7 +119,7 @@ interface Declaration : Value {
                 }
             }
 
-            visitSource("${name.substringAfterLast('.')}.m", null)
+            visitSource("${path.substringAfterLast('/')}.m", null)
 
             visitEnd()
             toByteArray()

@@ -4,7 +4,7 @@ import io.github.m.List.Nil
 import java.nio.file.StandardOpenOption
 
 @Suppress("MemberVisibilityCanBePrivate")
-@ExperimentalUnsignedTypes
+@UseExperimental(ExperimentalUnsignedTypes::class)
 object Generator {
     data class Env(val exprs: Sequence<Expr>,
                    val locals: Map<String, Variable.Local>,
@@ -137,7 +137,7 @@ object Generator {
     } catch (e: Failure) {
         throw e
     } catch (e: Exception) {
-        throw Failure("${e.message} at ${expr.path}.${env.def}(${expr.path.substringAfterLast('.')}.m:${expr.start.line})")
+        throw Failure("${e.message} at ${expr.path}.${env.def}(${expr.path.substringAfterLast('/')}.m:${expr.start.line})")
     }
 
     fun generate(env: Env): Result = if (env.exprs.none()) {

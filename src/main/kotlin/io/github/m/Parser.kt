@@ -6,7 +6,6 @@ import kotlin.Char
  * A parser for the M grammar.
  */
 @Suppress("MemberVisibilityCanBePrivate")
-@ExperimentalUnsignedTypes
 object Parser {
     data class Result(val rest: Sequence<Char>, val expr: Expr)
 
@@ -62,9 +61,10 @@ object Parser {
                 parse(input1, path, expr1.end, expr1.cons(acc))
             }
 
+    @UseExperimental(ExperimentalUnsignedTypes::class)
     fun parse(file: File, path: String, init: Boolean): Sequence<Expr> = when {
         file.isDirectory -> file.childFiles().asSequence().flatMap {
-            parse(it, if (init) "" else "$path${file.name}.", false)
+            parse(it, if (init) "" else "$path${file.name}/", false)
         }
         else -> parse(file.read().asCons(), "$path${file.nameWithoutExtension}", Position(1U, 1U), nil()).asSequence()
     }

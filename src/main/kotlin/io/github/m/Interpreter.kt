@@ -5,13 +5,14 @@ package io.github.m
  */
 object Interpreter {
     class ClassLoader : java.lang.ClassLoader() {
-        fun define(name: String, bytes: ByteArray) = defineClass(name, bytes, 0, bytes.size)!!.also { resolveClass(it) }
+        fun define(name: String, bytes: ByteArray) = try {
+            defineClass(name, bytes, 0, bytes.size)!!.also { resolveClass(it) }
+        } catch (e: Error) {
+            throw Exception("Error loading class $name", e)
+        }
     }
 
-    @ExperimentalUnsignedTypes
     class Heap(val definitions: Value, private val classLoader: ClassLoader) : Value {
-        fun load(declaration: Declaration) = load(sequenceOf(declaration))
-
         fun load(declarations: Sequence<Declaration>): Heap = run {
             val bytes = Generator.generateProgram(Operation.Nil, declarations)
             val newDefinitions = bytes
@@ -25,7 +26,7 @@ object Interpreter {
             Heap(fn, classLoader)
         }
 
-        private fun load(path: String, bytes: ByteArray) = classLoader.define(path, bytes)
+        private fun load(path: String, bytes: ByteArray) = classLoader.define(path.replace('/', '.'), bytes)
 
         private fun fields(clazz: Class<*>) = clazz.fields.asSequence()
                 .filter { field -> field.isAnnotationPresent(MField::class.java) }
@@ -43,14 +44,7 @@ object Interpreter {
      * M interpreter definitions.
      */
     @Suppress("unused")
-    @ExperimentalUnsignedTypes
     object Definitions {
-        @MField("interpret-declaration")
-        @JvmField
-        val interpretDeclaration: Value = Value { declaration, heap ->
-            Heap.from(heap).load(declaration as Declaration)
-        }
-
         @MField("interpret-declarations")
         @JvmField
         val interpretDeclarations: Value = Value { declarations, heap ->
