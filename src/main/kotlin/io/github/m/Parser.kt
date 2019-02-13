@@ -24,8 +24,7 @@ object Parser {
         '"' -> Result(input.cdr, Expr.Identifier(String(acc.reversed().toCharArray()), path, start, end.nextChar()))
         '\\' -> {
             val char = input.cdr.car
-            parseIdentifierLiteralExpr(input.cdr.cdr, path, start, end.nextChar().nextChar(), (escapeMap[char]
-                    ?: char).cons(acc))
+            parseIdentifierLiteralExpr(input.cdr.cdr, path, start, end.nextChar().nextChar(), (escapeMap[char] ?: char).cons(acc))
         }
         in newlines -> parseIdentifierLiteralExpr(input.cdr, path, start, end.nextLine(), input.car.cons(acc))
         else -> parseIdentifierLiteralExpr(input.cdr, path, start, end.nextChar(), input.car.cons(acc))
@@ -44,7 +43,7 @@ object Parser {
         }
     }
 
-    tailrec fun parseExpr(input: Sequence<Char>, path: String, position: Position): Result = when (input.car) {
+    fun parseExpr(input: Sequence<Char>, path: String, position: Position): Result = when (input.car) {
         '(' -> parseListExpr(input.cdr, path, position, position, nil())
         '"' -> parseIdentifierLiteralExpr(input.cdr, path, position, position, nil())
         ';' -> parseComment(input.cdr, path, position)
@@ -54,11 +53,14 @@ object Parser {
     }
 
     tailrec fun parse(input: Sequence<Char>, path: String, position: Position, acc: Sequence<Expr>): Sequence<Expr> =
-            if (input.none()) {
-                acc.reversed().asSequence()
-            } else {
-                val (input1, expr1) = parseExpr(input, path, position)
-                parse(input1, path, expr1.end, expr1.cons(acc))
+            when {
+                input.none() -> acc.reversed().asSequence()
+                input.car in newlines -> parse(input.cdr, path, position.nextLine(), acc)
+                input.car in whitespace -> parse(input.cdr, path, position.nextChar(), acc)
+                else -> {
+                    val (input1, expr1) = parseExpr(input, path, position)
+                    parse(input1, path, expr1.end, expr1.cons(acc))
+                }
             }
 
     @UseExperimental(ExperimentalUnsignedTypes::class)

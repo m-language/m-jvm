@@ -41,7 +41,7 @@ object Generator {
                     val next = generateExpr(env.exprs.car, env.copy(exprs = env.exprs.cdr, locals = emptyMap(), def = "", index = 0U))
                     val result = generateIdentifierExpr(name, env.copy(exprs = next.env.exprs, globals = next.env.globals))
                     Result(
-                            Operation.Combine(next.operation, result.operation),
+                            result.operation,
                             next.declarations + result.declarations,
                             result.env
                     )
@@ -73,7 +73,7 @@ object Generator {
                 .toMap()
         val result = generateExpr(expr, newEnv.copy(locals = locals, def = mangledName))
         Result(
-                Operation.Fn(expr.path.toList, mangledName.toList, List.valueOf(closureOperations)),
+                Operation.Fn(expr.path.toList, mangledName.toList, name.toList, result.operation, List.valueOf(closureOperations)),
                 Declaration.Fn(mangledName.toList, expr.path.toList, List.valueOf(closures.map(String::toList)), result.operation).cons(result.declarations),
                 result.env.copy(locals = newEnv.locals, def = newEnv.def, index = newEnv.index)
         )
@@ -146,7 +146,7 @@ object Generator {
         val car = generateExpr(env.exprs.car, env.copy(exprs = env.exprs.cdr))
         val cdr = generate(car.env)
         Result(
-                Operation.Combine(car.operation, cdr.operation),
+                cdr.operation,
                 car.declarations + cdr.declarations,
                 cdr.env
         )

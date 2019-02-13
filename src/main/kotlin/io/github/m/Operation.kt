@@ -54,7 +54,7 @@ interface Operation : Value {
         }
     }
 
-    data class Fn(val path: List, val name: List, val closures: List) : Data.Abstract("fn-operation", "path" to path, "name" to name, "closures" to closures), Operation {
+    data class Fn(val path: List, val name: List, val arg: List, val value: Operation, val closures: List) : Data.Abstract("fn-operation", "path" to path, "name" to name, "arg" to arg, "value" to value, "closures" to closures), Operation {
         override fun GeneratorAdapter.generate() {
             closures.forEach { (it as Operation).apply { generate() } }
             val closureTypes = (0 until closures.count()).joinToString("", "", "") { "Lio/github/m/Value;" }
@@ -112,14 +112,6 @@ interface Operation : Value {
         }
     }
 
-    data class Combine(val _first: Operation, val _second: Operation) : Data.Abstract("combine-operation", "first" to _first, "second" to _second), Operation {
-        override fun GeneratorAdapter.generate() {
-            _first.apply { generate() }
-            pop()
-            _second.apply { generate() }
-        }
-    }
-
     data class LineNumber(val operation: Operation, val line: Nat) : Data.Abstract("line-number-operation", "operation" to operation, "line" to line), Operation {
         override fun GeneratorAdapter.generate() {
             visitLineNumber(line.value.toInt(), mark())
@@ -164,8 +156,8 @@ interface Operation : Value {
 
         @MField("fn-operation")
         @JvmField
-        val fn: Value = Value { path, name, closures ->
-            Operation.Fn(List.from(path), List.from(name), List.from(closures))
+        val fn: Value = Value { path, name, arg, value, closures ->
+            Operation.Fn(List.from(path), List.from(name), List.from(arg), value as Operation, List.from(closures))
         }
 
         @MField("impure-operation")
@@ -184,12 +176,6 @@ interface Operation : Value {
         @JvmField
         val apply: Value = Value { fn, arg ->
             Operation.Apply(fn as Operation, arg as Operation)
-        }
-
-        @MField("combine-operation")
-        @JvmField
-        val combine: Value = Value { first, second ->
-            Operation.Combine(first as Operation, second as Operation)
         }
 
         @MField("line-number-operation")
