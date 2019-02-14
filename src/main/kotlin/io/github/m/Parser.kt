@@ -9,10 +9,10 @@ import kotlin.Char
 object Parser {
     data class Result(val rest: Sequence<Char>, val expr: Expr)
 
-    const val newlines = "\r\n"
-    const val whitespace = " \t\u000A\u000C$newlines"
+    const val newlines = "\n"
+    const val whitespace = " \t\r$newlines"
     const val separators = "();\"$whitespace"
-    val escapeMap = mapOf('b' to '\b', 't' to '\t', 'n' to '\n', 'r' to '\r', 'v' to '\u000A', 'f' to '\u000C')
+    val escapeMap = mapOf('t' to '\t', 'n' to '\n', 'r' to '\r')
 
     tailrec fun parseComment(input: Sequence<Char>, path: String, position: Position): Result =
             if (input.none() || input.car in newlines)
