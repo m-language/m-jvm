@@ -21,7 +21,7 @@ object Parser {
                 parseComment(input.cdr, path, position)
 
     tailrec fun parseIdentifierLiteralExpr(input: Sequence<Char>, path: String, start: Position, end: Position, acc: Sequence<Char>): Result = when (input.car) {
-        '"' -> Result(input.cdr, Expr.Identifier(String(acc.reversed().toCharArray()), path, start, end.nextChar()))
+        '"' -> Result(input.cdr, Expr.Symbol(String(acc.reversed().toCharArray()), path, start, end.nextChar()))
         '\\' -> {
             val char = input.cdr.car
             parseIdentifierLiteralExpr(input.cdr.cdr, path, start, end.nextChar().nextChar(), (escapeMap[char] ?: char).cons(acc))
@@ -31,7 +31,7 @@ object Parser {
     }
 
     tailrec fun parseIdentifierExpr(input: Sequence<Char>, path: String, start: Position, end: Position, acc: Sequence<Char>): Result = when (input.car) {
-        in separators -> Result(input, Expr.Identifier(String(acc.reversed().toCharArray()), path, start, end))
+        in separators -> Result(input, Expr.Symbol(String(acc.reversed().toCharArray()), path, start, end))
         else -> parseIdentifierExpr(input.cdr, path, start, end.nextChar(), input.car.cons(acc))
     }
 
