@@ -7,6 +7,10 @@ package io.github.m
 object Compiler {
     @JvmStatic
     fun main(args: Array<String>) {
+        if(args.size != 2){
+            System.err.println("Usage: mc <input> <output>")
+            return;
+        }
         val `in` = File(args[0])
         val out = File(args[1])
         try {
