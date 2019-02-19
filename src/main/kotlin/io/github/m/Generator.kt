@@ -121,10 +121,10 @@ object Generator {
         val exprs = expr.exprs
         when ((exprs.first() as? Expr.Symbol)?.name) {
             "if" -> generateIfExpr(exprs[1], exprs[2], exprs[3], env)
-            "def" -> generateDefExpr((exprs[1] as Expr.Identifier).name, exprs[2], env)
-            "fn" -> generateLambdaExpr((exprs[1] as Expr.Identifier).name, exprs[2], env)
+            "def" -> generateDefExpr((exprs[1] as Expr.Symbol).name, exprs[2], env)
+            "fn" -> generateLambdaExpr((exprs[1] as Expr.Symbol).name, exprs[2], env)
             "impure" -> generateDoExpr(exprs[1], env)
-            "symbol" -> generateSymbolExpr((exprs[1] as Expr.Identifier).name, env)
+            "symbol" -> generateSymbolExpr((exprs[1] as Expr.Symbol).name, env)
             else -> generateApplyExpr(exprs[0], exprs.drop(1), env)
         }
     }
