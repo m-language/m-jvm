@@ -49,7 +49,7 @@ object Generator {
     fun mangleLambdaName(name: String, index: UInt) = "${name}_$index"
 
     fun closures(expr: Expr, env: Env): Set<String> = when (expr) {
-        is Expr.Identifier -> when (env[expr.name]) {
+        is Expr.Symbol -> when (env[expr.name]) {
             null -> emptySet()
             is Variable.Global -> emptySet()
             is Variable.Local -> setOf(expr.name)
@@ -146,19 +146,19 @@ object Generator {
         generateNil(env)
     } else {
         val exprs = expr.exprs
-        when ((exprs.first() as? Expr.Identifier)?.name) {
+        when ((exprs.first() as? Expr.Symbol)?.name) {
             "if" -> generateIfExpr(exprs[1], exprs[2], exprs[3], env)
-            "lambda" -> generateLambdaExpr((exprs[1] as Expr.Identifier).name, exprs[2], env)
-            "def" -> generateDefExpr((exprs[1] as Expr.Identifier).name, exprs[2], env)
+            "lambda" -> generateLambdaExpr((exprs[1] as Expr.Symbol).name, exprs[2], env)
+            "def" -> generateDefExpr((exprs[1] as Expr.Symbol).name, exprs[2], env)
             "do" -> generateDoExpr(exprs[1], env)
-            "symbol" -> generateSymbolExpr((exprs[1] as Expr.Identifier).name, env)
+            "symbol" -> generateSymbolExpr((exprs[1] as Expr.Symbol).name, env)
             else -> generateApplyExpr(exprs.first(), exprs.drop(1), env)
         }
     }
 
     fun generateExpr(expr: Expr, env: Env): Result = try {
         when (expr) {
-            is Expr.Identifier -> generateIdentifierExpr(expr.name, env)
+            is Expr.Symbol -> generateIdentifierExpr(expr.name, env)
             is Expr.List -> generateListExpr(expr, env)
         }.run { copy(operation = Operation.LineNumber(operation, Nat(expr.start.line))) }
     } catch (e: Exception) {
