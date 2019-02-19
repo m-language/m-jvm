@@ -1,5 +1,7 @@
 package io.github.m
 
+import io.github.m.List.Nil
+
 /**
  * M implementation of functions.
  */
@@ -9,7 +11,7 @@ interface Value {
      * Invokes the function with an argument of nil.
      */
     @JvmDefault
-    operator fun invoke() = invoke(List.nil)
+    operator fun invoke() = invoke(Nil)
 
     /**
      * Invokes the function given an [arg].

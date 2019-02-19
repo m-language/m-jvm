@@ -1,9 +1,10 @@
 package io.github.m
 
+import io.github.m.List.Nil
 import java.nio.file.StandardOpenOption
 
 @Suppress("MemberVisibilityCanBePrivate")
-@ExperimentalUnsignedTypes
+@UseExperimental(ExperimentalUnsignedTypes::class)
 object Generator {
     data class Env(val exprs: Sequence<Expr>,
                    val locals: Map<String, Variable.Local>,
@@ -17,34 +18,7 @@ object Generator {
                       val declarations: Sequence<Declaration>,
                       val env: Env)
 
-    val internals: Map<String, Variable.Global> = listOf<java.lang.Class<*>>(
-            Bool.Definitions::class.java,
-            Char.Definitions::class.java,
-            Data.Definitions::class.java,
-            Declaration.Definitions::class.java,
-            Errors::class.java,
-            File.Definitions::class.java,
-            Generator.Definitions::class.java,
-            List.Definitions::class.java,
-            Nat.Definitions::class.java,
-            Operation.Definitions::class.java,
-            Pair.Definitions::class.java,
-            Process.Definitions::class.java,
-            Runtime::class.java,
-            Symbol.Definitions::class.java,
-            Variable.Definitions::class.java
-    ).flatMap {
-        it
-                .fields
-                .asSequence()
-                .filter { field -> field.isAnnotationPresent(MField::class.java) }
-                .map { field ->
-                    val name = field.getAnnotation(MField::class.java).name
-                    val variable = Variable.Global(field.name.toList, it.name.toList)
-                    name to variable
-                }
-                .toList()
-    }.toMap()
+    class Failure(message: String) : Exception(message)
 
     fun mangleLambdaName(name: String, index: UInt) = "${name}_$index"
 
@@ -67,7 +41,7 @@ object Generator {
                     val next = generateExpr(env.exprs.car, env.copy(exprs = env.exprs.cdr, locals = emptyMap(), def = "", index = 0U))
                     val result = generateIdentifierExpr(name, env.copy(exprs = next.env.exprs, globals = next.env.globals))
                     Result(
-                            Operation.Combine(next.operation, result.operation),
+                            result.operation,
                             next.declarations + result.declarations,
                             result.env
                     )
@@ -99,14 +73,14 @@ object Generator {
                 .toMap()
         val result = generateExpr(expr, newEnv.copy(locals = locals, def = mangledName))
         Result(
-                Operation.Lambda(expr.path.toList, mangledName.toList, List.valueOf(closureOperations)),
-                Declaration.Lambda(mangledName.toList, expr.path.toList, List.valueOf(closures.map(String::toList)), result.operation).cons(result.declarations),
+                Operation.Fn(expr.path.toList, mangledName.toList, name.toList, result.operation, List.valueOf(closureOperations)),
+                Declaration.Fn(mangledName.toList, expr.path.toList, List.valueOf(closures.map(String::toList)), result.operation).cons(result.declarations),
                 result.env.copy(locals = newEnv.locals, def = newEnv.def, index = newEnv.index)
         )
     }
 
     fun generateDefExpr(name: String, expr: Expr, env: Env): Result = if (env[name] != null) {
-        if (name in internals.keys) generateIdentifierExpr(name, env) else throw Exception("$name has already been defined")
+        throw Exception("$name has already been defined")
     } else {
         val newEnv = env.copy(globals = env.globals + (name to Variable.Global(name.toList, expr.path.toList)))
         val result = generateExpr(expr, newEnv.copy(def = name))
@@ -120,7 +94,7 @@ object Generator {
     fun generateDoExpr(expr: Expr, env: Env): Result = run {
         val result = generateExpr(expr, env)
         Result(
-                Operation.Do(result.operation),
+                Operation.Impure(result.operation),
                 result.declarations,
                 result.env
         )
@@ -129,7 +103,6 @@ object Generator {
     fun generateSymbolExpr(name: String, env: Env): Result = Result(Operation.Symbol(name.toList), nil(), env)
 
     tailrec fun generateApplyExpr(fn: Expr, args: kotlin.collections.List<Expr>, env: Env): Result = when (args.size) {
-        0 -> generateApplyExpr(fn, listOf(Expr.List(emptyList(), fn.path, fn.start, fn.end)), env)
         1 -> {
             val fnResult = generateExpr(fn, env)
             val argResult = generateExpr(args.first(), fnResult.env)
@@ -148,11 +121,11 @@ object Generator {
         val exprs = expr.exprs
         when ((exprs.first() as? Expr.Symbol)?.name) {
             "if" -> generateIfExpr(exprs[1], exprs[2], exprs[3], env)
-            "lambda" -> generateLambdaExpr((exprs[1] as Expr.Symbol).name, exprs[2], env)
-            "def" -> generateDefExpr((exprs[1] as Expr.Symbol).name, exprs[2], env)
-            "do" -> generateDoExpr(exprs[1], env)
-            "symbol" -> generateSymbolExpr((exprs[1] as Expr.Symbol).name, env)
-            else -> generateApplyExpr(exprs.first(), exprs.drop(1), env)
+            "def" -> generateDefExpr((exprs[1] as Expr.Identifier).name, exprs[2], env)
+            "fn" -> generateLambdaExpr((exprs[1] as Expr.Identifier).name, exprs[2], env)
+            "impure" -> generateDoExpr(exprs[1], env)
+            "symbol" -> generateSymbolExpr((exprs[1] as Expr.Identifier).name, env)
+            else -> generateApplyExpr(exprs[0], exprs.drop(1), env)
         }
     }
 
@@ -161,9 +134,10 @@ object Generator {
             is Expr.Symbol -> generateIdentifierExpr(expr.name, env)
             is Expr.List -> generateListExpr(expr, env)
         }.run { copy(operation = Operation.LineNumber(operation, Nat(expr.start.line))) }
-    } catch (e: Exception) {
-        e.stackTrace += StackTraceElement(expr.path, env.def, "${expr.path.substringAfterLast('.')}.m", expr.start.line.toInt())
+    } catch (e: Failure) {
         throw e
+    } catch (e: Exception) {
+        throw Failure("${e.message} at ${expr.path}.${env.def}(${expr.path.substringAfterLast('/')}.m:${expr.start.line})")
     }
 
     fun generate(env: Env): Result = if (env.exprs.none()) {
@@ -172,7 +146,7 @@ object Generator {
         val car = generateExpr(env.exprs.car, env.copy(exprs = env.exprs.cdr))
         val cdr = generate(car.env)
         Result(
-                Operation.Combine(car.operation, cdr.operation),
+                cdr.operation,
                 car.declarations + cdr.declarations,
                 cdr.env
         )
@@ -186,37 +160,38 @@ object Generator {
         java.nio.file.Files.write(path, bytes, StandardOpenOption.CREATE)
     }
 
-    fun generateProgram(out: File, @Suppress("UNUSED_PARAMETER") operation: Operation, declarations: Sequence<Declaration>) {
-        declarations
-                .groupBy { it.path.toString }
-                .forEach { path, decls -> write(Declaration.clazz(path, decls.asSequence()), out, path) }
-    }
+    fun generateProgram(@Suppress("UNUSED_PARAMETER") operation: Operation, declarations: Sequence<Declaration>) =
+            declarations
+                    .groupBy { it.path.toString }
+                    .map { (path, decls) -> path to Declaration.clazz(path, decls.asSequence()) }
+                    .toMap()
+
+    fun writeProgram(out: File, @Suppress("UNUSED_PARAMETER") operation: Operation, declarations: Sequence<Declaration>) =
+            generateProgram(operation, declarations).forEach { (path, bytes) ->
+                write(bytes, out, path)
+            }
 
     fun generate(`in`: File, out: File) {
         val exprs = Parser.parse(`in`, "", true).asCons()
-        val env = Env(exprs, emptyMap(), internals, "", 0U)
+        val env = Env(exprs, emptyMap(), emptyMap(), "", 0U)
         val result = generate(env)
-        generateProgram(out, result.operation, result.declarations)
+        writeProgram(out, result.operation, result.declarations)
     }
 
     @Suppress("unused")
     object Definitions {
-        @MField("mangle-lambda-name")
+        @MField("mangle-fn-name")
         @JvmField
-        val mangleLambdaName: Value = Value { name, index ->
+        val mangleFnName: Value = Value { name, index ->
             Generator.mangleLambdaName(List.from(name).toString, Nat.from(index).value).toList
         }
 
-        @MField("internal-variables")
+        @MField("write-program")
         @JvmField
-        val internalVariables: Value = List.valueOf(internals.entries.map { Pair.Impl(it.key.toList, it.value) }.asSequence())
-
-        @MField("generate-program")
-        @JvmField
-        val generateProgram: Value = Value { out, operation, declarations ->
+        val writeProgram: Value = Value { out, operation, declarations ->
             Process {
-                Generator.generateProgram(out as File, operation as Operation, List.from(declarations).asSequence().map { it as Declaration })
-                List.nil
+                Generator.writeProgram(out as File, operation as Operation, List.from(declarations).asSequence().map { it as Declaration })
+                Nil
             }
         }
 

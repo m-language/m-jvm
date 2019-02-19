@@ -14,8 +14,8 @@ interface Data : Pair {
      */
     fun get(name: Symbol): Value?
 
-    override val left get() = type
-    override val right get() = Value { name -> get(name as Symbol) ?: throw Error("No field $name") }
+    override val first  get() = type
+    override val second get() = Value { name -> get(Symbol.from(name)) ?: throw Error("No field $name") }
 
     /**
      * An abstract implementation of data.
@@ -36,7 +36,7 @@ interface Data : Pair {
             val fieldsMap = List.from(fields)
                     .map {
                         val pair = Pair.from(it)
-                        pair.left as Symbol to pair.right
+                        Symbol.from(pair.first) to pair.second
                     }
                     .toMap()
             object : Abstract((type as Symbol), fieldsMap) { }

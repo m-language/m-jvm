@@ -3,37 +3,28 @@ package io.github.m
 /**
  * Class representing an M pair.
  */
-interface Pair : List {
+interface Pair : Value {
     /**
-     * The left value of the pair.
+     * The first value of the pair.
      */
-    val left: Value
+    val first: Value
 
     /**
-     * The right value of the pair.
+     * The second value of the pair.
      */
-    val right: Value
+    val second: Value
 
     override fun invoke(arg: Value): Value = when (arg) {
-        Bool.True -> left
-        Bool.False -> right
-        else -> arg(left, right)
-    }
-
-    override fun iterator() = iterator {
-        var list: Value = this@Pair
-        while (list is Pair) {
-            yield(list.left)
-            list = list.right
-        }
-        yieldAll((list as List).iterator())
+        Bool.True -> first
+        Bool.False -> second
+        else -> arg(first, second)
     }
 
     /**
      * Default implementation of a pair.
      */
-    data class Impl(override val left: Value, override val right: Value) : Pair {
-        override fun toString() = "($left, $right)"
+    data class Impl(override val first: Value, override val second: Value) : Pair {
+        override fun toString() = "($first, $second)"
     }
 
     companion object {
@@ -47,14 +38,14 @@ interface Pair : List {
     object Definitions {
         @MField("pair")
         @JvmField
-        val pair: Value = Value { left, right -> Pair.Impl(left, right) }
+        val pair: Value = Value { first, second -> Pair.Impl(first, second) }
 
-        @MField("left")
+        @MField("first")
         @JvmField
-        val left: Value = Value { pair -> Pair.from(pair).left }
+        val first: Value = Value { pair -> from(pair).first }
 
-        @MField("right")
+        @MField("second")
         @JvmField
-        val right: Value = Value { pair -> Pair.from(pair).right }
+        val second: Value = Value { pair -> from(pair).second }
     }
 }

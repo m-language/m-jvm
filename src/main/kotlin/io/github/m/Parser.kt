@@ -6,14 +6,13 @@ import kotlin.Char
  * A parser for the M grammar.
  */
 @Suppress("MemberVisibilityCanBePrivate")
-@ExperimentalUnsignedTypes
 object Parser {
     data class Result(val rest: Sequence<Char>, val expr: Expr)
 
-    const val newlines = "\r\n"
-    const val whitespace = " \t\u000A\u000C$newlines"
+    const val newlines = "\n"
+    const val whitespace = " \t\r$newlines"
     const val separators = "();\"$whitespace"
-    val escapeMap = mapOf('b' to '\b', 't' to '\t', 'n' to '\n', 'r' to '\r', 'v' to '\u000A', 'f' to '\u000C')
+    val escapeMap = mapOf('t' to '\t', 'n' to '\n', 'r' to '\r')
 
     tailrec fun parseComment(input: Sequence<Char>, path: String, position: Position): Result =
             if (input.none() || input.car in newlines)
@@ -25,8 +24,7 @@ object Parser {
         '"' -> Result(input.cdr, Expr.Symbol(String(acc.reversed().toCharArray()), path, start, end.nextChar()))
         '\\' -> {
             val char = input.cdr.car
-            parseIdentifierLiteralExpr(input.cdr.cdr, path, start, end.nextChar().nextChar(), (escapeMap[char]
-                    ?: char).cons(acc))
+            parseIdentifierLiteralExpr(input.cdr.cdr, path, start, end.nextChar().nextChar(), (escapeMap[char] ?: char).cons(acc))
         }
         in newlines -> parseIdentifierLiteralExpr(input.cdr, path, start, end.nextLine(), input.car.cons(acc))
         else -> parseIdentifierLiteralExpr(input.cdr, path, start, end.nextChar(), input.car.cons(acc))
@@ -45,7 +43,7 @@ object Parser {
         }
     }
 
-    tailrec fun parseExpr(input: Sequence<Char>, path: String, position: Position): Result = when (input.car) {
+    fun parseExpr(input: Sequence<Char>, path: String, position: Position): Result = when (input.car) {
         '(' -> parseListExpr(input.cdr, path, position, position, nil())
         '"' -> parseIdentifierLiteralExpr(input.cdr, path, position, position, nil())
         ';' -> parseComment(input.cdr, path, position)
@@ -55,16 +53,20 @@ object Parser {
     }
 
     tailrec fun parse(input: Sequence<Char>, path: String, position: Position, acc: Sequence<Expr>): Sequence<Expr> =
-            if (input.none()) {
-                acc.reversed().asSequence()
-            } else {
-                val (input1, expr1) = parseExpr(input, path, position)
-                parse(input1, path, expr1.end, expr1.cons(acc))
+            when {
+                input.none() -> acc.reversed().asSequence()
+                input.car in newlines -> parse(input.cdr, path, position.nextLine(), acc)
+                input.car in whitespace -> parse(input.cdr, path, position.nextChar(), acc)
+                else -> {
+                    val (input1, expr1) = parseExpr(input, path, position)
+                    parse(input1, path, expr1.end, expr1.cons(acc))
+                }
             }
 
+    @UseExperimental(ExperimentalUnsignedTypes::class)
     fun parse(file: File, path: String, init: Boolean): Sequence<Expr> = when {
         file.isDirectory -> file.childFiles().asSequence().flatMap {
-            parse(it, if (init) "" else "$path${file.name}.", false)
+            parse(it, if (init) "" else "$path${file.name}/", false)
         }
         else -> parse(file.read().asCons(), "$path${file.nameWithoutExtension}", Position(1U, 1U), nil()).asSequence()
     }

@@ -1,5 +1,6 @@
 package io.github.m
 
+import io.github.m.List.Nil
 import java.lang.Exception
 
 /**
@@ -17,13 +18,13 @@ object Internals {
      * The singleton empty list.
      */
     @JvmField
-    val nil: Value = List.nil
+    val nil: Value = Nil
 
     /**
      * Creates a process which always returns [value].
      */
     @JvmStatic
-    fun `do`(value: Value): Value = Process.Do(value)
+    fun impure(value: Value): Value = Process.Do(value)
 
     /**
      * The implementation of the main definition for an M program.
@@ -34,8 +35,9 @@ object Internals {
     @JvmStatic
     fun run(args: Array<String>, clazz: Class<*>) {
         try {
-            val function = clazz.getField("").get(null) as? Value ?: throw Exception("Could not find main function")
-            val process = function(List.valueOf(args.asSequence().map(String::toList))) as? Process ?: throw Exception("Main must create a process")
+            val function = clazz.getField("".normalize()).get(null) as? Value ?: throw Exception("Could not find main function")
+            val value  = function(List.valueOf(args.asSequence().map(String::toList)))
+            val process = value as? Process ?: throw Exception("Main must create a process, (found ${value::class.java.name})")
             process.run()
         } catch (e: Throwable) {
             e.stackTrace = e.stackTrace
@@ -51,5 +53,6 @@ object Internals {
                     .toTypedArray()
             throw e
         }
+        System.out.flush()
     }
 }
