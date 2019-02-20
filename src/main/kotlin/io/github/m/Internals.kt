@@ -21,12 +21,6 @@ object Internals {
     val nil: Value = Nil
 
     /**
-     * Creates a process which always returns [value].
-     */
-    @JvmStatic
-    fun impure(value: Value): Value = Process.Do(value)
-
-    /**
      * The implementation of the main definition for an M program.
      *
      * @param args  The array of arguments passed to the program.

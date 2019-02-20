@@ -91,15 +91,6 @@ object Generator {
         )
     }
 
-    fun generateDoExpr(expr: Expr, env: Env): Result = run {
-        val result = generateExpr(expr, env)
-        Result(
-                Operation.Impure(result.operation),
-                result.declarations,
-                result.env
-        )
-    }
-
     fun generateSymbolExpr(name: String, env: Env): Result = Result(Operation.Symbol(name.toList), nil(), env)
 
     tailrec fun generateApplyExpr(fn: Expr, args: kotlin.collections.List<Expr>, env: Env): Result = when (args.size) {
@@ -123,7 +114,6 @@ object Generator {
             "if" -> generateIfExpr(exprs[1], exprs[2], exprs[3], env)
             "def" -> generateDefExpr((exprs[1] as Expr.Symbol).name, exprs[2], env)
             "fn" -> generateLambdaExpr((exprs[1] as Expr.Symbol).name, exprs[2], env)
-            "impure" -> generateDoExpr(exprs[1], env)
             "symbol" -> generateSymbolExpr((exprs[1] as Expr.Symbol).name, env)
             else -> generateApplyExpr(exprs[0], exprs.drop(1), env)
         }

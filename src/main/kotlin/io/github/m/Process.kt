@@ -14,7 +14,7 @@ interface Process : Value {
         inline operator fun invoke(noinline fn: () -> Value) = Impl(fn)
     }
 
-    class Do(val value: Value) : Process {
+    class Impure(val value: Value) : Process {
         override fun run(): Value = value
     }
 
@@ -39,9 +39,9 @@ interface Process : Value {
      */
     @Suppress("unused")
     object Definitions {
-        @MField("return")
+        @MField("impure")
         @JvmField
-        val `return`: Value = Value { value -> Process.Do(value) }
+        val impure: Value = Value { value -> Process.Impure(value) }
 
         @MField("then-run-with")
         @JvmField

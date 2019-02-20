@@ -79,16 +79,6 @@ interface Operation : Value {
         }
     }
 
-    data class Impure(val operation: Operation) : Data.Abstract("impure-operation", "operation" to operation), Operation {
-        override fun GeneratorAdapter.generate() {
-            operation.run { generate() }
-            invokeStatic(
-                    Type.getType("Lio/github/m/Internals;"),
-                    Method.getMethod("io.github.m.Value impure (io.github.m.Value)")
-            )
-        }
-    }
-
     data class Symbol(val name: List) : Data.Abstract("symbol-operation", "name" to name), Operation {
         override fun GeneratorAdapter.generate() {
             newInstance(Type.getType("Lio/github/m/Symbol;"))
@@ -158,12 +148,6 @@ interface Operation : Value {
         @JvmField
         val fn: Value = Value { path, name, arg, value, closures ->
             Operation.Fn(List.from(path), List.from(name), List.from(arg), value as Operation, List.from(closures))
-        }
-
-        @MField("impure-operation")
-        @JvmField
-        val impure: Value = Value { operation ->
-            Operation.Impure(operation as Operation)
         }
 
         @MField("symbol-operation")
