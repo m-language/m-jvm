@@ -40,7 +40,7 @@ object Internals {
                             clean(name.substringBefore("_"))
                         else
                             name
-                        StackTraceElement(it.className, clean(it.methodName), it.fileName, it.lineNumber)
+                        StackTraceElement(it.className, clean(it.methodName).unnormalize(), it.fileName, it.lineNumber)
                     }
 //                    .dropLast(1)
 //                    .dropLastWhile { it.fileName?.contains(".m")?.not() ?: true }
