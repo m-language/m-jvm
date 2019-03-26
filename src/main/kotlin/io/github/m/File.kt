@@ -13,6 +13,8 @@ data class File(val value: java.io.File) : Value {
     fun child(name: String) = File(java.io.File(value, name))
     fun childFiles() = value.listFiles().asSequence().map { File(it) }
 
+    fun exists() = Bool(value.exists())
+
     fun read() = run {
         val reader = value.bufferedReader()
         generateSequence { if (reader.ready()) reader.read() else null }
@@ -52,6 +54,10 @@ data class File(val value: java.io.File) : Value {
         @MField("file.child")
         @JvmField
         val child: Value = Value { file, name -> (file as File).child(name.toString) }
+
+        @MField("file.exists?")
+        @JvmField
+        val exists: Value = Value { file -> Process { (file as File).exists() } }
 
         @MField("file.read")
         @JvmField
