@@ -1,11 +1,11 @@
 package io.github.m
 
 import io.github.m.List.Nil
-import jdk.internal.org.objectweb.asm.ClassWriter
-import jdk.internal.org.objectweb.asm.Opcodes
-import jdk.internal.org.objectweb.asm.Type
-import jdk.internal.org.objectweb.asm.commons.GeneratorAdapter
-import jdk.internal.org.objectweb.asm.commons.Method
+import org.objectweb.asm.ClassWriter
+import org.objectweb.asm.Opcodes
+import org.objectweb.asm.Type
+import org.objectweb.asm.commons.GeneratorAdapter
+import org.objectweb.asm.commons.Method
 
 /**
  * A declaration for a class.
@@ -36,8 +36,8 @@ interface Declaration : Value {
         override val init get() = object : Operation {
             override fun invoke(arg: Value) = arg
             override fun GeneratorAdapter.generate() {
-                internals[name.toString]?.invoke(this) ?: value.apply { generate() }
-                putStatic(Type.getType("L${path.toString};"), name.toString.normalize(), Type.getType("Lio/github/m/Value;"))
+                internals[this@Def.name.toString]?.invoke(this) ?: value.apply { generate() }
+                putStatic(Type.getType("L${path.toString};"), this@Def.name.toString.normalize(), Type.getType("Lio/github/m/Value;"))
             }
         }
 
@@ -60,7 +60,7 @@ interface Declaration : Value {
                     Stdio.Definitions::class.java,
                     io.github.m.Symbol.Definitions::class.java
             ).flatMap {
-                val type = Type.getType(it.name.replace('.', '/'))
+                val type = Type.getType("L${it.name.replace('.', '/')};")
                 it.fields.asSequence()
                         .filter { field -> field.isAnnotationPresent(MField::class.java) }
                         .map { field -> field.getAnnotation(MField::class.java).name to { ge: GeneratorAdapter -> ge.getStatic(type, field.name, Type.getType("Lio/github/m/Value;")) } }

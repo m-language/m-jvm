@@ -1,10 +1,10 @@
 package io.github.m
 
-import jdk.internal.org.objectweb.asm.Handle
-import jdk.internal.org.objectweb.asm.Opcodes
-import jdk.internal.org.objectweb.asm.Type
-import jdk.internal.org.objectweb.asm.commons.GeneratorAdapter
-import jdk.internal.org.objectweb.asm.commons.Method
+import org.objectweb.asm.Handle
+import org.objectweb.asm.Opcodes
+import org.objectweb.asm.Type
+import org.objectweb.asm.commons.GeneratorAdapter
+import org.objectweb.asm.commons.Method
 
 /**
  * An operation for a method.
@@ -22,7 +22,7 @@ interface Operation : Value {
     data class GlobalVariable(val name: List, val path: List) : Data.Abstract("global-variable-operation", "name" to name, "path" to path), Operation {
         override fun GeneratorAdapter.generate() {
             val type = Type.getType("L${path.toString};")
-            getStatic(type, name.toString.normalize(), Type.getType("Lio/github/m/Value;"))
+            getStatic(type, this@GlobalVariable.name.toString.normalize(), Type.getType("Lio/github/m/Value;"))
         }
     }
 
@@ -50,7 +50,7 @@ interface Operation : Value {
 
     data class Def(val name: List, val path: List, val value: Operation) : Data.Abstract("def-operation", "name" to name, "value" to value, "path" to path), Operation {
         override fun GeneratorAdapter.generate() {
-            getStatic(Type.getType("L${path.toString};"), name.toString.normalize(), Type.getType("Lio/github/m/Value;"))
+            getStatic(Type.getType("L${path.toString};"), this@Def.name.toString.normalize(), Type.getType("Lio/github/m/Value;"))
         }
     }
 
@@ -65,14 +65,16 @@ interface Operation : Value {
                             Opcodes.H_INVOKESTATIC,
                             "java/lang/invoke/LambdaMetafactory",
                             "metafactory",
-                            "(Ljava/lang/invoke/MethodHandles\$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;"
+                            "(Ljava/lang/invoke/MethodHandles\$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;",
+                            false
                     ),
                     Type.getType("(Lio/github/m/Value;)Lio/github/m/Value;"),
                     Handle(
                             Opcodes.H_INVOKESTATIC,
                             path.toString,
-                            name.toString.normalize(),
-                            "(${closureTypes}Lio/github/m/Value;)Lio/github/m/Value;"
+                            this@Fn.name.toString.normalize(),
+                            "(${closureTypes}Lio/github/m/Value;)Lio/github/m/Value;",
+                            false
                     ),
                     Type.getType("(Lio/github/m/Value;)Lio/github/m/Value;")
             )
@@ -83,7 +85,7 @@ interface Operation : Value {
         override fun GeneratorAdapter.generate() {
             newInstance(Type.getType("Lio/github/m/Symbol;"))
             dup()
-            push(name.toString)
+            push(this@Symbol.name.toString)
             invokeConstructor(
                     Type.getType("Lio/github/m/Symbol;"),
                     Method.getMethod("void <init> (java.lang.String)")
