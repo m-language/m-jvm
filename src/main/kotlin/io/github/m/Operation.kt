@@ -1,121 +1,19 @@
 package io.github.m
 
-import org.objectweb.asm.Handle
-import org.objectweb.asm.Opcodes
-import org.objectweb.asm.Type
-import org.objectweb.asm.commons.GeneratorAdapter
-import org.objectweb.asm.commons.Method
-
 /**
  * An operation for a method.
  */
 @UseExperimental(ExperimentalUnsignedTypes::class)
 interface Operation : Value {
-    fun GeneratorAdapter.generate()
-
-    data class LocalVariable(val name: List, val index: Nat) : Data.Abstract("local-variable-operation", "name" to name, "index" to index), Operation {
-        override fun GeneratorAdapter.generate() {
-            loadArg(index.value.toInt())
-        }
-    }
-
-    data class GlobalVariable(val name: List, val path: List) : Data.Abstract("global-variable-operation", "name" to name, "path" to path), Operation {
-        override fun GeneratorAdapter.generate() {
-            val type = Type.getType("L${path.toString};")
-            getStatic(type, this@GlobalVariable.name.toString.normalize(), Type.getType("Lio/github/m/Value;"))
-        }
-    }
-
-    data class If(val cond: Operation, val `true`: Operation, val `false`: Operation) : Data.Abstract("if-operation", "cond" to cond, "true" to `true`, "false" to `false`), Operation {
-        override fun GeneratorAdapter.generate() {
-            val endLabel = newLabel()
-            val falseLabel = newLabel()
-
-            cond.apply { generate() }
-
-            invokeStatic(Type.getType("Lio/github/m/Internals;"), Method.getMethod("boolean toPrimitiveBool (io.github.m.Value)"))
-
-            ifZCmp(GeneratorAdapter.EQ, falseLabel)
-
-            `true`.apply { generate() }
-            goTo(endLabel)
-
-            mark(falseLabel)
-
-            `false`.apply { generate() }
-
-            mark(endLabel)
-        }
-    }
-
-    data class Def(val name: List, val path: List, val value: Operation) : Data.Abstract("def-operation", "name" to name, "value" to value, "path" to path), Operation {
-        override fun GeneratorAdapter.generate() {
-            getStatic(Type.getType("L${path.toString};"), this@Def.name.toString.normalize(), Type.getType("Lio/github/m/Value;"))
-        }
-    }
-
-    data class Fn(val path: List, val name: List, val arg: List, val value: Operation, val closures: List) : Data.Abstract("fn-operation", "path" to path, "name" to name, "arg" to arg, "value" to value, "closures" to closures), Operation {
-        override fun GeneratorAdapter.generate() {
-            closures.forEach { (it as Operation).apply { generate() } }
-            val closureTypes = (0 until closures.count()).joinToString("", "", "") { "Lio/github/m/Value;" }
-            visitInvokeDynamicInsn(
-                    "invoke",
-                    "($closureTypes)Lio/github/m/Value;",
-                    Handle(
-                            Opcodes.H_INVOKESTATIC,
-                            "java/lang/invoke/LambdaMetafactory",
-                            "metafactory",
-                            "(Ljava/lang/invoke/MethodHandles\$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;",
-                            false
-                    ),
-                    Type.getType("(Lio/github/m/Value;)Lio/github/m/Value;"),
-                    Handle(
-                            Opcodes.H_INVOKESTATIC,
-                            path.toString,
-                            this@Fn.name.toString.normalize(),
-                            "(${closureTypes}Lio/github/m/Value;)Lio/github/m/Value;",
-                            false
-                    ),
-                    Type.getType("(Lio/github/m/Value;)Lio/github/m/Value;")
-            )
-        }
-    }
-
-    data class Symbol(val name: List) : Data.Abstract("symbol-operation", "name" to name), Operation {
-        override fun GeneratorAdapter.generate() {
-            newInstance(Type.getType("Lio/github/m/Symbol;"))
-            dup()
-            push(this@Symbol.name.toString)
-            invokeConstructor(
-                    Type.getType("Lio/github/m/Symbol;"),
-                    Method.getMethod("void <init> (java.lang.String)")
-            )
-        }
-    }
-
-    data class Apply(val fn: Operation, val arg: Operation) : Data.Abstract("apply-operation", "fn" to fn, "arg" to arg), Operation {
-        override fun GeneratorAdapter.generate() {
-            fn.apply { generate() }
-            arg.apply { generate() }
-            invokeInterface(
-                    Type.getType("Lio/github/m/Value;"),
-                    Method.getMethod("io.github.m.Value invoke (io.github.m.Value)")
-            )
-        }
-    }
-
-    data class LineNumber(val operation: Operation, val line: Nat) : Data.Abstract("line-number-operation", "operation" to operation, "line" to line), Operation {
-        override fun GeneratorAdapter.generate() {
-            visitLineNumber(line.value.toInt(), mark())
-            operation.apply { generate() }
-        }
-    }
-
-    object Nil : Data.Abstract("nil-operation"), Operation {
-        override fun GeneratorAdapter.generate() {
-            getStatic(Type.getType("Lio/github/m/Internals;"), "nil", Type.getType("Lio/github/m/Value;"))
-        }
-    }
+    data class LocalVariable(val name: List, val index: Nat) : Data.Abstract("local-variable-operation", "name" to name, "index" to index), Operation
+    data class GlobalVariable(val name: List, val path: List) : Data.Abstract("global-variable-operation", "name" to name, "path" to path), Operation
+    data class If(val cond: Operation, val `true`: Operation, val `false`: Operation) : Data.Abstract("if-operation", "cond" to cond, "true" to `true`, "false" to `false`), Operation
+    data class Def(val name: List, val path: List, val value: Operation) : Data.Abstract("def-operation", "name" to name, "value" to value, "path" to path), Operation
+    data class Fn(val path: List, val name: List, val arg: List, val value: Operation, val closures: List) : Data.Abstract("fn-operation", "path" to path, "name" to name, "arg" to arg, "value" to value, "closures" to closures), Operation
+    data class Symbol(val name: List) : Data.Abstract("symbol-operation", "name" to name), Operation
+    data class Apply(val fn: Operation, val arg: Operation) : Data.Abstract("apply-operation", "fn" to fn, "arg" to arg), Operation
+    data class LineNumber(val operation: Operation, val line: Nat) : Data.Abstract("line-number-operation", "operation" to operation, "line" to line), Operation
+    object Nil : Data.Abstract("nil-operation"), Operation
 
     /**
      * M operation definitions.

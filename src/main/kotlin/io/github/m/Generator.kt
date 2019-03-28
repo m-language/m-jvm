@@ -153,7 +153,7 @@ object Generator {
     fun generateProgram(@Suppress("UNUSED_PARAMETER") operation: Operation, declarations: Sequence<Declaration>) =
             declarations
                     .groupBy { it.path.toString }
-                    .map { (path, decls) -> path to Declaration.clazz(path, decls.asSequence()) }
+                    .map { (path, decls) -> path to Backend.run { clazz(path, decls.asSequence()) } }
                     .toMap()
 
     fun writeProgram(out: File, @Suppress("UNUSED_PARAMETER") operation: Operation, declarations: Sequence<Declaration>) =
