@@ -6,8 +6,7 @@ import java.nio.file.StandardOpenOption
 @Suppress("MemberVisibilityCanBePrivate")
 @UseExperimental(ExperimentalUnsignedTypes::class)
 object Generator {
-    data class Env(val exprs: Sequence<Expr>,
-                   val locals: Map<String, Variable.Local>,
+    data class Env(val locals: Map<String, Variable.Local>,
                    val globals: Map<String, Variable.Global>,
                    val def: String,
                    val index: UInt) {
@@ -35,31 +34,10 @@ object Generator {
             when (val variable = env[name]) {
                 is Variable.Local -> Result(Operation.LocalVariable(variable.name, variable.index), nil(), env)
                 is Variable.Global -> Result(Operation.GlobalVariable(variable.name, variable.path), nil(), env)
-                null -> if (env.exprs.none()) {
-                    throw Exception("Could not find $name")
-                } else {
-                    val next = generateExpr(env.exprs.car, env.copy(exprs = env.exprs.cdr, locals = emptyMap(), def = "", index = 0U))
-                    val result = generateIdentifierExpr(name, env.copy(exprs = next.env.exprs, globals = next.env.globals))
-                    Result(
-                            result.operation,
-                            next.declarations + result.declarations,
-                            result.env
-                    )
-                }
+                null -> throw Exception("Could not find $name")
             }
 
     fun generateNil(env: Env) = Result(Operation.Nil, nil(), env)
-
-    fun generateIfExpr(cond: Expr, `true`: Expr, `false`: Expr, env: Env): Result = run {
-        val condResult = generateExpr(cond, env)
-        val trueResult = generateExpr(`true`, condResult.env)
-        val falseResult = generateExpr(`false`, trueResult.env)
-        Result(
-                Operation.If(condResult.operation, trueResult.operation, falseResult.operation),
-                condResult.declarations + trueResult.declarations + falseResult.declarations,
-                falseResult.env
-        )
-    }
 
     fun generateLambdaExpr(name: String, expr: Expr, env: Env): Result = run {
         val mangledName = mangleLambdaName(env.def, env.index)
@@ -93,17 +71,14 @@ object Generator {
 
     fun generateSymbolExpr(name: String, env: Env): Result = Result(Operation.Symbol(name.toList), nil(), env)
 
-    tailrec fun generateApplyExpr(fn: Expr, args: kotlin.collections.List<Expr>, env: Env): Result = when (args.size) {
-        1 -> {
-            val fnResult = generateExpr(fn, env)
-            val argResult = generateExpr(args.first(), fnResult.env)
-            Result(
-                    Operation.Apply(fnResult.operation, argResult.operation),
-                    fnResult.declarations + argResult.declarations,
-                    argResult.env
-            )
-        }
-        else -> generateApplyExpr(Expr.List(listOf(fn, args.first()), fn.path, fn.start, fn.end), args.drop(1), env)
+    fun generateApplyExpr(fn: Expr, arg: Expr, env: Env): Result = run {
+        val fnResult = generateExpr(fn, env)
+        val argResult = generateExpr(arg, fnResult.env)
+        Result(
+                Operation.Apply(fnResult.operation, argResult.operation),
+                fnResult.declarations + argResult.declarations,
+                argResult.env
+        )
     }
 
     fun generateListExpr(expr: Expr.List, env: Env): Result = if (expr.exprs.isEmpty()) {
@@ -111,11 +86,10 @@ object Generator {
     } else {
         val exprs = expr.exprs
         when ((exprs.first() as? Expr.Symbol)?.name) {
-            "if" -> generateIfExpr(exprs[1], exprs[2], exprs[3], env)
             "def" -> generateDefExpr((exprs[1] as Expr.Symbol).name, exprs[2], env)
             "fn" -> generateLambdaExpr((exprs[1] as Expr.Symbol).name, exprs[2], env)
             "symbol" -> generateSymbolExpr((exprs[1] as Expr.Symbol).name, env)
-            else -> generateApplyExpr(exprs[0], exprs.drop(1), env)
+            else -> generateApplyExpr(exprs[0], exprs[1], env)
         }
     }
 
@@ -130,11 +104,11 @@ object Generator {
         throw Failure("${e.message} at ${expr.path}.${env.def}(${expr.path.substringAfterLast('/')}.m:${expr.start.line})")
     }
 
-    fun generate(env: Env): Result = if (env.exprs.none()) {
+    fun generate(exprs: Sequence<Expr>, env: Env): Result = if (exprs.none()) {
         Result(Operation.Nil, nil(), env)
     } else {
-        val car = generateExpr(env.exprs.car, env.copy(exprs = env.exprs.cdr))
-        val cdr = generate(car.env)
+        val car = generateExpr(exprs.car, env)
+        val cdr = generate(exprs.cdr, car.env)
         Result(
                 cdr.operation,
                 car.declarations + cdr.declarations,
@@ -163,8 +137,8 @@ object Generator {
 
     fun generate(`in`: File, out: File) {
         val exprs = Parser.parse(`in`, "", true).asCons()
-        val env = Env(exprs, emptyMap(), emptyMap(), "", 0U)
-        val result = generate(env)
+        val env = Env(emptyMap(), emptyMap(), "", 0U)
+        val result = generate(exprs, env)
         writeProgram(out, result.operation, result.declarations)
     }
 
