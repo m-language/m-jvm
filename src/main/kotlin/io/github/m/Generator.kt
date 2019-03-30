@@ -135,13 +135,6 @@ object Generator {
                 write(bytes, out, path)
             }
 
-    fun generate(`in`: File, out: File) {
-        val exprs = Parser.parse(`in`, "", true).asCons()
-        val env = Env(emptyMap(), emptyMap(), "", 0U)
-        val result = generate(exprs, env)
-        writeProgram(out, result.operation, result.declarations)
-    }
-
     @Suppress("unused")
     object Definitions {
         @MField("mangle-fn-name")

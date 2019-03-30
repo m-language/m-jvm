@@ -4,6 +4,7 @@ package io.github.m
  * The entry point for the M compiler, which takes an input file and an output
  * file as arguments.
  */
+@UseExperimental(ExperimentalUnsignedTypes::class)
 object Compiler {
     @JvmStatic
     fun main(args: Array<String>) {
@@ -13,10 +14,17 @@ object Compiler {
             val `in` = File(args[0])
             val out = File(args[1])
             try {
-                Generator.generate(`in`, out)
+                compile(`in`, out)
             } catch (e: Generator.Failure) {
                 System.err.println(e.message)
             }
         }
+    }
+
+    fun compile(`in`: File, out: File) {
+        val exprs = Parser.parse(`in`, "", true).asCons()
+        val env = Generator.Env(emptyMap(), emptyMap(), "", 0U)
+        val result = Generator.generate(exprs, env)
+        Generator.writeProgram(out, result.operation, result.declarations)
     }
 }
