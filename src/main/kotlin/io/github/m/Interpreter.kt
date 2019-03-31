@@ -5,38 +5,69 @@ package io.github.m
  */
 object Interpreter {
     class ClassLoader : java.lang.ClassLoader() {
-        fun define(name: String, bytes: ByteArray) = try {
-            defineClass(name, bytes, 0, bytes.size)!!.also { resolveClass(it) }
+        fun define(path: String, bytes: ByteArray) = try {
+            defineClass(path, bytes, 0, bytes.size)!!.also { resolveClass(it) }
         } catch (e: Error) {
-            throw Exception("Error loading class $name", e)
+            throw Exception("Error loading class $path", e)
         }
     }
 
-    class Heap(val definitions: Value, private val classLoader: ClassLoader) : Value {
-        fun load(declarations: Sequence<Declaration>): Heap = run {
-            val bytes = Generator.generateProgram(Operation.Nil, declarations)
-            val newDefinitions = bytes
-                    .map { (path, bytes) -> load(path, bytes) }
-                    .map { clazz -> fields(clazz) }
-                    .plus(emptyMap())
-                    .reduce { acc, map -> acc + map }
-            val fn = Value @Suppress("RedundantLambdaArrow") { x ->
-                newDefinitions[x.toString]?.let { Either.Right(Value { _ -> it }) } ?: definitions(x)
-            }
-            Heap(fn, classLoader)
+    val mPath = "io/github/m/heap".toList
+
+    fun Declaration.rename(): Declaration = when (this) {
+        is Declaration.Def -> copy(path = mPath, value = value.rename())
+        is Declaration.Fn -> copy(path = mPath, value = value.rename())
+        else -> TODO(this::class.java.name)
+    }
+
+    fun Operation.rename(): Operation = when (this) {
+        is Operation.LocalVariable -> this
+        is Operation.GlobalVariable -> copy(path = mPath)
+        is Operation.If -> copy(cond = cond.rename(), `true` = `true`.rename(), `false` = `false`.rename())
+        is Operation.Def -> copy(path = mPath, value = value.rename())
+        is Operation.Fn -> copy(path = mPath, value = value.rename())
+        is Operation.Symbol -> this
+        is Operation.Apply -> copy(fn = fn.rename(), arg = arg.rename())
+        is Operation.LineNumber -> copy(operation = operation.rename())
+        is Operation.Nil -> this
+        else -> TODO(this::class.java.name)
+    }
+
+    class Heap(val declarations: Map<String, Declaration>,
+               val cache: MutableMap<String, Value>,
+               val fallback: Value) : Value {
+        val clazz by lazy {
+            val bytes = Backend.clazz("io/github/m/heap", declarations.values.asSequence())
+            ClassLoader().define("io.github.m.heap", bytes)
         }
 
-        private fun load(path: String, bytes: ByteArray) = classLoader.define(path.replace('/', '.'), bytes)
+        val fieldNames by lazy {
+            clazz.fields
+                    .map { it.getAnnotation(MField::class.java).name to it }
+                    .toMap()
+        }
 
-        private fun fields(clazz: Class<*>) = clazz.fields.asSequence()
-                .filter { field -> field.isAnnotationPresent(MField::class.java) }
-                .map { field -> field.getAnnotation(MField::class.java).name to field.get(null) as Value }
-                .toMap()
+        fun interpret(declarations: Sequence<Declaration>): Heap {
+            val newDeclarations = declarations
+                    .map { it.rename() }
+                    .associateBy { it.name.toString }
+            newDeclarations.forEach { cache.remove(it.key) }
+            return Heap(this.declarations + newDeclarations, cache, fallback)
+        }
 
-        override fun invoke(arg: Value): Value = definitions(arg)
+        override fun invoke(arg: Value): Value {
+            val name = arg.toString
+            val value = cache[name] ?: fieldNames[name]?.get(null) as? Value
+            return if (value != null) {
+                cache.putIfAbsent(name, value)
+                Either.Right(Value @Suppress("RedundantLambdaArrow") { _ -> value })
+            } else {
+                fallback(arg)
+            }
+        }
 
         companion object {
-            fun from(value: Value) = value as? Heap ?: Heap(value, ClassLoader())
+            fun from(value: Value) = value as? Heap ?: Heap(emptyMap(), mutableMapOf(), value)
         }
     }
 
@@ -48,7 +79,21 @@ object Interpreter {
         @MField("interpret-declarations")
         @JvmField
         val interpretDeclarations: Value = Value { declarations, heap ->
-            Heap.from(heap).load((declarations as List).asSequence().map { it as Declaration })
+            Heap.from(heap).interpret((declarations as List).asSequence().map { it as Declaration })
         }
+
+        @MField("interpret-declaration")
+        @JvmField
+        val interpretDeclaration: Value = Value { declaration, heap ->
+            Heap.from(heap).interpret(sequenceOf(declaration as Declaration))
+        }
+
+        @MField("interpret-def-declaration")
+        @JvmField
+        val interpretDefDeclaration: Value = interpretDeclaration
+
+        @MField("interpret-fn-declaration")
+        @JvmField
+        val interpretFnDeclaration: Value = interpretDeclaration
     }
 }

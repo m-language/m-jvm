@@ -4,10 +4,11 @@ package io.github.m
  * A declaration for a class.
  */
 interface Declaration : Value {
+    val name: List
     val path: List
 
-    data class Def(val name: List, override val path: List, val value: Operation) : Data.Abstract("def-declaration", "name" to name, "path" to path, "value" to value), Declaration
-    data class Fn(val name: List, override val path: List, val closures: List, val value: Operation) : Data.Abstract("fn-declaration", "name" to name, "path" to path, "closures" to closures, "value" to value), Declaration
+    data class Def(override val name: List, override val path: List, val value: Operation) : Data.Abstract("def-declaration", "name" to name, "path" to path, "value" to value), Declaration
+    data class Fn(override val name: List, override val path: List, val closures: List, val value: Operation) : Data.Abstract("fn-declaration", "name" to name, "path" to path, "closures" to closures, "value" to value), Declaration
 
     /**
      * M declaration definitions.
