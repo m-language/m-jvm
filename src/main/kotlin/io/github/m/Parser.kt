@@ -12,7 +12,6 @@ object Parser {
     const val newlines = "\n"
     const val whitespace = " \t\r$newlines"
     const val separators = "();\"$whitespace"
-    val escapeMap = mapOf('t' to '\t', 'n' to '\n', 'r' to '\r')
 
     tailrec fun parseComment(input: Sequence<Char>, path: String, position: Position): Result =
             if (input.none() || input.car in newlines)
@@ -20,14 +19,24 @@ object Parser {
             else
                 parseComment(input.cdr, path, position)
 
-    tailrec fun parseIdentifierLiteralExpr(input: Sequence<Char>, path: String, start: Position, end: Position, acc: Sequence<Char>): Result = when (input.car) {
+    tailrec fun parseSingleQuote(input: Sequence<Char>, path: String, start: Position, end: Position, acc: Sequence<Char>): Result = when (input.car) {
         '"' -> Result(input.cdr, Expr.Symbol(String(acc.reversed().toCharArray()), path, start, end.nextChar()))
-        '\\' -> {
-            val char = input.cdr.car
-            parseIdentifierLiteralExpr(input.cdr.cdr, path, start, end.nextChar().nextChar(), (escapeMap[char] ?: char).cons(acc))
-        }
-        in newlines -> parseIdentifierLiteralExpr(input.cdr, path, start, end.nextLine(), input.car.cons(acc))
-        else -> parseIdentifierLiteralExpr(input.cdr, path, start, end.nextChar(), input.car.cons(acc))
+        in newlines -> parseSingleQuote(input.cdr, path, start, end.nextLine(), input.car.cons(acc))
+        else -> parseSingleQuote(input.cdr, path, start, end.nextChar(), input.car.cons(acc))
+    }
+
+    tailrec fun parseDoubleQuote(input: Sequence<Char>, path: String, start: Position, end: Position, acc: Sequence<Char>): Result = when (input.car) {
+        '"' -> if (input.cdr.car == '"')
+            Result(input.cdr.cdr, Expr.Symbol(String(acc.reversed().toCharArray()), path, start, end.nextChar().nextChar()))
+        else
+            parseDoubleQuote(input.cdr, path, start, end.nextChar(), '"'.cons(acc))
+        in newlines -> parseDoubleQuote(input.cdr, path, start, end.nextLine(), input.car.cons(acc))
+        else -> parseDoubleQuote(input.cdr, path, start, end.nextChar(), input.car.cons(acc))
+    }
+
+    fun parseIdentifierLiteralExpr(input: Sequence<Char>, path: String, start: Position, end: Position, acc: Sequence<Char>): Result = when (input.car) {
+        '"' -> parseDoubleQuote(input.cdr, path, start, end.nextChar(), acc)
+        else -> parseSingleQuote(input, path, start, end, acc)
     }
 
     tailrec fun parseIdentifierExpr(input: Sequence<Char>, path: String, start: Position, end: Position, acc: Sequence<Char>): Result = when (input.car) {

@@ -25,5 +25,21 @@ data class Char(val value: kotlin.Char) : Value {
         @MField("char->nat")
         @JvmField
         val toNat: Value = Value { x -> Nat(from(x).value.toInt().toUInt()) }
+
+        @MField("space")
+        @JvmField
+        val space: Value = Char(' ')
+
+        @MField("tab")
+        @JvmField
+        val tab: Value = Char('\t')
+
+        @MField("linefeed")
+        @JvmField
+        val linefeed: Value = Char('\n')
+
+        @MField("carriage-return")
+        @JvmField
+        val carriageReturn: Value = Char('\r')
     }
 }
