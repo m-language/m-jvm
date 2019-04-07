@@ -7,20 +7,18 @@ package io.github.m
 data class Nat(val value: UInt) : Value {
     override fun toString() = value.toString()
 
-    override fun invoke(arg: Value) = when (value) {
-        0U -> Either.Left(Value { x -> x })
-        else -> Either.Right(Nat(value - 1U))
-    }(arg)
+    override fun invoke(arg: Value): Value = Value { arg2 -> this(arg, arg2) }
+
+    override fun invoke(arg1: Value, arg2: Value) = run {
+        var x = arg2
+        for (i in 0U until value) {
+            x = arg1(x)
+        }
+        x
+    }
 
     companion object {
-        fun from(value: Value) = value as? Nat ?: Either.from(value).run {
-            fun nat(either: Either): UInt = when (either) {
-                is Either.Left -> 0U
-                is Either.Right -> nat(Either.from(either.value)) + 1U
-            }
-
-            Nat(nat(this))
-        }
+        fun from(value: Value) = value as? Nat ?: value(Definitions.inc, Definitions.zero) as Nat
     }
 
     /**
