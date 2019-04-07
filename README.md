@@ -9,7 +9,7 @@ bootstrap [the main M compiler](https://github.com/m-language/m-compiler).
 Usage
 -----
 
-M-jvm uses Gradle as its build system, and is built with the `fatJar`
+M-Jvm uses Gradle as its build system, and is built with the `fatJar`
 task.
 
     git clone https://github.com/m-language/m-jvm.git
