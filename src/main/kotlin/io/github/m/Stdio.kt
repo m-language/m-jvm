@@ -5,6 +5,10 @@ object Stdio {
         override fun invoke(arg: Value) = Process { System.out.write(Char.from(arg).value.toInt()); arg }
     }
 
+    object Stderr : Value {
+        override fun invoke(arg: Value) = Process { System.err.write(Char.from(arg).value.toInt()); arg }
+    }
+
     object Stdin : Process {
         override fun run() = run {
             System.out.flush()
@@ -20,6 +24,10 @@ object Stdio {
         @MField("stdout")
         @JvmField
         val stdout: Value = Stdout
+
+        @MField("stderr")
+        @JvmField
+        val stderr: Value = Stderr
 
         @MField("stdin")
         @JvmField
