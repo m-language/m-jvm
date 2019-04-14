@@ -14,7 +14,7 @@ object Backend {
             Data.Definitions::class.java,
             Declaration.Definitions::class.java,
             Either.Definitions::class.java,
-            Errors::class.java,
+            Error.Definitions::class.java,
             File.Definitions::class.java,
             Generator.Definitions::class.java,
             Interpreter.Definitions::class.java,
@@ -24,7 +24,7 @@ object Backend {
             Pair.Definitions::class.java,
             Process.Definitions::class.java,
             Stdio.Definitions::class.java,
-            io.github.m.Symbol.Definitions::class.java
+            Symbol.Definitions::class.java
     ).flatMap {
         val type = Type.getType("L${it.name.replace('.', '/')};")
         it.fields.asSequence()
