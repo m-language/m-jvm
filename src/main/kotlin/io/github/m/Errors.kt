@@ -5,7 +5,12 @@ package io.github.m
  */
 @Suppress("unused")
 object Errors {
+    class Error(message: String) : Throwable(message), Value {
+        override fun invoke(arg: Value) = this
+        override fun toString() = "Error: $message"
+    }
+
     @MField("error")
     @JvmField
-    val error: Value = Value { arg -> throw Error(List.from(arg).toString) }
+    val error: Value = Value { arg -> Error(List.from(arg).toString) }
 }

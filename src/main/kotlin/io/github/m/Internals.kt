@@ -32,7 +32,9 @@ object Internals {
             val function = clazz.getField("".normalize()).get(null) as? Value ?: throw Exception("Could not find main function")
             val value  = function(List.valueOf(args.asSequence().map(String::toList)))
             val process = value as? Process ?: throw Exception("Main must create a process (found ${value::class.java.name})")
-            process.run()
+            val result = process.run()
+            if (result is Error)
+                throw result
         } catch (e: Throwable) {
             e.stackTrace = e.stackTrace
                     .map {
@@ -42,8 +44,6 @@ object Internals {
                             name
                         StackTraceElement(it.className, clean(it.methodName).unnormalize(), it.fileName, it.lineNumber)
                     }
-//                    .dropLast(1)
-//                    .dropLastWhile { it.fileName?.contains(".m")?.not() ?: true }
                     .toTypedArray()
             throw e
         }
