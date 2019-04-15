@@ -143,9 +143,9 @@ object Generator {
             Generator.mangleLambdaName(List.from(name).toString, Nat.from(index).value).toList
         }
 
-        @MField("write-program")
+        @MField("jvm-backend")
         @JvmField
-        val writeProgram: Value = Value { out, operation, declarations ->
+        val jvmBackend: Value = Value { out, operation, declarations ->
             Process {
                 Generator.writeProgram(out as File, operation as Operation, List.from(declarations).asSequence().map { it as Declaration })
                 Nil
