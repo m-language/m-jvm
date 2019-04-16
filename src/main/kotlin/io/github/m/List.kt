@@ -12,13 +12,13 @@ sealed class List : Iterable<Value>, Value {
         }
     }
 
-    object Nil : List() {
-        override fun invoke(arg: Value) = Bool.False(arg)
+    object Nil : List(), Value.Delegate {
+        override val value = Bool.False
         override fun toString() = "()"
     }
 
-    data class Cons(val car: Value, val cdr: List) : List() {
-        override fun invoke(arg: Value) = Pair.Impl(car, cdr)(arg)
+    data class Cons(val car: Value, val cdr: List) : List(), Value.Delegate {
+        override val value get() = Pair(car, cdr)
         override fun toString() = joinToString(" ", "(", ")")
     }
 
@@ -35,25 +35,12 @@ sealed class List : Iterable<Value>, Value {
      */
     @Suppress("unused")
     object Definitions {
-        @Suppress("RedundantCompanionReference")
         @MField("nil")
         @JvmField
         val nil: Value = Nil
 
-        @MField("nil?")
-        @JvmField
-        val isNil: Value = Value { arg -> arg(Value { _, _, _ -> Bool.False }, Bool.True) }
-
         @MField("cons")
         @JvmField
         val cons: Value = Value { car, cdr -> Cons(car, List.from(cdr)) }
-
-        @MField("car")
-        @JvmField
-        val car: Value = Value { arg -> arg(Bool.True) }
-
-        @MField("cdr")
-        @JvmField
-        val cdr: Value = Value { arg -> arg(Bool.False) }
     }
 }

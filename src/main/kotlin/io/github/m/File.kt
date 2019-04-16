@@ -24,7 +24,7 @@ data class File(val value: java.io.File) : Value {
     fun write(chars: Sequence<Char>) = run {
         value.parentFile.mkdirs()
         val writer = value.bufferedWriter()
-        chars.forEach { writer.write(it.value.toInt()) }
+        chars.forEach { writer.write(it.char.toInt()) }
         writer.flush()
     }
 

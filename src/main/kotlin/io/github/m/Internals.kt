@@ -27,7 +27,7 @@ object Internals {
      * @param clazz The class to run.
      */
     @JvmStatic
-    fun run(args: Array<String>, clazz: Class<*>) {
+    fun run(args: kotlin.Array<String>, clazz: Class<*>) {
         try {
             val function = clazz.getField("".normalize()).get(null) as? Value ?: throw Exception("Could not find main function")
             val value  = function(List.valueOf(args.asSequence().map(String::toList)))

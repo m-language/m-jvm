@@ -8,8 +8,8 @@ interface Operation : Value {
     data class LocalVariable(val name: List, val index: Nat) : Data.Abstract("local-variable-operation", "name" to name, "index" to index), Operation
     data class GlobalVariable(val name: List, val path: List) : Data.Abstract("global-variable-operation", "name" to name, "path" to path), Operation
     data class If(val cond: Operation, val `true`: Operation, val `false`: Operation) : Data.Abstract("if-operation", "cond" to cond, "true" to `true`, "false" to `false`), Operation
-    data class Def(val name: List, val path: List, val value: Operation) : Data.Abstract("def-operation", "name" to name, "value" to value, "path" to path), Operation
-    data class Fn(val path: List, val name: List, val arg: List, val value: Operation, val closures: List) : Data.Abstract("fn-operation", "path" to path, "name" to name, "arg" to arg, "value" to value, "closures" to closures), Operation
+    data class Def(val name: List, val path: List, val _value: Operation) : Data.Abstract("def-operation", "name" to name, "value" to _value, "path" to path), Operation
+    data class Fn(val path: List, val name: List, val arg: List, val _value: Operation, val closures: List) : Data.Abstract("fn-operation", "path" to path, "name" to name, "arg" to arg, "value" to _value, "closures" to closures), Operation
     data class Symbol(val name: List) : Data.Abstract("symbol-operation", "name" to name), Operation
     data class Apply(val fn: Operation, val arg: Operation) : Data.Abstract("apply-operation", "fn" to fn, "arg" to arg), Operation
     data class LineNumber(val operation: Operation, val line: Nat) : Data.Abstract("line-number-operation", "operation" to operation, "line" to line), Operation

@@ -50,6 +50,15 @@ interface Value {
         inline operator fun invoke(noinline fn: (Value, Value, Value, Value, Value) -> Value) = Impl5(fn)
     }
 
+    /**
+     * Delegates a value.
+     */
+    interface Delegate : Value {
+        val value: Value
+
+        override fun invoke(arg: Value) = value(arg)
+    }
+
     class Impl0(val fn: () -> Value) : Value {
         override fun invoke(): Value = fn()
         override fun invoke(arg: Value): Value = fn()

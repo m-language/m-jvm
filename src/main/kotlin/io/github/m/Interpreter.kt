@@ -15,8 +15,8 @@ object Interpreter {
     val mPath = "io/github/m/heap".toList
 
     fun Declaration.rename(): Declaration = when (this) {
-        is Declaration.Def -> copy(path = mPath, value = value.rename())
-        is Declaration.Fn -> copy(path = mPath, value = value.rename())
+        is Declaration.Def -> copy(path = mPath, _value = _value.rename())
+        is Declaration.Fn -> copy(path = mPath, _value = _value.rename())
         else -> TODO(this::class.java.name)
     }
 
@@ -24,8 +24,8 @@ object Interpreter {
         is Operation.LocalVariable -> this
         is Operation.GlobalVariable -> copy(path = mPath)
         is Operation.If -> copy(cond = cond.rename(), `true` = `true`.rename(), `false` = `false`.rename())
-        is Operation.Def -> copy(path = mPath, value = value.rename())
-        is Operation.Fn -> copy(path = mPath, value = value.rename())
+        is Operation.Def -> copy(path = mPath, _value = _value.rename())
+        is Operation.Fn -> copy(path = mPath, _value = _value.rename())
         is Operation.Symbol -> this
         is Operation.Apply -> copy(fn = fn.rename(), arg = arg.rename())
         is Operation.LineNumber -> copy(operation = operation.rename())

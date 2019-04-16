@@ -3,7 +3,7 @@ package io.github.m
 /**
  * M wrapper class for data.
  */
-interface Data : Pair {
+interface Data : Value.Delegate {
     /**
      * The type of the data.
      */
@@ -14,8 +14,7 @@ interface Data : Pair {
      */
     fun get(name: Symbol): Value?
 
-    override val first  get() = type
-    override val second get() = Value { name -> get(Symbol.from(name)) ?: throw Error("No field $name") }
+    override val value get() = Pair(type, Value { name -> get(Symbol.from(name)) ?: throw Error("No field $name") })
 
     /**
      * An abstract implementation of data.

@@ -140,7 +140,7 @@ object Generator {
         @MField("mangle-fn-name")
         @JvmField
         val mangleFnName: Value = Value { name, index ->
-            Generator.mangleLambdaName(List.from(name).toString, Nat.from(index).value).toList
+            Generator.mangleLambdaName(List.from(name).toString, Nat.from(index).nat).toList
         }
 
         @MField("jvm-backend")

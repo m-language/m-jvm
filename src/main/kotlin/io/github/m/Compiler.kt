@@ -7,7 +7,7 @@ package io.github.m
 @UseExperimental(ExperimentalUnsignedTypes::class)
 object Compiler {
     @JvmStatic
-    fun main(args: Array<String>) {
+    fun main(args: kotlin.Array<String>) {
         if (args.size != 2) {
             System.err.println("Usage: mc <input> <output>")
         } else {

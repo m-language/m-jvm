@@ -91,7 +91,7 @@ object Backend {
         val args = (0..declaration.closures.count()).joinToString(", ", "(", ")") { "io.github.m.Value" }
         val type = Method.getMethod("io.github.m.Value ${declaration.name.toString.normalize()} $args")
         GeneratorAdapter(Opcodes.ACC_PRIVATE + Opcodes.ACC_STATIC + Opcodes.ACC_SYNTHETIC, type, null, null, this).apply {
-            write(declaration.value)
+            write(declaration._value)
             returnValue()
             endMethod()
         }
@@ -104,7 +104,7 @@ object Backend {
     }
 
     private fun GeneratorAdapter.init(declaration: Declaration.Def) {
-        internals[declaration.name.toString]?.invoke(this) ?: write(declaration.value)
+        internals[declaration.name.toString]?.invoke(this) ?: write(declaration._value)
         putStatic(Type.getType("L${declaration.path.toString};"), declaration.name.toString.normalize(), Type.getType("Lio/github/m/Value;"))
     }
 
@@ -127,7 +127,7 @@ object Backend {
     }
 
     private fun GeneratorAdapter.write(operation: Operation.LocalVariable) {
-        loadArg(operation.index.value.toInt())
+        loadArg(operation.index.nat.toInt())
     }
 
     private fun GeneratorAdapter.write(operation: Operation.GlobalVariable) {
@@ -204,7 +204,7 @@ object Backend {
     }
 
     private fun GeneratorAdapter.write(operation: Operation.LineNumber) {
-        visitLineNumber(operation.line.value.toInt(), mark())
+        visitLineNumber(operation.line.nat.toInt(), mark())
         write(operation.operation)
     }
 

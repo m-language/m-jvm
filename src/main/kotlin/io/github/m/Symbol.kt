@@ -3,15 +3,16 @@ package io.github.m
 /**
  * M wrapper class for strings.
  */
-data class Symbol(val value: String) : Value {
-    override fun toString() = value
+data class Symbol(val string: String) : Value.Delegate {
+    override fun toString() = string
 
-    override fun invoke(arg: Value) =
-            if (value.isEmpty()) List.Nil(arg)
-            else Pair.Impl(Char(value[0]), Symbol(value.drop(1)))(arg)
+    override val value get() = when {
+        string.isEmpty() -> List.Nil
+        else -> Pair(Char(string[0]), Symbol(string.drop(1)))
+    }
 
     companion object {
-        fun from(value: Value) = value as? Symbol ?: Symbol(String(List.from(value).map { Char.from(it).value }.toCharArray()))
+        fun from(value: Value) = value as? Symbol ?: Symbol(String(List.from(value).map { Char.from(it).char }.toCharArray()))
     }
 
     /**
@@ -21,22 +22,22 @@ data class Symbol(val value: String) : Value {
     object Definitions {
         @MField("symbol.=")
         @JvmField
-        val eq: Value = Value { x, y -> Bool(from(x).value == from(y).value) }
+        val eq: Value = Value { x, y -> Bool(from(x).string == from(y).string) }
 
         @MField("symbol.+")
         @JvmField
-        val add: Value = Value { x, y -> Symbol(from(x).value + from(y).value) }
+        val add: Value = Value { x, y -> Symbol(from(x).string + from(y).string) }
 
         @MField("symbol->list")
         @JvmField
-        val toList: Value = Value { x -> from(x).value.toList }
+        val toList: Value = Value { x -> from(x).string.toList }
 
         @MField("normalize")
         @JvmField
-        val normalize: Value = Value { x -> Symbol(Symbol.from(x).value.normalize()) }
+        val normalize: Value = Value { x -> Symbol(Symbol.from(x).string.normalize()) }
 
         @MField("unnormalize")
         @JvmField
-        val unnormalize: Value = Value { x -> Symbol(Symbol.from(x).value.unnormalize()) }
+        val unnormalize: Value = Value { x -> Symbol(Symbol.from(x).string.unnormalize()) }
     }
 }

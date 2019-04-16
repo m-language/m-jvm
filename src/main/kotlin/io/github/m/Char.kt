@@ -4,13 +4,13 @@ package io.github.m
  * M wrapper class for chars.
  */
 @UseExperimental(ExperimentalUnsignedTypes::class)
-data class Char(val value: kotlin.Char) : Value {
-    override fun toString() = value.toString()
+data class Char(val char: kotlin.Char) : Value.Delegate {
+    override fun toString() = char.toString()
 
-    override fun invoke(arg: Value) = Nat(value.toInt().toUInt())(arg)
+    override val value get() = Nat(char.toInt().toUInt())
 
     companion object {
-        fun from(value: Value) = value as? Char ?: Char(Nat.from(value).value.toInt().toChar())
+        fun from(value: Value) = value as? Char ?: Char(Nat.from(value).nat.toInt().toChar())
     }
 
     /**
@@ -20,11 +20,11 @@ data class Char(val value: kotlin.Char) : Value {
     object Definitions {
         @MField("char.=")
         @JvmField
-        val eq: Value = Value { x, y -> Bool(from(x).value == from(y).value) }
+        val eq: Value = Value { x, y -> Bool(from(x).char == from(y).char) }
 
         @MField("char->nat")
         @JvmField
-        val toNat: Value = Value { x -> Nat(from(x).value.toInt().toUInt()) }
+        val toNat: Value = Value { x -> Nat(from(x).char.toInt().toUInt()) }
 
         @MField("space")
         @JvmField
