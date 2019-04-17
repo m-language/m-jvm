@@ -31,6 +31,8 @@ object Internals {
         try {
             val function = clazz.getField("".normalize()).get(null) as? Value ?: throw Exception("Could not find main function")
             val value  = function(List.valueOf(args.asSequence().map(String::toList)))
+            if (value is Error)
+                throw value
             val process = value as? Process ?: throw Exception("Main must create a process (found ${value::class.java.name})")
             val result = process.run()
             if (result is Error)
