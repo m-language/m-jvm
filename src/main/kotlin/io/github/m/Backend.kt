@@ -23,7 +23,7 @@ object Backend {
             Operation.Definitions::class.java,
             Pair::class.java,
             Process::class.java,
-            Stdio.Definitions::class.java,
+            Stdio::class.java,
             Symbol::class.java
     ).flatMap {
         val type = Type.getType("L${it.name.replace('.', '/')};")

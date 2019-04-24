@@ -8,9 +8,17 @@ public class Error extends Throwable implements Value {
         super(message);
     }
 
+    public Error(String message, Throwable cause) {
+        super(message, cause);
+    }
+
     @Override
     public Value invoke(Value arg) {
         return this;
+    }
+
+    public static Error wrap(Throwable t) {
+        return new Error(t.getMessage(), t);
     }
 
     @MField(name = "error")
