@@ -12,19 +12,19 @@ object Backend {
             Bool::class.java,
             Char::class.java,
             Data::class.java,
-            Declaration.Definitions::class.java,
             Either::class.java,
             Error::class.java,
-            File.Definitions::class.java,
-            Generator.Definitions::class.java,
-            Interpreter.Definitions::class.java,
             List::class.java,
             Nat::class.java,
-            Operation.Definitions::class.java,
             Pair::class.java,
             Process::class.java,
             Stdio::class.java,
-            Symbol::class.java
+            Symbol::class.java,
+            File.Definitions::class.java,
+            Declaration.Definitions::class.java,
+            Generator.Definitions::class.java,
+            Interpreter.Definitions::class.java,
+            Operation.Definitions::class.java
     ).flatMap {
         val type = Type.getType("L${it.name.replace('.', '/')};")
         it.fields.asSequence()
@@ -77,14 +77,14 @@ object Backend {
     private fun ClassWriter.write(declaration: Declaration.Def) {
         val field = visitField(
                 Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC,
-                declaration.name.toString.normalize(),
+                Symbol.normalize(Symbol.toString(declaration.name)),
                 "Lio/github/m/Value;",
                 null,
                 null
         )
 
         val av = field.visitAnnotation("Lio/github/m/MField;", true)
-        av.visit("name", declaration.name.toString)
+        av.visit("name", Symbol.toString(declaration.name))
         av.visitEnd()
 
         field.visitEnd()
@@ -92,7 +92,7 @@ object Backend {
 
     private fun ClassWriter.write(declaration: Declaration.Fn) {
         val args = (0..declaration.closures.count()).joinToString(", ", "(", ")") { "io.github.m.Value" }
-        val type = Method.getMethod("io.github.m.Value ${declaration.name.toString.normalize()} $args")
+        val type = Method.getMethod("io.github.m.Value ${Symbol.normalize(Symbol.toString(declaration.name))} $args")
         GeneratorAdapter(Opcodes.ACC_PRIVATE + Opcodes.ACC_STATIC + Opcodes.ACC_SYNTHETIC, type, null, null, this).apply {
             write(declaration._value)
             returnValue()
@@ -107,8 +107,8 @@ object Backend {
     }
 
     private fun GeneratorAdapter.init(declaration: Declaration.Def) {
-        internals[declaration.name.toString]?.invoke(this) ?: write(declaration._value)
-        putStatic(Type.getType("L${declaration.path.toString};"), declaration.name.toString.normalize(), Type.getType("Lio/github/m/Value;"))
+        internals[Symbol.toString(declaration.name)]?.invoke(this) ?: write(declaration._value)
+        putStatic(Type.getType("L${Symbol.toString(declaration.path)};"), Symbol.normalize(Symbol.toString(declaration.name)), Type.getType("Lio/github/m/Value;"))
     }
 
     @Suppress("unused")
@@ -134,8 +134,8 @@ object Backend {
     }
 
     private fun GeneratorAdapter.write(operation: Operation.GlobalVariable) {
-        val type = Type.getType("L${operation.path.toString};")
-        getStatic(type, operation.name.toString.normalize(), Type.getType("Lio/github/m/Value;"))
+        val type = Type.getType("L${Symbol.toString(operation.path)};")
+        getStatic(type, Symbol.normalize(Symbol.toString(operation.name)), Type.getType("Lio/github/m/Value;"))
     }
 
     private fun GeneratorAdapter.write(operation: Operation.If) {
@@ -162,7 +162,7 @@ object Backend {
     }
 
     private fun GeneratorAdapter.write(operation: Operation.Def) {
-        getStatic(Type.getType("L${operation.path.toString};"), operation.name.toString.normalize(), Type.getType("Lio/github/m/Value;"))
+        getStatic(Type.getType("L${Symbol.toString(operation.path)};"), Symbol.normalize(Symbol.toString(operation.name)), Type.getType("Lio/github/m/Value;"))
     }
 
     private fun GeneratorAdapter.write(operation: Operation.Fn) {
@@ -181,8 +181,8 @@ object Backend {
                 Type.getType("(Lio/github/m/Value;)Lio/github/m/Value;"),
                 Handle(
                         Opcodes.H_INVOKESTATIC,
-                        operation.path.toString,
-                        operation.name.toString.normalize(),
+                        Symbol.toString(operation.path),
+                        Symbol.normalize(Symbol.toString(operation.name)),
                         "(${closureTypes}Lio/github/m/Value;)Lio/github/m/Value;",
                         false
                 ),
@@ -191,7 +191,7 @@ object Backend {
     }
 
     private fun GeneratorAdapter.write(operation: Operation.Symbol) {
-        push(operation.name.toString)
+        push(Symbol.toString(operation.name))
         invokeStatic(
                 Type.getType("Lio/github/m/Symbol;"),
                 Method.getMethod("io.github.m.Symbol valueOf (java.lang.String)")

@@ -45,12 +45,12 @@ object Generator {
         val locals = newEnv.locals + closures
                 .plus(element = name)
                 .withIndex()
-                .map { (index, name) -> name to Variable.Local(name.toList, Nat.valueOf(index)) }
+                .map { (index, name) -> name to Variable.Local(Symbol.toList(name), Nat.valueOf(index)) }
                 .toMap()
         val result = generateExpr(expr, newEnv.copy(locals = locals, def = mangledName))
         Result(
-                Operation.Fn(expr.path.toList, mangledName.toList, name.toList, result.operation, closureOperations.list()),
-                Declaration.Fn(mangledName.toList, expr.path.toList, closures.map(String::toList).list(), result.operation).cons(result.declarations),
+                Operation.Fn(Symbol.toList(expr.path), Symbol.toList(mangledName), Symbol.toList(name), result.operation, closureOperations.list()),
+                Declaration.Fn(Symbol.toList(mangledName), Symbol.toList(expr.path), closures.map { it.toList }.list(), result.operation).cons(result.declarations),
                 result.env.copy(locals = newEnv.locals, def = newEnv.def, index = newEnv.index)
         )
     }
@@ -58,16 +58,16 @@ object Generator {
     fun generateDefExpr(name: String, expr: Expr, env: Env): Result = if (env[name] != null) {
         throw Exception("$name has already been defined")
     } else {
-        val newEnv = env.copy(globals = env.globals + (name to Variable.Global(name.toList, expr.path.toList)))
+        val newEnv = env.copy(globals = env.globals + (name to Variable.Global(Symbol.toList(name), Symbol.toList(expr.path))))
         val result = generateExpr(expr, newEnv.copy(def = name))
         Result(
-                Operation.Def(name.toList, expr.path.toList, result.operation),
-                Declaration.Def(name.toList, expr.path.toList, result.operation).cons(result.declarations),
+                Operation.Def(Symbol.toList(name), Symbol.toList(expr.path), result.operation),
+                Declaration.Def(Symbol.toList(name), Symbol.toList(expr.path), result.operation).cons(result.declarations),
                 result.env.copy(def = newEnv.def)
         )
     }
 
-    fun generateSymbolExpr(name: String, env: Env): Result = Result(Operation.Symbol(name.toList), nil(), env)
+    fun generateSymbolExpr(name: String, env: Env): Result = Result(Operation.Symbol(Symbol.toList(name)), nil(), env)
 
     fun generateApplyExpr(fn: Expr, arg: Expr, env: Env): Result = run {
         val fnResult = generateExpr(fn, env)
@@ -124,7 +124,7 @@ object Generator {
 
     fun generateProgram(@Suppress("UNUSED_PARAMETER") operation: Operation, declarations: Sequence<Declaration>) =
             declarations
-                    .groupBy { it.path.toString }
+                    .groupBy { Symbol.toString(it.path) }
                     .map { (path, decls) -> path to Backend.run { clazz(path, decls.asSequence()) } }
                     .toMap()
 
@@ -138,7 +138,7 @@ object Generator {
         @MField(name = "mangle-fn-name")
         @JvmField
         val mangleFnName: Value = Value.Impl2 { name, index ->
-            mangleLambdaName(List.from(name).toString, Nat.from(index).value).toList
+            Symbol.toList(mangleLambdaName(Symbol.toString(List.from(name)), Nat.from(index).value))
         }
 
         @MField(name = "jvm-backend")

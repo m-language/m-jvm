@@ -12,7 +12,7 @@ object Interpreter {
         }
     }
 
-    val mPath = "io/github/m/heap".toList
+    val mPath = Symbol.toList("io/github/m/heap")
 
     fun Declaration.rename(): Declaration = when (this) {
         is Declaration.Def -> copy(path = mPath, _value = _value.rename())
@@ -50,13 +50,13 @@ object Interpreter {
         fun interpret(declarations: Sequence<Declaration>): Heap {
             val newDeclarations = declarations
                     .map { it.rename() }
-                    .associateBy { it.name.toString }
+                    .associateBy { Symbol.toString(it.name) }
             newDeclarations.forEach { cache.remove(it.key) }
             return Heap(this.declarations + newDeclarations, cache, fallback)
         }
 
         override fun invoke(arg: Value): Value {
-            val name = arg.toString
+            val name = Symbol.toString(arg)
             val value = cache[name] ?: fieldNames[name]?.get(null) as? Value
             return if (value != null) {
                 cache.putIfAbsent(name, value)

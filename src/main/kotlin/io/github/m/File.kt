@@ -45,15 +45,15 @@ data class File(val value: java.io.File) : Value {
 
         @MField(name = "file.name")
         @JvmField
-        val name: Value = Value.Impl1 { file -> (file as File).name.toList }
+        val name: Value = Value.Impl1 { file -> Symbol.toList((file as File).name) }
 
         @MField(name = "file.name-without-extension")
         @JvmField
-        val nameWithoutExtension: Value = Value.Impl1 { file -> (file as File).nameWithoutExtension.toList }
+        val nameWithoutExtension: Value = Value.Impl1 { file -> Symbol.toList((file as File).nameWithoutExtension) }
 
         @MField(name = "file.child")
         @JvmField
-        val child: Value = Value.Impl2 { file, name -> (file as File).child(name.toString) }
+        val child: Value = Value.Impl2 { file, name -> (file as File).child(Symbol.toString(name)) }
 
         @MField(name = "file.exists?")
         @JvmField

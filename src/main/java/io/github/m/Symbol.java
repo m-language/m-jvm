@@ -32,13 +32,13 @@ public class Symbol implements Value.Delegate {
         if (value instanceof Symbol) {
             return (Symbol) value;
         } else {
-            return new Symbol(toString(List.from(value)));
+            return new Symbol(toString(value));
         }
     }
 
-    public static String toString(List list) {
+    public static String toString(Value value) {
         StringBuilder builder = new StringBuilder();
-        list.forEach(x -> builder.append(Char.from(x).value));
+        List.from(value).forEach(x -> builder.append(Char.from(x).value));
         return builder.toString();
     }
 

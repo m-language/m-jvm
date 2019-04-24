@@ -28,8 +28,8 @@ object Internals {
     @JvmStatic
     fun run(args: Array<String>, clazz: Class<*>) {
         try {
-            val function = clazz.getField("".normalize()).get(null) as? Value ?: throw Exception("Could not find main function")
-            val value  = function(args.asSequence().map(String::toList).list())
+            val function = clazz.getField(Symbol.normalize("")).get(null) as? Value ?: throw Exception("Could not find main function")
+            val value  = function(args.asSequence().map { it.toList }.list())
             if (value is Error)
                 throw value
             val process = value as? Process ?: throw Exception("Main must create a process (found ${value::class.java.name})")
@@ -43,7 +43,7 @@ object Internals {
                             clean(name.substringBefore("_"))
                         else
                             name
-                        StackTraceElement(it.className, clean(it.methodName).unnormalize(), it.fileName, it.lineNumber)
+                        StackTraceElement(it.className, Symbol.unnormalize(clean(it.methodName)), it.fileName, it.lineNumber)
                     }
                     .toTypedArray()
             throw e
