@@ -1,6 +1,5 @@
 package io.github.m
 
-import io.github.m.List.Nil
 import java.nio.file.StandardOpenOption
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -51,8 +50,8 @@ object Generator {
                 .toMap()
         val result = generateExpr(expr, newEnv.copy(locals = locals, def = mangledName))
         Result(
-                Operation.Fn(expr.path.toList, mangledName.toList, name.toList, result.operation, List.valueOf(closureOperations)),
-                Declaration.Fn(mangledName.toList, expr.path.toList, List.valueOf(closures.map(String::toList)), result.operation).cons(result.declarations),
+                Operation.Fn(expr.path.toList, mangledName.toList, name.toList, result.operation, closureOperations.list()),
+                Declaration.Fn(mangledName.toList, expr.path.toList, closures.map(String::toList).list(), result.operation).cons(result.declarations),
                 result.env.copy(locals = newEnv.locals, def = newEnv.def, index = newEnv.index)
         )
     }
@@ -148,7 +147,7 @@ object Generator {
         val jvmBackend: Value = Value.Impl3 { out, operation, declarations ->
             Process {
                 writeProgram(out as File, operation as Operation, List.from(declarations).asSequence().map { it as Declaration })
-                Nil
+                List.NIL
             }
         }
 

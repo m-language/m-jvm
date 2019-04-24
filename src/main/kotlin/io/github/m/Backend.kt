@@ -18,7 +18,7 @@ object Backend {
             File.Definitions::class.java,
             Generator.Definitions::class.java,
             Interpreter.Definitions::class.java,
-            List.Definitions::class.java,
+            List::class.java,
             Nat.Definitions::class.java,
             Operation.Definitions::class.java,
             Pair::class.java,
@@ -49,7 +49,7 @@ object Backend {
             endMethod()
         }
 
-        if (declarations.any { it is Declaration.Def && it.name == List.Nil }) {
+        if (declarations.any { it is Declaration.Def && it.name == List.NIL }) {
             GeneratorAdapter(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC + Opcodes.ACC_FINAL, Method.getMethod("void main (java.lang.String[])"), null, null, this).apply {
                 loadArg(0)
                 push(type)

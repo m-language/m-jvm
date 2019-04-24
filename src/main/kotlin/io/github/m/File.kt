@@ -61,15 +61,15 @@ data class File(val value: java.io.File) : Value {
 
         @MField(name = "file.read")
         @JvmField
-        val read: Value = Value.Impl1 { file -> Process { List.valueOf((file as File).read().map(::Char)) } }
+        val read: Value = Value.Impl1 { file -> Process { (file as File).read().map(::Char).list() } }
 
         @MField(name = "file.write")
         @JvmField
-        val write: Value = Value.Impl2 { file, text -> Process { (file as File).write(List.from(text).asSequence().map { it as Char }); List.Nil } }
+        val write: Value = Value.Impl2 { file, text -> Process { (file as File).write(List.from(text).asSequence().map { it as Char }); List.NIL } }
 
         @MField(name = "file.child-files")
         @JvmField
-        val childFiles: Value = Value.Impl1 { file -> Process { List.valueOf((file as File).childFiles()) } }
+        val childFiles: Value = Value.Impl1 { file -> Process { (file as File).childFiles().list() } }
 
         @MField(name = "file.directory?")
         @JvmField
@@ -77,7 +77,7 @@ data class File(val value: java.io.File) : Value {
 
         @MField(name = "file.copy")
         @JvmField
-        val copy: Value = Value.Impl2 { file, dest -> Process { (file as File).copy(dest as File); List.Nil } }
+        val copy: Value = Value.Impl2 { file, dest -> Process { (file as File).copy(dest as File); List.NIL } }
 
         @MField(name = "mpm-root")
         @JvmField

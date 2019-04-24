@@ -2,11 +2,11 @@ package io.github.m
 
 object Stdio {
     object Stdout : Value {
-        override fun invoke(arg: Value) = Process { System.out.write(Char.from(arg).char.toInt()); List.Nil }
+        override fun invoke(arg: Value) = Process { System.out.write(Char.from(arg).char.toInt()); List.NIL }
     }
 
     object Stderr : Value {
-        override fun invoke(arg: Value) = Process { System.err.write(Char.from(arg).char.toInt()); List.Nil }
+        override fun invoke(arg: Value) = Process { System.err.write(Char.from(arg).char.toInt()); List.NIL }
     }
 
     object Stdin : Process {

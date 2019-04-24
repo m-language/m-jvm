@@ -17,3 +17,5 @@ val <A> Sequence<A>.car get() = if (this is ConsSequence<A>) head else first()
 val <A> Sequence<A>.cdr get() = if (this is ConsSequence<A>) tail else drop(1)
 
 fun <A> Sequence<A>.reversed() = asIterable().reversed()
+
+fun Sequence<Value>.list() = toList().foldRight(List.NIL) { a, b -> List.Cons(a, b) }

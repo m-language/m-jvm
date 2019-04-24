@@ -7,7 +7,7 @@ data class Symbol(val string: String) : Value.Delegate {
     override fun toString() = string
 
     override fun value() = when {
-        string.isEmpty() -> List.Nil
+        string.isEmpty() -> List.NIL
         else -> Pair(Char(string[0]), Symbol(string.drop(1)))
     }
 

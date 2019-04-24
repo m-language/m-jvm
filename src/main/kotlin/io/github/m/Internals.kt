@@ -1,6 +1,5 @@
 package io.github.m
 
-import io.github.m.List.Nil
 import java.lang.Exception
 
 /**
@@ -18,7 +17,7 @@ object Internals {
      * The singleton empty list.
      */
     @JvmField
-    val nil: Value = Nil
+    val nil: Value = List.NIL
 
     /**
      * The implementation of the main definition for an M program.
@@ -27,10 +26,10 @@ object Internals {
      * @param clazz The class to run.
      */
     @JvmStatic
-    fun run(args: kotlin.Array<String>, clazz: Class<*>) {
+    fun run(args: Array<String>, clazz: Class<*>) {
         try {
             val function = clazz.getField("".normalize()).get(null) as? Value ?: throw Exception("Could not find main function")
-            val value  = function(List.valueOf(args.asSequence().map(String::toList)))
+            val value  = function(args.asSequence().map(String::toList).list())
             if (value is Error)
                 throw value
             val process = value as? Process ?: throw Exception("Main must create a process (found ${value::class.java.name})")

@@ -9,7 +9,7 @@ import java.util.function.Function;
 @FunctionalInterface
 public interface Value {
     default Value invoke() {
-        return invoke(null);
+        return invoke(List.NIL);
     }
 
     Value invoke(Value arg);

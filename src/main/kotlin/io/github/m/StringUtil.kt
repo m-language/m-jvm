@@ -2,7 +2,7 @@
 
 package io.github.m
 
-val String.toList get(): List = List.valueOf(asSequence().map(::Char))
+val String.toList get(): List = asSequence().map(::Char).list()
 
 val Value.toString get() = String(List.from(this).toList().map { Char.from(it).char }.toCharArray())
 

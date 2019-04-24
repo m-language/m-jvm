@@ -23,53 +23,53 @@ interface Operation : Value {
         @MField(name = "local-variable-operation")
         @JvmField
         val localVariable: Value = Value.Impl2 { name, index ->
-            Operation.LocalVariable(List.from(name), Nat.from(index))
+            LocalVariable(List.from(name), Nat.from(index))
         }
 
         @MField(name = "global-variable-operation")
         @JvmField
         val globalVariable: Value = Value.Impl2 { name, path ->
-            Operation.GlobalVariable(List.from(name), List.from(path))
+            GlobalVariable(List.from(name), List.from(path))
         }
 
         @MField(name = "if-operation")
         @JvmField
         val `if`: Value = Value.Impl3 { cond, `true`, `false` ->
-            Operation.If(cond as Operation, `true` as Operation, `false` as Operation)
+            If(cond as Operation, `true` as Operation, `false` as Operation)
         }
 
         @MField(name = "def-operation")
         @JvmField
         val def: Value = Value.Impl3 { name, path, value ->
-            Operation.Def(List.from(name), List.from(path), value as Operation)
+            Def(List.from(name), List.from(path), value as Operation)
         }
 
         @MField(name = "fn-operation")
         @JvmField
         val fn: Value = Value.Impl5 { path, name, arg, value, closures ->
-            Operation.Fn(List.from(path), List.from(name), List.from(arg), value as Operation, List.from(closures))
+            Fn(List.from(path), List.from(name), List.from(arg), value as Operation, List.from(closures))
         }
 
         @MField(name = "symbol-operation")
         @JvmField
         val symbol: Value = Value.Impl1 { name ->
-            Operation.Symbol(List.from(name))
+            Symbol(List.from(name))
         }
 
         @MField(name = "apply-operation")
         @JvmField
         val apply: Value = Value.Impl2 { fn, arg ->
-            Operation.Apply(fn as Operation, arg as Operation)
+            Apply(fn as Operation, arg as Operation)
         }
 
         @MField(name = "line-number-operation")
         @JvmField
         val lineNumber: Value = Value.Impl2 { operation, line ->
-            Operation.LineNumber(operation as Operation, Nat.from(line))
+            LineNumber(operation as Operation, Nat.from(line))
         }
 
         @MField(name = "nil-operation")
         @JvmField
-        val nil: Value = Operation.Nil
+        val nil: Value = Nil
     }
 }
