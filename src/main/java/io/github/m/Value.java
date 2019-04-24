@@ -1,5 +1,9 @@
 package io.github.m;
 
+import io.github.m.function.PentaFunction;
+import io.github.m.function.QuadFunction;
+import io.github.m.function.TriFunction;
+
 import java.util.function.BiFunction;
 import java.util.function.Function;
 

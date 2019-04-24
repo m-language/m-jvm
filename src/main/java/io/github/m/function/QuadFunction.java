@@ -1,4 +1,4 @@
-package io.github.m;
+package io.github.m.function;
 
 @FunctionalInterface
 public interface QuadFunction<T, U, X, N, R> {
