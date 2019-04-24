@@ -24,7 +24,7 @@ object Backend {
             Pair::class.java,
             Process.Definitions::class.java,
             Stdio.Definitions::class.java,
-            Symbol.Definitions::class.java
+            Symbol::class.java
     ).flatMap {
         val type = Type.getType("L${it.name.replace('.', '/')};")
         it.fields.asSequence()
@@ -53,7 +53,10 @@ object Backend {
             GeneratorAdapter(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC + Opcodes.ACC_FINAL, Method.getMethod("void main (java.lang.String[])"), null, null, this).apply {
                 loadArg(0)
                 push(type)
-                invokeStatic(Type.getType("Lio/github/m/Internals;"), Method.getMethod("void run (java.lang.String[], java.lang.Class)"))
+                invokeStatic(
+                        Type.getType("Lio/github/m/Internals;"),
+                        Method.getMethod("void run (java.lang.String[], java.lang.Class)")
+                )
                 returnValue()
                 endMethod()
             }
@@ -141,7 +144,10 @@ object Backend {
 
         write(operation.cond)
 
-        invokeStatic(Type.getType("Lio/github/m/Internals;"), Method.getMethod("boolean toPrimitiveBool (io.github.m.Value)"))
+        invokeStatic(
+                Type.getType("Lio/github/m/Internals;"),
+                Method.getMethod("boolean toPrimitiveBool (io.github.m.Value)")
+        )
 
         ifZCmp(GeneratorAdapter.EQ, falseLabel)
 
@@ -185,12 +191,10 @@ object Backend {
     }
 
     private fun GeneratorAdapter.write(operation: Operation.Symbol) {
-        newInstance(Type.getType("Lio/github/m/Symbol;"))
-        dup()
         push(operation.name.toString)
-        invokeConstructor(
+        invokeStatic(
                 Type.getType("Lio/github/m/Symbol;"),
-                Method.getMethod("void <init> (java.lang.String)")
+                Method.getMethod("io.github.m.Symbol valueOf (java.lang.String)")
         )
     }
 

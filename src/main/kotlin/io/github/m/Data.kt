@@ -14,7 +14,7 @@ interface Data : Value.Delegate {
      */
     fun get(name: Symbol): Value?
 
-    override fun value() = Pair(type, Value { name -> get(Symbol.from(name)) ?: throw Error("No field $name") })
+    override fun value() = Pair(type, Value.Impl1 { name -> get(Symbol.from(name)) ?: throw Error("No field $name") })
 
     /**
      * An abstract implementation of data.
@@ -22,9 +22,9 @@ interface Data : Value.Delegate {
      * @param type   The type of the data.
      * @param fields A map of fields representing the data.
      */
-    abstract class Abstract(final override val type: Symbol, val fields: Map<Symbol, Value>) : Data {
-        constructor(type: String, vararg fields: kotlin.Pair<String, Value>) : this(Symbol(type), fields.toMap().mapKeys { Symbol(it.key) })
-        override fun get(name: Symbol) = fields[name]
+    abstract class Abstract(final override val type: Symbol, val fields: Map<String, Value>) : Data {
+        constructor(type: String, vararg fields: kotlin.Pair<String, Value>) : this(Symbol.valueOf(type), fields.toMap())
+        override fun get(name: Symbol) = fields[name.value]
         override fun toString() = "$type$fields"
     }
 
@@ -35,7 +35,7 @@ interface Data : Value.Delegate {
             val fieldsMap = List.from(fields)
                     .map {
                         val pair = Pair.from(it)
-                        Symbol.from(pair.first) to pair.second
+                        Symbol.from(pair.first).value to pair.second
                     }
                     .toMap()
             object : Abstract((type as Symbol), fieldsMap) { }

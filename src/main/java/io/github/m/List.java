@@ -2,6 +2,7 @@ package io.github.m;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.function.Function;
 
 /**
  * M implementation of lists.
@@ -66,6 +67,15 @@ public interface List extends Iterable<Value>, Value {
                     NIL
             );
         }
+    }
+
+    static List valueOf(String string) {
+        char[] chars = string.toCharArray();
+        List list = List.NIL;
+        for (int i = chars.length - 1; i >= 0; i--) {
+            list = new Cons(Char.valueOf(chars[i]), list);
+        }
+        return list;
     }
 
     @MField(name = "nil")

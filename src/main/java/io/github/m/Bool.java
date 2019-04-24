@@ -11,6 +11,11 @@ public class Bool implements Value {
     }
 
     @Override
+    public String toString() {
+        return Boolean.toString(value);
+    }
+
+    @Override
     public Value invoke(Value arg) {
         return new Value.Impl1(arg2 -> invoke(arg, arg2));
     }
