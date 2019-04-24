@@ -3,16 +3,20 @@ package io.github.m;
 /**
  * M wrapper class for chars.
  */
-public final class Char implements Value.Delegate {
+public class Char implements Value.Delegate {
     public final char value;
 
-    public Char(char value) {
+    private Char(char value) {
         this.value = value;
     }
 
     @Override
     public Value value() {
-        return new Nat((int) value);
+        return Nat.valueOf((int) value);
+    }
+
+    public static Char valueOf(char value) {
+        return new Char(value);
     }
 
     public static Char from(Value value) {
@@ -36,8 +40,8 @@ public final class Char implements Value.Delegate {
     public static final Value carriageReturn = new Char('\r');
 
     @MField(name = "char.=")
-    public static final Value eq = new Value.Impl2((x, y) -> new Bool(from(x).value == from(y).value));
+    public static final Value eq = new Value.Impl2((x, y) -> Bool.valueOf(from(x).value == from(y).value));
 
     @MField(name = "char->nat")
-    public static final Value toNat = new Value.Impl1(value -> new Nat((int) from(value).value));
+    public static final Value toNat = new Value.Impl1(value -> Nat.valueOf((int) from(value).value));
 }

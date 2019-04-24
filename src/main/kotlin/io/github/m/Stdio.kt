@@ -12,7 +12,7 @@ object Stdio {
     object Stdin : Process {
         override fun run() = run {
             System.out.flush()
-            Char(System.`in`.read().toChar())
+            Char.valueOf(System.`in`.read().toChar())
         }
     }
 

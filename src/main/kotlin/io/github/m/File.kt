@@ -13,7 +13,7 @@ data class File(val value: java.io.File) : Value {
     fun child(name: String) = File(java.io.File(value, name))
     fun childFiles() = value.listFiles().asSequence().map { File(it) }
 
-    fun exists() = Bool(value.exists())
+    fun exists() = Bool.valueOf(value.exists())
 
     fun read() = run {
         val reader = value.bufferedReader()
@@ -61,7 +61,7 @@ data class File(val value: java.io.File) : Value {
 
         @MField(name = "file.read")
         @JvmField
-        val read: Value = Value.Impl1 { file -> Process { (file as File).read().map(::Char).list() } }
+        val read: Value = Value.Impl1 { file -> Process { (file as File).read().map(Char::valueOf).list() } }
 
         @MField(name = "file.write")
         @JvmField
@@ -73,7 +73,7 @@ data class File(val value: java.io.File) : Value {
 
         @MField(name = "file.directory?")
         @JvmField
-        val isDirectory: Value = Value.Impl1 { file -> Process { Bool((file as File).isDirectory) } }
+        val isDirectory: Value = Value.Impl1 { file -> Process { Bool.valueOf((file as File).isDirectory) } }
 
         @MField(name = "file.copy")
         @JvmField

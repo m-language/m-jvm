@@ -3,7 +3,7 @@ package io.github.m;
 /**
  * M wrapper class for pairs.
  */
-public final class Pair implements Value {
+public class Pair implements Value {
     public final Value first;
     public final Value second;
 

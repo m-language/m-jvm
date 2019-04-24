@@ -45,7 +45,7 @@ object Generator {
         val locals = newEnv.locals + closures
                 .plus(element = name)
                 .withIndex()
-                .map { (index, name) -> name to Variable.Local(name.toList, Nat(index)) }
+                .map { (index, name) -> name to Variable.Local(name.toList, Nat.valueOf(index)) }
                 .toMap()
         val result = generateExpr(expr, newEnv.copy(locals = locals, def = mangledName))
         Result(
@@ -95,7 +95,7 @@ object Generator {
         when (expr) {
             is Expr.Symbol -> generateIdentifierExpr(expr.name, env)
             is Expr.List -> generateListExpr(expr, env)
-        }.run { copy(operation = Operation.LineNumber(operation, Nat(expr.start.line.toInt()))) }
+        }.run { copy(operation = Operation.LineNumber(operation, Nat.valueOf(expr.start.line))) }
     } catch (e: Failure) {
         throw e
     } catch (e: Exception) {

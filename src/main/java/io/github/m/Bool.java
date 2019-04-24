@@ -6,7 +6,7 @@ package io.github.m;
 public class Bool implements Value {
     public final boolean value;
 
-    public Bool(boolean value) {
+    private Bool(boolean value) {
         this.value = value;
     }
 
@@ -24,6 +24,22 @@ public class Bool implements Value {
         }
     }
 
+    public static Bool valueOf(boolean value) {
+        if (value) {
+            return TRUE;
+        } else {
+            return FALSE;
+        }
+    }
+
+    public static Bool from(Value value) {
+        if (value instanceof Bool) {
+            return (Bool) value;
+        } else {
+            return (Bool) value.invoke(TRUE, FALSE);
+        }
+    }
+
     public static final Bool TRUE = new Bool(true) {
         @Override
         public Value invoke(Value arg1, Value arg2) {
@@ -37,14 +53,6 @@ public class Bool implements Value {
             return arg2;
         }
     };
-
-    public static Bool from(Value value) {
-        if (value instanceof Bool) {
-            return (Bool) value;
-        } else {
-            return (Bool) value.invoke(TRUE, FALSE);
-        }
-    }
 
     @MField(name = "true")
     public static final Value $true = TRUE;

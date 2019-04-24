@@ -8,7 +8,7 @@ data class Symbol(val string: String) : Value.Delegate {
 
     override fun value() = when {
         string.isEmpty() -> List.NIL
-        else -> Pair(Char(string[0]), Symbol(string.drop(1)))
+        else -> Pair(Char.valueOf(string[0]), Symbol(string.drop(1)))
     }
 
     companion object {
@@ -22,7 +22,7 @@ data class Symbol(val string: String) : Value.Delegate {
     object Definitions {
         @MField(name = "symbol.=")
         @JvmField
-        val eq: Value = Value.Impl2 { x, y -> Bool(from(x).string == from(y).string) }
+        val eq: Value = Value.Impl2 { x, y -> Bool.valueOf(from(x).string == from(y).string) }
 
         @MField(name = "symbol.+")
         @JvmField
