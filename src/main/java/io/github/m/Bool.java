@@ -45,6 +45,10 @@ public class Bool implements Value {
         }
     }
 
+    public static boolean primitiveValue(Value value) {
+        return Bool.from(value).value;
+    }
+
     public static final Bool TRUE = new Bool(true) {
         @Override
         public Value invoke(Value arg1, Value arg2) {

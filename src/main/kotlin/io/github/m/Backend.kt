@@ -53,7 +53,7 @@ object Backend {
                 loadArg(0)
                 push(type)
                 invokeStatic(
-                        Type.getType("Lio/github/m/Internals;"),
+                        Type.getType("Lio/github/m/Cli;"),
                         Method.getMethod("void run (java.lang.String[], java.lang.Class)")
                 )
                 returnValue()
@@ -144,8 +144,8 @@ object Backend {
         write(operation.cond)
 
         invokeStatic(
-                Type.getType("Lio/github/m/Internals;"),
-                Method.getMethod("boolean toPrimitiveBool (io.github.m.Value)")
+                Type.getType("Lio/github/m/Bool;"),
+                Method.getMethod("boolean primitiveValue (io.github.m.Value)")
         )
 
         ifZCmp(GeneratorAdapter.EQ, falseLabel)
@@ -212,6 +212,6 @@ object Backend {
     }
 
     private fun GeneratorAdapter.write(@Suppress("UNUSED_PARAMETER") operation: Operation.Nil) {
-        getStatic(Type.getType("Lio/github/m/Internals;"), "nil", Type.getType("Lio/github/m/Value;"))
+        getStatic(Type.getType("Lio/github/m/List;"), "NIL", Type.getType("Lio/github/m/List;"))
     }
 }
