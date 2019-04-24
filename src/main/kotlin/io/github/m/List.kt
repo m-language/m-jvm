@@ -13,17 +13,17 @@ sealed class List : Iterable<Value>, Value {
     }
 
     object Nil : List(), Value.Delegate {
-        override val value = Bool.False
+        override fun value() = Bool.False
         override fun toString() = "()"
     }
 
     data class Cons(val car: Value, val cdr: List) : List(), Value.Delegate {
-        override val value get() = Pair(car, cdr)
+        override fun value() = Pair(car, cdr)
         override fun toString() = joinToString(" ", "(", ")")
     }
 
     companion object {
-        fun from(value: Value): List = value as? List ?: value(Value { a, b, _ -> Cons(a, from(b)) }, Nil) as List
+        fun from(value: Value): List = value as? List ?: value(Value.Impl3 { a, b, _ -> Cons(a, from(b)) }, Nil) as List
 
         fun valueOf(sequence: Sequence<Value>) = sequence
                 .toList()
@@ -41,6 +41,6 @@ sealed class List : Iterable<Value>, Value {
 
         @MField("cons")
         @JvmField
-        val cons: Value = Value { car, cdr -> Cons(car, List.from(cdr)) }
+        val cons: Value = Value.Impl2 { car, cdr -> Cons(car, from(cdr)) }
     }
 }

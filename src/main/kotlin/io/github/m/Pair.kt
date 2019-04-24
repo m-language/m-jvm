@@ -21,14 +21,14 @@ data class Pair(val first: Value, val second: Value) : Value {
     object Definitions {
         @MField("pair")
         @JvmField
-        val pair: Value = Value { first, second -> Pair(first, second) }
+        val pair: Value = Value.Impl2 { first, second -> Pair(first, second) }
 
         @MField("first")
         @JvmField
-        val first: Value = Value { pair -> from(pair).first }
+        val first: Value = Value.Impl1 { pair -> from(pair).first }
 
         @MField("second")
         @JvmField
-        val second: Value = Value { pair -> from(pair).second }
+        val second: Value = Value.Impl1 { pair -> from(pair).second }
     }
 }

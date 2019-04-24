@@ -45,39 +45,39 @@ data class File(val value: java.io.File) : Value {
 
         @MField("file.name")
         @JvmField
-        val name: Value = Value { file -> (file as File).name.toList }
+        val name: Value = Value.Impl1 { file -> (file as File).name.toList }
 
         @MField("file.name-without-extension")
         @JvmField
-        val nameWithoutExtension: Value = Value { file -> (file as File).nameWithoutExtension.toList }
+        val nameWithoutExtension: Value = Value.Impl1 { file -> (file as File).nameWithoutExtension.toList }
 
         @MField("file.child")
         @JvmField
-        val child: Value = Value { file, name -> (file as File).child(name.toString) }
+        val child: Value = Value.Impl2 { file, name -> (file as File).child(name.toString) }
 
         @MField("file.exists?")
         @JvmField
-        val exists: Value = Value { file -> Process { (file as File).exists() } }
+        val exists: Value = Value.Impl1 { file -> Process { (file as File).exists() } }
 
         @MField("file.read")
         @JvmField
-        val read: Value = Value { file -> Process { List.valueOf((file as File).read().map(::Char)) } }
+        val read: Value = Value.Impl1 { file -> Process { List.valueOf((file as File).read().map(::Char)) } }
 
         @MField("file.write")
         @JvmField
-        val write: Value = Value { file, text -> Process { (file as File).write(List.from(text).asSequence().map { it as Char }); List.Nil } }
+        val write: Value = Value.Impl2 { file, text -> Process { (file as File).write(List.from(text).asSequence().map { it as Char }); List.Nil } }
 
         @MField("file.child-files")
         @JvmField
-        val childFiles: Value = Value { file -> Process { List.valueOf((file as File).childFiles()) } }
+        val childFiles: Value = Value.Impl1 { file -> Process { List.valueOf((file as File).childFiles()) } }
 
         @MField("file.directory?")
         @JvmField
-        val isDirectory: Value = Value { file -> Process { Bool((file as File).isDirectory) } }
+        val isDirectory: Value = Value.Impl1 { file -> Process { Bool((file as File).isDirectory) } }
 
         @MField("file.copy")
         @JvmField
-        val copy: Value = Value { file, dest -> Process { (file as File).copy(dest as File); List.Nil } }
+        val copy: Value = Value.Impl2 { file, dest -> Process { (file as File).copy(dest as File); List.Nil } }
 
         @MField("mpm-root")
         @JvmField

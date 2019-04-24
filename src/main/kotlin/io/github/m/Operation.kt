@@ -22,49 +22,49 @@ interface Operation : Value {
     object Definitions {
         @MField("local-variable-operation")
         @JvmField
-        val localVariable: Value = Value { name, index ->
+        val localVariable: Value = Value.Impl2 { name, index ->
             Operation.LocalVariable(List.from(name), Nat.from(index))
         }
 
         @MField("global-variable-operation")
         @JvmField
-        val globalVariable: Value = Value { name, path ->
+        val globalVariable: Value = Value.Impl2 { name, path ->
             Operation.GlobalVariable(List.from(name), List.from(path))
         }
 
         @MField("if-operation")
         @JvmField
-        val `if`: Value = Value { cond, `true`, `false` ->
+        val `if`: Value = Value.Impl3 { cond, `true`, `false` ->
             Operation.If(cond as Operation, `true` as Operation, `false` as Operation)
         }
 
         @MField("def-operation")
         @JvmField
-        val def: Value = Value { name, path, value ->
+        val def: Value = Value.Impl3 { name, path, value ->
             Operation.Def(List.from(name), List.from(path), value as Operation)
         }
 
         @MField("fn-operation")
         @JvmField
-        val fn: Value = Value { path, name, arg, value, closures ->
+        val fn: Value = Value.Impl5 { path, name, arg, value, closures ->
             Operation.Fn(List.from(path), List.from(name), List.from(arg), value as Operation, List.from(closures))
         }
 
         @MField("symbol-operation")
         @JvmField
-        val symbol: Value = Value { name ->
+        val symbol: Value = Value.Impl1 { name ->
             Operation.Symbol(List.from(name))
         }
 
         @MField("apply-operation")
         @JvmField
-        val apply: Value = Value { fn, arg ->
+        val apply: Value = Value.Impl2 { fn, arg ->
             Operation.Apply(fn as Operation, arg as Operation)
         }
 
         @MField("line-number-operation")
         @JvmField
-        val lineNumber: Value = Value { operation, line ->
+        val lineNumber: Value = Value.Impl2 { operation, line ->
             Operation.LineNumber(operation as Operation, Nat.from(line))
         }
 

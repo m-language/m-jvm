@@ -11,6 +11,6 @@ class Error(message: String) : Throwable(message), Value {
     object Definitions {
         @MField("error")
         @JvmField
-        val error: Value = Value { arg -> Error(List.from(arg).toString) }
+        val error: Value = Value.Impl1 { arg -> Error(List.from(arg).toString) }
     }
 }

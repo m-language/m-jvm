@@ -31,18 +31,18 @@ sealed class Either : Value {
     object Definitions {
         @MField("left")
         @JvmField
-        val left: Value = Value { x -> Left(x) }
+        val left: Value = Value.Impl1 { x -> Left(x) }
 
         @MField("right")
         @JvmField
-        val right: Value = Value { x -> Right(x) }
+        val right: Value = Value.Impl1 { x -> Right(x) }
 
         @MField("left?")
         @JvmField
-        val isLeft: Value = Value { x -> Bool(from(x) is Left) }
+        val isLeft: Value = Value.Impl1 { x -> Bool(from(x) is Left) }
 
         @MField("right?")
         @JvmField
-        val isRight: Value = Value { x -> Bool(from(x) is Right) }
+        val isRight: Value = Value.Impl1 { x -> Bool(from(x) is Right) }
     }
 }

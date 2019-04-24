@@ -28,10 +28,10 @@ sealed class Bool : Value {
     object Definitions {
         @MField("true")
         @JvmField
-        val `true`: Value = Bool.True
+        val `true`: Value = True
 
         @MField("false")
         @JvmField
-        val `false`: Value = Bool.False
+        val `false`: Value = False
     }
 }

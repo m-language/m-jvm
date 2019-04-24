@@ -6,7 +6,7 @@ package io.github.m
 data class Symbol(val string: String) : Value.Delegate {
     override fun toString() = string
 
-    override val value get() = when {
+    override fun value() = when {
         string.isEmpty() -> List.Nil
         else -> Pair(Char(string[0]), Symbol(string.drop(1)))
     }
@@ -22,22 +22,22 @@ data class Symbol(val string: String) : Value.Delegate {
     object Definitions {
         @MField("symbol.=")
         @JvmField
-        val eq: Value = Value { x, y -> Bool(from(x).string == from(y).string) }
+        val eq: Value = Value.Impl2 { x, y -> Bool(from(x).string == from(y).string) }
 
         @MField("symbol.+")
         @JvmField
-        val add: Value = Value { x, y -> Symbol(from(x).string + from(y).string) }
+        val add: Value = Value.Impl2 { x, y -> Symbol(from(x).string + from(y).string) }
 
         @MField("symbol->list")
         @JvmField
-        val toList: Value = Value { x -> from(x).string.toList }
+        val toList: Value = Value.Impl1 { x -> from(x).string.toList }
 
         @MField("normalize")
         @JvmField
-        val normalize: Value = Value { x -> Symbol(Symbol.from(x).string.normalize()) }
+        val normalize: Value = Value.Impl1 { x -> Symbol(Symbol.from(x).string.normalize()) }
 
         @MField("unnormalize")
         @JvmField
-        val unnormalize: Value = Value { x -> Symbol(Symbol.from(x).string.unnormalize()) }
+        val unnormalize: Value = Value.Impl1 { x -> Symbol(Symbol.from(x).string.unnormalize()) }
     }
 }

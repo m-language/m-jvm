@@ -14,7 +14,7 @@ interface Data : Value.Delegate {
      */
     fun get(name: Symbol): Value?
 
-    override val value get() = Pair(type, Value { name -> get(Symbol.from(name)) ?: throw Error("No field $name") })
+    override fun value() = Pair(type, Value { name -> get(Symbol.from(name)) ?: throw Error("No field $name") })
 
     /**
      * An abstract implementation of data.
@@ -31,7 +31,7 @@ interface Data : Value.Delegate {
     object Definitions {
         @MField("data")
         @JvmField
-        val data: Value = Value { type, fields ->
+        val data: Value = Value.Impl2 { type, fields ->
             val fieldsMap = List.from(fields)
                     .map {
                         val pair = Pair.from(it)

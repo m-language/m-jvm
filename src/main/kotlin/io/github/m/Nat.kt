@@ -36,50 +36,50 @@ data class Nat(val nat: UInt) : Value {
 
         @MField("nat.0?")
         @JvmField
-        val isZero: Value = Value { x -> Bool(from(x).nat == 0U) }
+        val isZero: Value = Value.Impl1 { x -> Bool(from(x).nat == 0U) }
 
         @MField("nat.inc")
         @JvmField
-        val inc: Value = Value { x -> Nat(from(x).nat + 1U) }
+        val inc: Value = Value.Impl1 { x -> Nat(from(x).nat + 1U) }
 
         @MField("nat.dec")
         @JvmField
-        val dec: Value = Value { x -> Nat(from(x).nat - 1U) }
+        val dec: Value = Value.Impl1 { x -> Nat(from(x).nat - 1U) }
 
         @MField("nat.+")
         @JvmField
-        val add: Value = Value { x, y -> Nat(from(x).nat + from(y).nat) }
+        val add: Value = Value.Impl2 { x, y -> Nat(from(x).nat + from(y).nat) }
 
         @MField("nat.-")
         @JvmField
-        val sub: Value = Value { x, y -> Nat(from(x).nat - from(y).nat) }
+        val sub: Value = Value.Impl2 { x, y -> Nat(from(x).nat - from(y).nat) }
 
         @MField("nat.*")
         @JvmField
-        val mul: Value = Value { x, y -> Nat(from(x).nat * from(y).nat) }
+        val mul: Value = Value.Impl2 { x, y -> Nat(from(x).nat * from(y).nat) }
 
         @MField("nat./")
         @JvmField
-        val div: Value = Value { x, y -> Nat(from(x).nat / from(y).nat) }
+        val div: Value = Value.Impl2 { x, y -> Nat(from(x).nat / from(y).nat) }
 
         @MField("nat.%")
         @JvmField
-        val rem: Value = Value { x, y -> Nat(from(x).nat % from(y).nat) }
+        val rem: Value = Value.Impl2 { x, y -> Nat(from(x).nat % from(y).nat) }
 
         @MField("nat.<")
         @JvmField
-        val lt: Value = Value { x, y -> Bool(from(x).nat < from(y).nat) }
+        val lt: Value = Value.Impl2 { x, y -> Bool(from(x).nat < from(y).nat) }
 
         @MField("nat.>")
         @JvmField
-        val gt: Value = Value { x, y -> Bool(from(x).nat > from(y).nat) }
+        val gt: Value = Value.Impl2 { x, y -> Bool(from(x).nat > from(y).nat) }
 
         @MField("nat.=")
         @JvmField
-        val eq: Value = Value { x, y -> Bool(from(x).nat == from(y).nat) }
+        val eq: Value = Value.Impl2 { x, y -> Bool(from(x).nat == from(y).nat) }
 
         @MField("nat->char")
         @JvmField
-        val toChar: Value = Value { x -> Char(from(x).nat.toInt().toChar()) }
+        val toChar: Value = Value.Impl1 { x -> Char(from(x).nat.toInt().toChar()) }
     }
 }
