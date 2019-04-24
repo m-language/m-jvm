@@ -29,19 +29,19 @@ sealed class Either : Value {
      */
     @Suppress("unused")
     object Definitions {
-        @MField("left")
+        @MField(name = "left")
         @JvmField
         val left: Value = Value.Impl1 { x -> Left(x) }
 
-        @MField("right")
+        @MField(name = "right")
         @JvmField
         val right: Value = Value.Impl1 { x -> Right(x) }
 
-        @MField("left?")
+        @MField(name = "left?")
         @JvmField
         val isLeft: Value = Value.Impl1 { x -> Bool(from(x) is Left) }
 
-        @MField("right?")
+        @MField(name = "right?")
         @JvmField
         val isRight: Value = Value.Impl1 { x -> Bool(from(x) is Right) }
     }

@@ -18,27 +18,27 @@ data class Char(val char: kotlin.Char) : Value.Delegate {
      */
     @Suppress("unused")
     object Definitions {
-        @MField("char.=")
+        @MField(name = "char.=")
         @JvmField
         val eq: Value = Value.Impl2 { x, y -> Bool(from(x).char == from(y).char) }
 
-        @MField("char->nat")
+        @MField(name = "char->nat")
         @JvmField
         val toNat: Value = Value.Impl1 { x -> Nat(from(x).char.toInt().toUInt()) }
 
-        @MField("space")
+        @MField(name = "space")
         @JvmField
         val space: Value = Char(' ')
 
-        @MField("tab")
+        @MField(name = "tab")
         @JvmField
         val tab: Value = Char('\t')
 
-        @MField("linefeed")
+        @MField(name = "linefeed")
         @JvmField
         val linefeed: Value = Char('\n')
 
-        @MField("carriage-return")
+        @MField(name = "carriage-return")
         @JvmField
         val carriageReturn: Value = Char('\r')
     }

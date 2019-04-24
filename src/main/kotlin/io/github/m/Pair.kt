@@ -5,13 +5,13 @@ package io.github.m
  */
 data class Pair(val first: Value, val second: Value) : Value {
     override fun invoke(arg: Value): Value = when (arg) {
-        Bool.True -> first
-        Bool.False -> second
+        Bool.TRUE -> first
+        Bool.FALSE -> second
         else -> arg(first, second)
     }
 
     companion object {
-        fun from(value: Value) = value as? Pair ?: Pair(value(Bool.True), value(Bool.False))
+        fun from(value: Value) = value as? Pair ?: Pair(value(Bool.TRUE), value(Bool.FALSE))
     }
 
     /**
@@ -19,15 +19,15 @@ data class Pair(val first: Value, val second: Value) : Value {
      */
     @Suppress("unused")
     object Definitions {
-        @MField("pair")
+        @MField(name = "pair")
         @JvmField
         val pair: Value = Value.Impl2 { first, second -> Pair(first, second) }
 
-        @MField("first")
+        @MField(name = "first")
         @JvmField
         val first: Value = Value.Impl1 { pair -> from(pair).first }
 
-        @MField("second")
+        @MField(name = "second")
         @JvmField
         val second: Value = Value.Impl1 { pair -> from(pair).second }
     }

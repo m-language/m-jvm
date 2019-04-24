@@ -12,7 +12,7 @@ object Internals {
      * Converts a [io.github.m.Bool] to a [java.lang.Boolean].
      */
     @JvmStatic
-    fun toPrimitiveBool(bool: Value) = Bool.from(bool) === Bool.True
+    fun toPrimitiveBool(bool: Value) = Bool.from(bool).value
 
     /**
      * The singleton empty list.

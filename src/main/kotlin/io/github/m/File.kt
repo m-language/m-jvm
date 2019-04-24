@@ -39,47 +39,47 @@ data class File(val value: java.io.File) : Value {
      */
     @Suppress("unused")
     object Definitions {
-        @MField("file.local-file")
+        @MField(name = "file.local-file")
         @JvmField
         val localFile: Value = File(java.io.File("."))
 
-        @MField("file.name")
+        @MField(name = "file.name")
         @JvmField
         val name: Value = Value.Impl1 { file -> (file as File).name.toList }
 
-        @MField("file.name-without-extension")
+        @MField(name = "file.name-without-extension")
         @JvmField
         val nameWithoutExtension: Value = Value.Impl1 { file -> (file as File).nameWithoutExtension.toList }
 
-        @MField("file.child")
+        @MField(name = "file.child")
         @JvmField
         val child: Value = Value.Impl2 { file, name -> (file as File).child(name.toString) }
 
-        @MField("file.exists?")
+        @MField(name = "file.exists?")
         @JvmField
         val exists: Value = Value.Impl1 { file -> Process { (file as File).exists() } }
 
-        @MField("file.read")
+        @MField(name = "file.read")
         @JvmField
         val read: Value = Value.Impl1 { file -> Process { List.valueOf((file as File).read().map(::Char)) } }
 
-        @MField("file.write")
+        @MField(name = "file.write")
         @JvmField
         val write: Value = Value.Impl2 { file, text -> Process { (file as File).write(List.from(text).asSequence().map { it as Char }); List.Nil } }
 
-        @MField("file.child-files")
+        @MField(name = "file.child-files")
         @JvmField
         val childFiles: Value = Value.Impl1 { file -> Process { List.valueOf((file as File).childFiles()) } }
 
-        @MField("file.directory?")
+        @MField(name = "file.directory?")
         @JvmField
         val isDirectory: Value = Value.Impl1 { file -> Process { Bool((file as File).isDirectory) } }
 
-        @MField("file.copy")
+        @MField(name = "file.copy")
         @JvmField
         val copy: Value = Value.Impl2 { file, dest -> Process { (file as File).copy(dest as File); List.Nil } }
 
-        @MField("mpm-root")
+        @MField(name = "mpm-root")
         @JvmField
         val mpmRoot: Value = File(java.io.File.listRoots().first()).child("mpm-root")
     }

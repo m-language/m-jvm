@@ -39,19 +39,19 @@ interface Process : Value {
      */
     @Suppress("unused")
     object Definitions {
-        @MField("impure")
+        @MField(name = "impure")
         @JvmField
         val impure: Value = Value.Impl1 { value -> Impure(value) }
 
-        @MField("then-run-with")
+        @MField(name = "then-run-with")
         @JvmField
         val thenRunWith: Value = Value.Impl2 { proc, fn -> ThenRunWith(proc as Process, fn) }
 
-        @MField("then-run")
+        @MField(name = "then-run")
         @JvmField
         val thenRun: Value = Value.Impl2 { proc1, proc2 -> ThenRun(proc1 as Process, proc2 as Process) }
 
-        @MField("run-with")
+        @MField(name = "run-with")
         @JvmField
         val runWith: Value = Value.Impl2 { proc, fn -> RunWith(proc as Process, fn) }
     }

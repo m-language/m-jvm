@@ -76,23 +76,23 @@ object Interpreter {
      */
     @Suppress("unused")
     object Definitions {
-        @MField("interpret-declarations")
+        @MField(name = "interpret-declarations")
         @JvmField
         val interpretDeclarations: Value = Value.Impl2 { declarations, heap ->
             Heap.from(heap).interpret((declarations as List).asSequence().map { it as Declaration })
         }
 
-        @MField("interpret-declaration")
+        @MField(name = "interpret-declaration")
         @JvmField
         val interpretDeclaration: Value = Value.Impl2 { declaration, heap ->
             Heap.from(heap).interpret(sequenceOf(declaration as Declaration))
         }
 
-        @MField("interpret-def-declaration")
+        @MField(name = "interpret-def-declaration")
         @JvmField
         val interpretDefDeclaration: Value = interpretDeclaration
 
-        @MField("interpret-fn-declaration")
+        @MField(name = "interpret-fn-declaration")
         @JvmField
         val interpretFnDeclaration: Value = interpretDeclaration
     }

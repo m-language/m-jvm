@@ -29,7 +29,7 @@ interface Data : Value.Delegate {
     }
 
     object Definitions {
-        @MField("data")
+        @MField(name = "data")
         @JvmField
         val data: Value = Value.Impl2 { type, fields ->
             val fieldsMap = List.from(fields)

@@ -21,15 +21,15 @@ object Stdio {
      */
     @Suppress("unused")
     object Definitions {
-        @MField("stdout")
+        @MField(name = "stdout")
         @JvmField
         val stdout: Value = Stdout
 
-        @MField("stderr")
+        @MField(name = "stderr")
         @JvmField
         val stderr: Value = Stderr
 
-        @MField("stdin")
+        @MField(name = "stdin")
         @JvmField
         val stdin: Value = Stdin
     }

@@ -9,7 +9,7 @@ import org.objectweb.asm.commons.*
 @UseExperimental(ExperimentalUnsignedTypes::class)
 object Backend {
     val internals: Map<String, (GeneratorAdapter) -> Unit> = listOf<java.lang.Class<*>>(
-            Bool.Definitions::class.java,
+            Bool::class.java,
             Char.Definitions::class.java,
             Data.Definitions::class.java,
             Declaration.Definitions::class.java,
@@ -36,7 +36,7 @@ object Backend {
     fun clazz(
             path: String,
             declarations: Sequence<Declaration>
-    ): ByteArray = object : ClassWriter(ClassWriter.COMPUTE_FRAMES) { }.run {
+    ): ByteArray = object : ClassWriter(COMPUTE_FRAMES) { }.run {
         val type = Type.getType("L$path;")
         visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC + Opcodes.ACC_FINAL, path, null, "java/lang/Object", null)
 

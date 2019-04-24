@@ -13,7 +13,7 @@ sealed class List : Iterable<Value>, Value {
     }
 
     object Nil : List(), Value.Delegate {
-        override fun value() = Bool.False
+        override fun value() = Bool.FALSE
         override fun toString() = "()"
     }
 
@@ -35,11 +35,11 @@ sealed class List : Iterable<Value>, Value {
      */
     @Suppress("unused")
     object Definitions {
-        @MField("nil")
+        @MField(name = "nil")
         @JvmField
         val nil: Value = Nil
 
-        @MField("cons")
+        @MField(name = "cons")
         @JvmField
         val cons: Value = Value.Impl2 { car, cdr -> Cons(car, from(cdr)) }
     }

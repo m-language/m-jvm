@@ -20,24 +20,24 @@ data class Symbol(val string: String) : Value.Delegate {
      */
     @Suppress("unused")
     object Definitions {
-        @MField("symbol.=")
+        @MField(name = "symbol.=")
         @JvmField
         val eq: Value = Value.Impl2 { x, y -> Bool(from(x).string == from(y).string) }
 
-        @MField("symbol.+")
+        @MField(name = "symbol.+")
         @JvmField
         val add: Value = Value.Impl2 { x, y -> Symbol(from(x).string + from(y).string) }
 
-        @MField("symbol->list")
+        @MField(name = "symbol->list")
         @JvmField
         val toList: Value = Value.Impl1 { x -> from(x).string.toList }
 
-        @MField("normalize")
+        @MField(name = "normalize")
         @JvmField
-        val normalize: Value = Value.Impl1 { x -> Symbol(Symbol.from(x).string.normalize()) }
+        val normalize: Value = Value.Impl1 { x -> Symbol(from(x).string.normalize()) }
 
-        @MField("unnormalize")
+        @MField(name = "unnormalize")
         @JvmField
-        val unnormalize: Value = Value.Impl1 { x -> Symbol(Symbol.from(x).string.unnormalize()) }
+        val unnormalize: Value = Value.Impl1 { x -> Symbol(from(x).string.unnormalize()) }
     }
 }

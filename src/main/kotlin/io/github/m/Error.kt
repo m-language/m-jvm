@@ -9,7 +9,7 @@ class Error(message: String) : Throwable(message), Value {
 
     @Suppress("unused")
     object Definitions {
-        @MField("error")
+        @MField(name = "error")
         @JvmField
         val error: Value = Value.Impl1 { arg -> Error(List.from(arg).toString) }
     }
