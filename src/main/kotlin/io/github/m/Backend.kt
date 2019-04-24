@@ -8,12 +8,12 @@ import org.objectweb.asm.commons.*
  */
 @UseExperimental(ExperimentalUnsignedTypes::class)
 object Backend {
-    val internals: Map<String, (GeneratorAdapter) -> Unit> = listOf<java.lang.Class<*>>(
+    val internals: Map<String, (GeneratorAdapter) -> Unit> = listOf<Class<*>>(
             Bool::class.java,
             Char.Definitions::class.java,
             Data.Definitions::class.java,
             Declaration.Definitions::class.java,
-            Either.Definitions::class.java,
+            Either::class.java,
             Error.Definitions::class.java,
             File.Definitions::class.java,
             Generator.Definitions::class.java,
