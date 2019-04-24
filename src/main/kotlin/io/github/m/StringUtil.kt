@@ -2,9 +2,9 @@
 
 package io.github.m
 
-val String.toList get(): List = asSequence().map(Char::valueOf).list()
+val String.toList get(): List = Symbol.toList(this)
 
-val Value.toString get() = String(List.from(this).toList().map { Char.from(it).value }.toCharArray())
+val Value.toString get() = Symbol.toString(List.from(this))
 
 fun String.normalize() = Symbol.normalize(this)
 

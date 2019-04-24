@@ -14,7 +14,7 @@ object Backend {
             Data::class.java,
             Declaration.Definitions::class.java,
             Either::class.java,
-            Error.Definitions::class.java,
+            Error::class.java,
             File.Definitions::class.java,
             Generator.Definitions::class.java,
             Interpreter.Definitions::class.java,

@@ -32,10 +32,23 @@ public class Symbol implements Value.Delegate {
         if (value instanceof Symbol) {
             return (Symbol) value;
         } else {
-            StringBuilder builder = new StringBuilder();
-            List.from(value).forEach(x -> builder.append(Char.from(x).value));
-            return new Symbol(builder.toString());
+            return new Symbol(toString(List.from(value)));
         }
+    }
+
+    public static String toString(List list) {
+        StringBuilder builder = new StringBuilder();
+        list.forEach(x -> builder.append(Char.from(x).value));
+        return builder.toString();
+    }
+
+    static List toList(String string) {
+        char[] chars = string.toCharArray();
+        List list = List.NIL;
+        for (int i = chars.length - 1; i >= 0; i--) {
+            list = new List.Cons(Char.valueOf(chars[i]), list);
+        }
+        return list;
     }
 
     public static String normalize(String string) {
@@ -86,7 +99,7 @@ public class Symbol implements Value.Delegate {
     public static final Value add = new Value.Impl2((x, y) -> new Symbol(from(x).value + from(y).value));
 
     @MField(name = "symbol->list")
-    public static final Value toList = new Value.Impl1(value -> List.valueOf(Symbol.from(value).value));
+    public static final Value toList = new Value.Impl1(value -> toList(from(value).value));
 
     @MField(name = "normalize")
     public static final Value normalize = new Value.Impl1(value -> new Symbol(normalize(from(value).value)));
