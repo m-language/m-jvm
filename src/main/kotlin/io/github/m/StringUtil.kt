@@ -4,7 +4,7 @@ package io.github.m
 
 val String.toList get(): List = asSequence().map(::Char).list()
 
-val Value.toString get() = String(List.from(this).toList().map { Char.from(it).char }.toCharArray())
+val Value.toString get() = String(List.from(this).toList().map { Char.from(it).value }.toCharArray())
 
 fun String.normalize() = map {
     if (it in 'a'..'z' || it == '_') "$it" else "$${it.toInt()}"

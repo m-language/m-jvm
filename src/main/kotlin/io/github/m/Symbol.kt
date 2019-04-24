@@ -12,7 +12,7 @@ data class Symbol(val string: String) : Value.Delegate {
     }
 
     companion object {
-        fun from(value: Value) = value as? Symbol ?: Symbol(String(List.from(value).map { Char.from(it).char }.toCharArray()))
+        fun from(value: Value) = value as? Symbol ?: Symbol(String(List.from(value).map { Char.from(it).value }.toCharArray()))
     }
 
     /**

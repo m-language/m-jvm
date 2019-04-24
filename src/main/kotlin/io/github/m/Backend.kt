@@ -10,7 +10,7 @@ import org.objectweb.asm.commons.*
 object Backend {
     val internals: Map<String, (GeneratorAdapter) -> Unit> = listOf<Class<*>>(
             Bool::class.java,
-            Char.Definitions::class.java,
+            Char::class.java,
             Data.Definitions::class.java,
             Declaration.Definitions::class.java,
             Either::class.java,
