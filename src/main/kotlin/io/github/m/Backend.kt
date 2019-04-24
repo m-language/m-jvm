@@ -11,7 +11,7 @@ object Backend {
     val internals: Map<String, (GeneratorAdapter) -> Unit> = listOf<Class<*>>(
             Bool::class.java,
             Char::class.java,
-            Data.Definitions::class.java,
+            Data::class.java,
             Declaration.Definitions::class.java,
             Either::class.java,
             Error.Definitions::class.java,
