@@ -3,7 +3,6 @@ package io.github.m
 /**
  * An operation for a method.
  */
-@UseExperimental(ExperimentalUnsignedTypes::class)
 interface Operation : Value {
     data class LocalVariable(val name: List, val index: Nat) : Data.Abstract("local-variable-operation", "name" to name, "index" to index), Operation
     data class GlobalVariable(val name: List, val path: List) : Data.Abstract("global-variable-operation", "name" to name, "path" to path), Operation

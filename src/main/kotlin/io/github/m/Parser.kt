@@ -72,7 +72,6 @@ object Parser {
                 }
             }
 
-    @UseExperimental(ExperimentalUnsignedTypes::class)
     fun parse(file: File, path: String, init: Boolean): Sequence<Expr> = when {
         file.isDirectory -> file.childFiles().asSequence().flatMap {
             parse(it, if (init) "" else "$path${file.name}/", false)

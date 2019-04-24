@@ -50,7 +50,7 @@ object Generator {
         val result = generateExpr(expr, newEnv.copy(locals = locals, def = mangledName))
         Result(
                 Operation.Fn(Symbol.toList(expr.path), Symbol.toList(mangledName), Symbol.toList(name), result.operation, closureOperations.list()),
-                Declaration.Fn(Symbol.toList(mangledName), Symbol.toList(expr.path), closures.map { it.toList }.list(), result.operation).cons(result.declarations),
+                Declaration.Fn(Symbol.toList(mangledName), Symbol.toList(expr.path), closures.map { Symbol.toList(it) }.list(), result.operation).cons(result.declarations),
                 result.env.copy(locals = newEnv.locals, def = newEnv.def, index = newEnv.index)
         )
     }

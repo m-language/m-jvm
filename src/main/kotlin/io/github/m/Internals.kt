@@ -29,7 +29,7 @@ object Internals {
     fun run(args: Array<String>, clazz: Class<*>) {
         try {
             val function = clazz.getField(Symbol.normalize("")).get(null) as? Value ?: throw Exception("Could not find main function")
-            val value  = function(args.asSequence().map { it.toList }.list())
+            val value  = function(args.asSequence().map { Symbol.toList(it) }.list())
             if (value is Error)
                 throw value
             val process = value as? Process ?: throw Exception("Main must create a process (found ${value::class.java.name})")

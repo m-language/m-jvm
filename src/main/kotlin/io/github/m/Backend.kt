@@ -6,7 +6,6 @@ import org.objectweb.asm.commons.*
 /**
  * Jvm backend.
  */
-@UseExperimental(ExperimentalUnsignedTypes::class)
 object Backend {
     val internals: Map<String, (GeneratorAdapter) -> Unit> = listOf<Class<*>>(
             Bool::class.java,
