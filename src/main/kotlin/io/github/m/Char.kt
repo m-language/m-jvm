@@ -7,10 +7,10 @@ package io.github.m
 data class Char(val char: kotlin.Char) : Value.Delegate {
     override fun toString() = char.toString()
 
-    override fun value() = Nat(char.toInt().toUInt())
+    override fun value() = Nat(char.toInt())
 
     companion object {
-        fun from(value: Value) = value as? Char ?: Char(Nat.from(value).nat.toInt().toChar())
+        fun from(value: Value) = value as? Char ?: Char(Nat.from(value).value.toChar())
     }
 
     /**
@@ -24,7 +24,7 @@ data class Char(val char: kotlin.Char) : Value.Delegate {
 
         @MField(name = "char->nat")
         @JvmField
-        val toNat: Value = Value.Impl1 { x -> Nat(from(x).char.toInt().toUInt()) }
+        val toNat: Value = Value.Impl1 { x -> Nat(from(x).char.toInt()) }
 
         @MField(name = "space")
         @JvmField

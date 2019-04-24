@@ -3,9 +3,8 @@ package io.github.m
 /**
  * Class representing an M position.
  */
-@UseExperimental(ExperimentalUnsignedTypes::class)
-data class Position(val line: UInt, val char: UInt) {
-    fun nextChar() = copy(char = char + 1U)
-    fun nextLine() = copy(line = line + 1U, char = 1U)
+data class Position(val line: Int, val char: Int) {
+    fun nextChar() = copy(char = char + 1)
+    fun nextLine() = copy(line = line + 1, char = 1)
     override fun toString() = "$line:$char"
 }

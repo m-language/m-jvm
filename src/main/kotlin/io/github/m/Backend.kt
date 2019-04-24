@@ -19,7 +19,7 @@ object Backend {
             Generator.Definitions::class.java,
             Interpreter.Definitions::class.java,
             List::class.java,
-            Nat.Definitions::class.java,
+            Nat::class.java,
             Operation.Definitions::class.java,
             Pair::class.java,
             Process.Definitions::class.java,
@@ -127,7 +127,7 @@ object Backend {
     }
 
     private fun GeneratorAdapter.write(operation: Operation.LocalVariable) {
-        loadArg(operation.index.nat.toInt())
+        loadArg(operation.index.value)
     }
 
     private fun GeneratorAdapter.write(operation: Operation.GlobalVariable) {
@@ -204,7 +204,7 @@ object Backend {
     }
 
     private fun GeneratorAdapter.write(operation: Operation.LineNumber) {
-        visitLineNumber(operation.line.nat.toInt(), mark())
+        visitLineNumber(operation.line.value, mark())
         write(operation.operation)
     }
 

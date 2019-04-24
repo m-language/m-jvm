@@ -7,7 +7,7 @@ package io.github.m
 @UseExperimental(ExperimentalUnsignedTypes::class)
 object Compiler {
     @JvmStatic
-    fun main(args: kotlin.Array<String>) {
+    fun main(args: Array<String>) {
         if (args.size != 2) {
             System.err.println("Usage: mc <input> <output>")
         } else {
@@ -23,7 +23,7 @@ object Compiler {
 
     fun compile(`in`: File, out: File) {
         val exprs = Parser.parse(`in`, "", true).asCons()
-        val env = Generator.Env(emptyMap(), emptyMap(), "", 0U)
+        val env = Generator.Env(emptyMap(), emptyMap(), "", 0)
         val result = Generator.generate(exprs, env)
         Generator.writeProgram(out, result.operation, result.declarations)
     }

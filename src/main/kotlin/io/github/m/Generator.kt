@@ -3,12 +3,11 @@ package io.github.m
 import java.nio.file.StandardOpenOption
 
 @Suppress("MemberVisibilityCanBePrivate")
-@UseExperimental(ExperimentalUnsignedTypes::class)
 object Generator {
     data class Env(val locals: Map<String, Variable.Local>,
                    val globals: Map<String, Variable.Global>,
                    val def: String,
-                   val index: UInt) {
+                   val index: Int) {
         operator fun get(name: String) = locals[name] ?: globals[name]
     }
 
@@ -18,7 +17,7 @@ object Generator {
 
     class Failure(message: String) : Exception(message)
 
-    fun mangleLambdaName(name: String, index: UInt) = "${name}_$index"
+    fun mangleLambdaName(name: String, index: Int) = "${name}_$index"
 
     fun closures(expr: Expr, env: Env): Set<String> = when (expr) {
         is Expr.Symbol -> when (env[expr.name]) {
@@ -40,13 +39,13 @@ object Generator {
 
     fun generateLambdaExpr(name: String, expr: Expr, env: Env): Result = run {
         val mangledName = mangleLambdaName(env.def, env.index)
-        val newEnv = env.copy(index = env.index + 1U)
+        val newEnv = env.copy(index = env.index + 1)
         val closures = closures(expr, env).asSequence()
         val closureOperations = closures.map { generateIdentifierExpr(it, newEnv).operation }
         val locals = newEnv.locals + closures
                 .plus(element = name)
                 .withIndex()
-                .map { (index, name) -> name to Variable.Local(name.toList, Nat(index.toUInt())) }
+                .map { (index, name) -> name to Variable.Local(name.toList, Nat(index)) }
                 .toMap()
         val result = generateExpr(expr, newEnv.copy(locals = locals, def = mangledName))
         Result(
@@ -96,7 +95,7 @@ object Generator {
         when (expr) {
             is Expr.Symbol -> generateIdentifierExpr(expr.name, env)
             is Expr.List -> generateListExpr(expr, env)
-        }.run { copy(operation = Operation.LineNumber(operation, Nat(expr.start.line))) }
+        }.run { copy(operation = Operation.LineNumber(operation, Nat(expr.start.line.toInt()))) }
     } catch (e: Failure) {
         throw e
     } catch (e: Exception) {
@@ -139,7 +138,7 @@ object Generator {
         @MField(name = "mangle-fn-name")
         @JvmField
         val mangleFnName: Value = Value.Impl2 { name, index ->
-            mangleLambdaName(List.from(name).toString, Nat.from(index).nat).toList
+            mangleLambdaName(List.from(name).toString, Nat.from(index).value).toList
         }
 
         @MField(name = "jvm-backend")

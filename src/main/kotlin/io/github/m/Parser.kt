@@ -77,6 +77,6 @@ object Parser {
         file.isDirectory -> file.childFiles().asSequence().flatMap {
             parse(it, if (init) "" else "$path${file.name}/", false)
         }
-        else -> parse(file.read().asCons(), "$path${file.nameWithoutExtension}", Position(1U, 1U), nil()).asSequence()
+        else -> parse(file.read().asCons(), "$path${file.nameWithoutExtension}", Position(1, 1), nil()).asSequence()
     }
 }
