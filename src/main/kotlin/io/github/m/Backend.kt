@@ -22,7 +22,7 @@ object Backend {
             Nat::class.java,
             Operation.Definitions::class.java,
             Pair::class.java,
-            Process.Definitions::class.java,
+            Process::class.java,
             Stdio.Definitions::class.java,
             Symbol::class.java
     ).flatMap {
