@@ -21,7 +21,7 @@ object Backend {
             List.Definitions::class.java,
             Nat.Definitions::class.java,
             Operation.Definitions::class.java,
-            Pair.Definitions::class.java,
+            Pair::class.java,
             Process.Definitions::class.java,
             Stdio.Definitions::class.java,
             Symbol.Definitions::class.java
