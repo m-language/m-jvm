@@ -4,6 +4,8 @@ package io.github.m;
  * M wrapper class for errors.
  */
 public class Error extends Throwable implements Value {
+    private static final long serialVersionUID = 5916392373513454218L;
+
     public Error(String message) {
         super(message);
     }
