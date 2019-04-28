@@ -1,7 +1,5 @@
 package io.github.m;
 
-import java.util.function.Supplier;
-
 /**
  * M implementation of IO processes.
  */
@@ -12,19 +10,6 @@ public interface Process extends Value {
     @Override
     default Value invoke(Value arg) {
         return new ThenRunWith(this, arg);
-    }
-
-    final class Impl implements Process {
-        public final Supplier<Value> supplier;
-
-        public Impl(Supplier<Value> supplier) {
-            this.supplier = supplier;
-        }
-
-        @Override
-        public Value run() {
-            return supplier.get();
-        }
     }
 
     final class Impure implements Process {

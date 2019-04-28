@@ -11,11 +11,6 @@ public class Nat implements Value {
     }
 
     @Override
-    public String toString() {
-        return Integer.toString(value);
-    }
-
-    @Override
     public Value invoke(Value arg) {
         return new Value.Impl1(arg2 -> invoke(arg, arg2));
     }
@@ -27,6 +22,11 @@ public class Nat implements Value {
             x = arg1.invoke(x);
         }
         return x;
+    }
+
+    @Override
+    public String toString() {
+        return Integer.toString(value);
     }
 
     public static Nat valueOf(int value) {

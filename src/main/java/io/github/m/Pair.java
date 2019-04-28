@@ -23,6 +23,11 @@ public class Pair implements Value {
         }
     }
 
+    @Override
+    public String toString() {
+        return "(" + first + ", " + second + ")";
+    }
+
     public static Pair from(Value value) {
         if (value instanceof Pair) {
             return (Pair) value;

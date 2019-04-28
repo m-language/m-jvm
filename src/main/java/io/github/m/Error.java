@@ -19,6 +19,11 @@ public class Error extends Throwable implements Value {
         return this;
     }
 
+    @Override
+    public String toString() {
+        return "Error(" + getMessage() + ")";
+    }
+
     public static Error wrap(Throwable t) {
         return new Error(t.getMessage(), t);
     }

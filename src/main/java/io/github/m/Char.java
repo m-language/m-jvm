@@ -11,13 +11,13 @@ public class Char implements Value.Delegate {
     }
 
     @Override
-    public String toString() {
-        return Character.toString(value);
+    public Value value() {
+        return Nat.valueOf((int) value);
     }
 
     @Override
-    public Value value() {
-        return Nat.valueOf((int) value);
+    public String toString() {
+        return Character.toString(value);
     }
 
     public static Char valueOf(char value) {

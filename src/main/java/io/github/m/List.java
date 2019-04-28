@@ -2,6 +2,8 @@ package io.github.m;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * M implementation of lists.
@@ -40,6 +42,11 @@ public interface List extends Iterable<Value>, Value {
         public Value invoke(Value arg1, Value arg2) {
             return arg2;
         }
+
+        @Override
+        public String toString() {
+            return "()";
+        }
     };
 
     final class Cons implements List, Value.Delegate {
@@ -54,6 +61,15 @@ public interface List extends Iterable<Value>, Value {
         @Override
         public Value value() {
             return new Pair(car, cdr);
+        }
+
+        @Override
+        public String toString() {
+            Stream.Builder<Value> builder = Stream.builder();
+            iterator().forEachRemaining(builder);
+            return builder.build()
+                    .map(Value::toString)
+                    .collect(Collectors.joining(" ", "(", ")"));
         }
     }
 

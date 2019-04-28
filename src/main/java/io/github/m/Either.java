@@ -27,6 +27,11 @@ public interface Either extends Value {
         public Value fold(Value left, Value right) {
             return left.invoke(value);
         }
+
+        @Override
+        public String toString() {
+            return "Left(" + value + ")";
+        }
     }
 
     final class Right implements Either {
@@ -39,6 +44,11 @@ public interface Either extends Value {
         @Override
         public Value fold(Value left, Value right) {
             return right.invoke(value);
+        }
+
+        @Override
+        public String toString() {
+            return "Right(" + value + ")";
         }
     }
 

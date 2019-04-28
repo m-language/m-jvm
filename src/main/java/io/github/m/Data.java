@@ -51,6 +51,11 @@ public interface Data extends Value.Delegate {
                 return value;
         }
 
+        @Override
+        public String toString() {
+            return type.toString() + fields.toString();
+        }
+
         private static Map<String, Value> toMap(kotlin.Pair<String, Value>[] fields) {
             Map<String, Value> map = new HashMap<>(fields.length);
             for (kotlin.Pair<String, Value> field : fields) {
