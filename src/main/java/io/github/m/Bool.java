@@ -19,7 +19,7 @@ public final class Bool implements Value {
     }
 
     /**
-     * Partial application of {@link Bool#invoke(Value, Value)}.
+     * Partially applies this value to an argument.
      */
     @Override
     public Value invoke(Value arg) {
@@ -27,7 +27,7 @@ public final class Bool implements Value {
     }
 
     /**
-     * Returns {@param arg1} if this is true, or {@param arg2} if this is false.
+     * Returns the first argument if this is true, or the second if this is false.
      */
     @Override
     public Value invoke(Value arg1, Value arg2) {
@@ -53,7 +53,7 @@ public final class Bool implements Value {
     }
 
     /**
-     * Converts a {@link Value} to a boolean.
+     * Converts a value to a boolean.
      */
     public static Bool from(Value value) {
         if (value instanceof Bool) {
@@ -64,7 +64,7 @@ public final class Bool implements Value {
     }
 
     /**
-     * Converts a {@link Value} to a primitive boolean.
+     * Converts a value to a primitive boolean.
      */
     public static boolean primitiveFrom(Value value) {
         return Bool.from(value).value;

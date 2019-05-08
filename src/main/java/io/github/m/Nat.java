@@ -1,9 +1,12 @@
 package io.github.m;
 
 /**
- * M wrapper class for nats.
+ * M wrapper class for natural numbers.
  */
-public class Nat implements Value {
+public final class Nat implements Value {
+    /**
+     * The primitive value of this natural number.
+     */
     public final int value;
 
     private Nat(int value) {
@@ -11,10 +14,21 @@ public class Nat implements Value {
     }
 
     @Override
+    public String toString() {
+        return Integer.toString(value);
+    }
+
+    /**
+     * Partially applies this value to an argument.
+     */
+    @Override
     public Value invoke(Value arg) {
         return new Partial(this, arg);
     }
 
+    /**
+     * Applies the first argument x times to the second argument.
+     */
     @Override
     public Value invoke(Value arg1, Value arg2) {
         Value x = arg2;
@@ -24,15 +38,16 @@ public class Nat implements Value {
         return x;
     }
 
-    @Override
-    public String toString() {
-        return Integer.toString(value);
-    }
-
+    /**
+     * Wraps a primitive integer in a natural number.
+     */
     public static Nat valueOf(int value) {
         return new Nat(value);
     }
 
+    /**
+     * Converts a value to a natural number.
+     */
     public static Nat from(Value value) {
         if (value instanceof Nat) {
             return (Nat) value;
