@@ -26,7 +26,7 @@ fun run(args: Array<String>, clazz: Class<*>) {
                         clean(name.substringBefore("_"))
                     else
                         name
-                    StackTraceElement(it.className, Symbol.unnormalize(clean(it.methodName)), it.fileName, it.lineNumber)
+                    StackTraceElement(it.className, Symbol.denormalize(clean(it.methodName)), it.fileName, it.lineNumber)
                 }
                 .toTypedArray()
         throw e

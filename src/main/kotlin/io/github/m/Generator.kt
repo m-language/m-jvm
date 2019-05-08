@@ -137,13 +137,13 @@ object Generator {
     object Definitions {
         @MField(name = "mangle-fn-name")
         @JvmField
-        val mangleFnName: Value = Value.Impl2 { name, index ->
+        val mangleFnName: Value = Value.Impl2("mangle-fn-name") { name, index ->
             Symbol.toList(mangleLambdaName(Symbol.toString(List.from(name)), Nat.from(index).value))
         }
 
         @MField(name = "jvm-backend")
         @JvmField
-        val jvmBackend: Value = Value.Impl3 { out, operation, declarations ->
+        val jvmBackend: Value = Value.Impl3("jvm-backend") { out, operation, declarations ->
             Process {
                 writeProgram(out as File, operation as Operation, List.from(declarations).asSequence().map { it as Declaration })
                 List.NIL
@@ -152,7 +152,7 @@ object Generator {
 
         @MField(name = "debug")
         @JvmField
-        val debug: Value = Value.Impl1 { x ->
+        val debug: Value = Value.Impl1("debug") { x ->
             println(x)
             x
         }

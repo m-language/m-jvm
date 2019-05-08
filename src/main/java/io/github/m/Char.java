@@ -45,8 +45,8 @@ public class Char implements Value.Delegate {
     public static final Value carriageReturn = new Char('\r');
 
     @MField(name = "char.=")
-    public static final Value eq = new Value.Impl2((x, y) -> Bool.valueOf(from(x).value == from(y).value));
+    public static final Value eq = new Value.Impl2("char.=", (x, y) -> Bool.valueOf(from(x).value == from(y).value));
 
     @MField(name = "char->nat")
-    public static final Value toNat = new Value.Impl1(value -> Nat.valueOf((int) from(value).value));
+    public static final Value toNat = new Value.Impl1("char->nat", value -> Nat.valueOf((int) from(value).value));
 }

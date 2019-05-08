@@ -37,11 +37,11 @@ public class Pair implements Value {
     }
 
     @MField(name = "pair")
-    public static Value pair = new Value.Impl2(Pair::new);
+    public static Value pair = new Value.Impl2("pair", Pair::new);
 
     @MField(name = "first")
-    public static Value $first = new Value.Impl1(pair -> Pair.from(pair).first);
+    public static Value $first = new Value.Impl1("first", pair -> Pair.from(pair).first);
 
     @MField(name = "second")
-    public static Value $second = new Value.Impl1(pair -> Pair.from(pair).second);
+    public static Value $second = new Value.Impl1("second", pair -> Pair.from(pair).second);
 }

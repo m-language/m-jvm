@@ -29,5 +29,5 @@ public class Error extends Throwable implements Value {
     }
 
     @MField(name = "error")
-    public static final Value error = new Value.Impl1(message -> new Error(Symbol.toString(List.from(message))));
+    public static final Value error = new Value.Impl1("error", message -> new Error(Symbol.toString(List.from(message))));
 }

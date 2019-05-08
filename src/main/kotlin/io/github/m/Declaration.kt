@@ -17,13 +17,13 @@ interface Declaration : Value {
     object Definitions {
         @MField(name = "def-declaration")
         @JvmField
-        val def: Value = Value.Impl3 { name, path, value ->
+        val def: Value = Value.Impl3("def-declaration") { name, path, value ->
             Def(List.from(name), List.from(path), value as Operation)
         }
 
         @MField(name = "fn-declaration")
         @JvmField
-        val fn: Value = Value.Impl4 { name, path, closures, value ->
+        val fn: Value = Value.Impl4("fn-declaration") { name, path, closures, value ->
             Fn(List.from(name), List.from(path), List.from(closures), value as Operation)
         }
     }

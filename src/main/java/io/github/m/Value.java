@@ -43,10 +43,54 @@ public interface Value {
         }
     }
 
+    final class Partial implements Value {
+        private final Value value;
+        private final Value arg;
+
+        public Partial(Value value, Value arg) {
+            this.value = value;
+            this.arg = arg;
+        }
+
+        @Override
+        public Value invoke(Value arg) {
+            return value.invoke(this.arg, arg);
+        }
+
+        @Override
+        public Value invoke(Value arg1, Value arg2) {
+            return value.invoke(this.arg, arg1, arg2);
+        }
+
+        @Override
+        public Value invoke(Value arg1, Value arg2, Value arg3) {
+            return value.invoke(this.arg, arg1, arg2, arg3);
+        }
+
+        @Override
+        public Value invoke(Value arg1, Value arg2, Value arg3, Value arg4) {
+            return value.invoke(this.arg, arg1, arg2, arg3, arg4);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder builder = new StringBuilder();
+            Value value = this;
+            while (value instanceof Partial) {
+                Partial partial = (Partial) value;
+                builder.insert(0, " " + partial.arg);
+                value = partial.value;
+            }
+            return "λ(" + value + builder.toString() + ")";
+        }
+    }
+
     final class Impl1 implements Value {
+        private final String name;
         private final Function<Value, Value> impl;
 
-        public Impl1(Function<Value, Value> impl) {
+        public Impl1(String name, Function<Value, Value> impl) {
+            this.name = name;
             this.impl = impl;
         }
 
@@ -54,77 +98,140 @@ public interface Value {
         public Value invoke(Value arg) {
             return impl.apply(arg);
         }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 
     final class Impl2 implements Value {
+        private final String name;
         private final BiFunction<Value, Value, Value> impl;
 
-        public Impl2(BiFunction<Value, Value, Value> impl) {
+        public Impl2(String name, BiFunction<Value, Value, Value> impl) {
+            this.name = name;
             this.impl = impl;
         }
 
         @Override
         public Value invoke(Value arg) {
-            return new Impl1(arg2 -> invoke(arg, arg2));
+            return new Partial(this, arg);
         }
 
         @Override
         public Value invoke(Value arg1, Value arg2) {
             return impl.apply(arg1, arg2);
         }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 
     final class Impl3 implements Value {
+        private final String name;
         private final TriFunction<Value, Value, Value, Value> impl;
 
-        public Impl3(TriFunction<Value, Value, Value, Value> impl) {
+        public Impl3(String name, TriFunction<Value, Value, Value, Value> impl) {
+            this.name = name;
             this.impl = impl;
         }
 
         @Override
         public Value invoke(Value arg) {
-            return new Impl2((arg2, arg3) -> invoke(arg, arg2, arg3));
+            return new Partial(this, arg);
+        }
+
+        @Override
+        public Value invoke(Value arg1, Value arg2) {
+            return new Partial(new Partial(this, arg1), arg2);
         }
 
         @Override
         public Value invoke(Value arg1, Value arg2, Value arg3) {
             return impl.apply(arg1, arg2, arg3);
         }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 
     final class Impl4 implements Value {
+        private final String name;
         private final QuadFunction<Value, Value, Value, Value, Value> impl;
 
-        public Impl4(QuadFunction<Value, Value, Value, Value, Value> impl) {
+        public Impl4(String name, QuadFunction<Value, Value, Value, Value, Value> impl) {
+            this.name = name;
             this.impl = impl;
         }
 
         @Override
         public Value invoke(Value arg) {
-            return new Impl3((arg2, arg3, arg4) -> invoke(arg, arg2, arg3, arg4));
+            return new Partial(this, arg);
+        }
+
+        @Override
+        public Value invoke(Value arg1, Value arg2) {
+            return new Partial(new Partial(this, arg1), arg2);
+        }
+
+        @Override
+        public Value invoke(Value arg1, Value arg2, Value arg3) {
+            return new Partial(new Partial(new Partial(this, arg1), arg2), arg3);
         }
 
         @Override
         public Value invoke(Value arg1, Value arg2, Value arg3, Value arg4) {
             return impl.apply(arg1, arg2, arg3, arg4);
         }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 
     final class Impl5 implements Value {
+        private final String name;
         private final PentaFunction<Value, Value, Value, Value, Value, Value> impl;
 
-        public Impl5(PentaFunction<Value, Value, Value, Value, Value, Value> impl) {
+        public Impl5(String name, PentaFunction<Value, Value, Value, Value, Value, Value> impl) {
+            this.name = name;
             this.impl = impl;
         }
 
         @Override
         public Value invoke(Value arg) {
-            return new Impl4((arg2, arg3, arg4, arg5) -> invoke(arg, arg2, arg3, arg4, arg5));
+            return new Partial(this, arg);
+        }
+
+        @Override
+        public Value invoke(Value arg1, Value arg2) {
+            return new Partial(new Partial(this, arg1), arg2);
+        }
+
+        @Override
+        public Value invoke(Value arg1, Value arg2, Value arg3) {
+            return new Partial(new Partial(new Partial(this, arg1), arg2), arg3);
+        }
+
+        @Override
+        public Value invoke(Value arg1, Value arg2, Value arg3, Value arg4) {
+            return new Partial(new Partial(new Partial(new Partial(this, arg1), arg2), arg3), arg4);
         }
 
         @Override
         public Value invoke(Value arg1, Value arg2, Value arg3, Value arg4, Value arg5) {
             return impl.apply(arg1, arg2, arg3, arg4, arg5);
+        }
+
+        @Override
+        public String toString() {
+            return name;
         }
     }
 }

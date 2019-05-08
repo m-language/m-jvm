@@ -35,7 +35,7 @@ public interface List extends Iterable<Value>, Value {
     List NIL = new List() {
         @Override
         public Value invoke(Value arg) {
-            return new Value.Impl1(arg2 -> invoke(arg, arg2));
+            return new Partial(this, arg);
         }
 
         @Override
@@ -78,7 +78,7 @@ public interface List extends Iterable<Value>, Value {
             return (List) value;
         } else {
             return (List) value.invoke(
-                    new Value.Impl3((a, b, c) -> new Cons(a, from(b))),
+                    new Value.Impl3("(fn a b c (cons a b))", (a, b, c) -> new Cons(a, from(b))),
                     NIL
             );
         }
@@ -88,5 +88,5 @@ public interface List extends Iterable<Value>, Value {
     Value nil = NIL;
 
     @MField(name = "cons")
-    Value cons = new Value.Impl2((car, cdr) -> new Cons(car, from(cdr)));
+    Value cons = new Value.Impl2("cons", (car, cdr) -> new Cons(car, from(cdr)));
 }

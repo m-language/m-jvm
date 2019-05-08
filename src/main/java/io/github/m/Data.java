@@ -20,7 +20,7 @@ public interface Data extends Value.Delegate {
 
     @Override
     default Value value() {
-        return new Pair(type(), new Value.Impl1(name -> get(Symbol.from(name))));
+        return new Pair(type(), new Value.Impl1(type().value, name -> get(Symbol.from(name))));
     }
 
     class Abstract implements Data {
@@ -66,7 +66,7 @@ public interface Data extends Value.Delegate {
     }
 
     @MField(name = "data")
-    Value data = new Value.Impl2((type, fields) -> {
+    Value data = new Value.Impl2("data", (type, fields) -> {
         Map<String, Value> map = new HashMap<>();
         List.from(fields).forEach(value -> {
             Pair pair = Pair.from(value);

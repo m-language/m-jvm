@@ -8,7 +8,7 @@ public interface Either extends Value {
 
     @Override
     default Value invoke(Value arg) {
-        return new Value.Impl1(arg2 -> invoke(arg, arg2));
+        return new Partial(this, arg);
     }
 
     @Override
@@ -56,13 +56,13 @@ public interface Either extends Value {
         if (value instanceof Either) {
             return (Either) value;
         } else {
-            return (Either) value.invoke(new Value.Impl1(Left::new), new Value.Impl1(Right::new));
+            return (Either) value.invoke(left, right);
         }
     }
 
     @MField(name = "left")
-    Value left = new Value.Impl1(Left::new);
+    Value left = new Value.Impl1("left", Left::new);
 
     @MField(name = "right")
-    Value right = new Value.Impl1(Right::new);
+    Value right = new Value.Impl1("right", Right::new);
 }

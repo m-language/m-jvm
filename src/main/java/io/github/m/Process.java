@@ -1,5 +1,7 @@
 package io.github.m;
 
+import java.util.function.Supplier;
+
 /**
  * M implementation of IO processes.
  */
@@ -10,6 +12,26 @@ public interface Process extends Value {
     @Override
     default Value invoke(Value arg) {
         return new ThenRunWith(this, arg);
+    }
+
+    final class Impl implements Process {
+        public final String name;
+        public final Supplier<Value> impl;
+
+        public Impl(String name, Supplier<Value> impl) {
+            this.name = name;
+            this.impl = impl;
+        }
+
+        @Override
+        public Value run() {
+            return impl.get();
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 
     final class Impure implements Process {
@@ -72,14 +94,14 @@ public interface Process extends Value {
     }
 
     @MField(name = "impure")
-    Value impure = new Value.Impl1(Impure::new);
+    Value impure = new Value.Impl1("impure", Impure::new);
 
     @MField(name = "then-run-with")
-    Value thenRunWith = new Value.Impl2((proc, fn) -> new ThenRunWith((Process) proc, fn));
+    Value thenRunWith = new Value.Impl2("then-run-with", (proc, fn) -> new ThenRunWith((Process) proc, fn));
 
     @MField(name = "then-run")
-    Value thenRun = new Value.Impl2((first, second) -> new ThenRun((Process) first, (Process) second));
+    Value thenRun = new Value.Impl2("then-run", (first, second) -> new ThenRun((Process) first, (Process) second));
 
     @MField(name = "run-with")
-    Value runWith = new Value.Impl2((proc, fn) -> new RunWith((Process) proc, fn));
+    Value runWith = new Value.Impl2("run-with", (proc, fn) -> new RunWith((Process) proc, fn));
 }

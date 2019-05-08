@@ -70,7 +70,7 @@ public class Symbol implements Value.Delegate {
         }
     }
 
-    public static String unnormalize(String string) {
+    public static String denormalize(String string) {
         char[] chars = string.toCharArray();
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < chars.length; i++) {
@@ -93,17 +93,17 @@ public class Symbol implements Value.Delegate {
     }
 
     @MField(name = "symbol.=")
-    public static final Value eq = new Value.Impl2((x, y) -> Bool.valueOf(from(x).value.equals(from(y).value)));
+    public static final Value eq = new Value.Impl2("symbol.=", (x, y) -> Bool.valueOf(from(x).value.equals(from(y).value)));
 
     @MField(name = "symbol.+")
-    public static final Value add = new Value.Impl2((x, y) -> new Symbol(from(x).value + from(y).value));
+    public static final Value add = new Value.Impl2("symbol.+", (x, y) -> new Symbol(from(x).value + from(y).value));
 
     @MField(name = "symbol->list")
-    public static final Value toList = new Value.Impl1(value -> toList(from(value).value));
+    public static final Value toList = new Value.Impl1("symbol->list", value -> toList(from(value).value));
 
     @MField(name = "normalize")
-    public static final Value normalize = new Value.Impl1(value -> new Symbol(normalize(from(value).value)));
+    public static final Value normalize = new Value.Impl1("normalize", value -> new Symbol(normalize(from(value).value)));
 
     @MField(name = "denormalize")
-    public static final Value unnormalize = new Value.Impl1(value -> new Symbol(unnormalize(from(value).value)));
+    public static final Value denormalize = new Value.Impl1("denormalize", value -> new Symbol(denormalize(from(value).value)));
 }

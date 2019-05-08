@@ -8,6 +8,8 @@ version '0.1.0'
 
 apply plugin: 'java'
 
+sourceCompatibility = 1.8
+
 repositories {
     mavenCentral()
     maven { url "https://dl.bintray.com/aedans/maven/" }
@@ -38,5 +40,10 @@ compileKotlin {
         allWarningsAsErrors = true
         languageVersion = "1.3"
         apiVersion = "1.3"
+        jvmTarget = '1.8'
     }
+}
+
+compileTestKotlin {
+    kotlinOptions.jvmTarget = '1.8'
 }

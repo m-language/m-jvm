@@ -12,7 +12,7 @@ public class Nat implements Value {
 
     @Override
     public Value invoke(Value arg) {
-        return new Value.Impl1(arg2 -> invoke(arg, arg2));
+        return new Partial(this, arg);
     }
 
     @Override
@@ -48,38 +48,38 @@ public class Nat implements Value {
     public static final Value one = new Nat(1);
 
     @MField(name = "nat.0?")
-    public static final Value isZero = new Value.Impl1(nat -> Bool.valueOf(from(nat).value == 0));
+    public static final Value isZero = new Value.Impl1("nat.0?", nat -> Bool.valueOf(from(nat).value == 0));
 
     @MField(name = "nat.inc")
-    public static final Value inc = new Value.Impl1(nat -> new Nat(from(nat).value + 1));
+    public static final Value inc = new Value.Impl1("nat.inc", nat -> new Nat(from(nat).value + 1));
 
     @MField(name = "nat.dec")
-    public static final Value dec = new Value.Impl1(nat -> new Nat(from(nat).value - 1));
+    public static final Value dec = new Value.Impl1("nat.dec", nat -> new Nat(from(nat).value - 1));
 
     @MField(name = "nat.+")
-    public static final Value add = new Value.Impl2((x, y) -> new Nat(from(x).value + from(y).value));
+    public static final Value add = new Value.Impl2("nat.+", (x, y) -> new Nat(from(x).value + from(y).value));
 
     @MField(name = "nat.-")
-    public static final Value sub = new Value.Impl2((x, y) -> new Nat(from(x).value - from(y).value));
+    public static final Value sub = new Value.Impl2("nat.-", (x, y) -> new Nat(from(x).value - from(y).value));
 
     @MField(name = "nat.*")
-    public static final Value mul = new Value.Impl2((x, y) -> new Nat(from(x).value * from(y).value));
+    public static final Value mul = new Value.Impl2("nat.*", (x, y) -> new Nat(from(x).value * from(y).value));
 
     @MField(name = "nat./")
-    public static final Value div = new Value.Impl2((x, y) -> new Nat(from(x).value / from(y).value));
+    public static final Value div = new Value.Impl2("nat./", (x, y) -> new Nat(from(x).value / from(y).value));
 
     @MField(name = "nat.%")
-    public static final Value mod = new Value.Impl2((x, y) -> new Nat(from(x).value % from(y).value));
+    public static final Value mod = new Value.Impl2("nat.%", (x, y) -> new Nat(from(x).value % from(y).value));
 
     @MField(name = "nat.<")
-    public static final Value lt = new Value.Impl2((x, y) -> Bool.valueOf(from(x).value < from(y).value));
+    public static final Value lt = new Value.Impl2("nat.<", (x, y) -> Bool.valueOf(from(x).value < from(y).value));
 
     @MField(name = "nat.>")
-    public static final Value gt = new Value.Impl2((x, y) -> Bool.valueOf(from(x).value > from(y).value));
+    public static final Value gt = new Value.Impl2("nat.>", (x, y) -> Bool.valueOf(from(x).value > from(y).value));
 
     @MField(name = "nat.=")
-    public static final Value eq = new Value.Impl2((x, y) -> Bool.valueOf(from(x).value == from(y).value));
+    public static final Value eq = new Value.Impl2("nat.=", (x, y) -> Bool.valueOf(from(x).value == from(y).value));
 
     @MField(name = "nat->char")
-    public static final Value toChar = new Value.Impl1(x -> Char.valueOf((char) from(x).value));
+    public static final Value toChar = new Value.Impl1("nat->char", x -> Char.valueOf((char) from(x).value));
 }

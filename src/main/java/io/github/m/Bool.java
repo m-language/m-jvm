@@ -3,25 +3,14 @@ package io.github.m;
 /**
  * M wrapper class for booleans.
  */
-public class Bool implements Value {
+public final class Bool implements Value {
+    /**
+     * The primitive value of this boolean.
+     */
     public final boolean value;
 
-    private Bool(boolean value) {
+    public Bool(boolean value) {
         this.value = value;
-    }
-
-    @Override
-    public Value invoke(Value arg) {
-        return new Value.Impl1(arg2 -> invoke(arg, arg2));
-    }
-
-    @Override
-    public Value invoke(Value arg1, Value arg2) {
-        if (value) {
-            return arg1;
-        } else {
-            return arg2;
-        }
     }
 
     @Override
@@ -29,6 +18,25 @@ public class Bool implements Value {
         return Boolean.toString(value);
     }
 
+    /**
+     * Partial application of {@link Bool#invoke(Value, Value)}.
+     */
+    @Override
+    public Value invoke(Value arg) {
+        return new Partial(this, arg);
+    }
+
+    /**
+     * Returns {@param arg1} if this is true, or {@param arg2} if this is false.
+     */
+    @Override
+    public Value invoke(Value arg1, Value arg2) {
+        return value ? arg1 : arg2;
+    }
+
+    /**
+     * Wraps a primitive boolean in a boolean.
+     */
     public static Bool valueOf(boolean value) {
         if (value) {
             return TRUE;
@@ -37,6 +45,16 @@ public class Bool implements Value {
         }
     }
 
+    /**
+     * Tests if a value is a boolean.
+     */
+    public static boolean is(Value value) {
+        return value instanceof Bool || value.invoke(TRUE, FALSE) instanceof Bool;
+    }
+
+    /**
+     * Converts a {@link Value} to a boolean.
+     */
     public static Bool from(Value value) {
         if (value instanceof Bool) {
             return (Bool) value;
@@ -45,23 +63,22 @@ public class Bool implements Value {
         }
     }
 
-    public static boolean primitiveValue(Value value) {
+    /**
+     * Converts a {@link Value} to a primitive boolean.
+     */
+    public static boolean primitiveFrom(Value value) {
         return Bool.from(value).value;
     }
 
-    public static final Bool TRUE = new Bool(true) {
-        @Override
-        public Value invoke(Value arg1, Value arg2) {
-            return arg1;
-        }
-    };
+    /**
+     * The singleton truthy value.
+     */
+    public static final Bool TRUE = new Bool(true);
 
-    public static final Bool FALSE = new Bool(false) {
-        @Override
-        public Value invoke(Value arg1, Value arg2) {
-            return arg2;
-        }
-    };
+    /**
+     * The singleton falsy value.
+     */
+    public static final Bool FALSE = new Bool(false);
 
     @MField(name = "true")
     public static final Value $true = TRUE;

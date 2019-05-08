@@ -145,7 +145,7 @@ object Backend {
 
         invokeStatic(
                 Type.getType("Lio/github/m/Bool;"),
-                Method.getMethod("boolean primitiveValue (io.github.m.Value)")
+                Method.getMethod("boolean primitiveFrom (io.github.m.Value)")
         )
 
         ifZCmp(GeneratorAdapter.EQ, falseLabel)
