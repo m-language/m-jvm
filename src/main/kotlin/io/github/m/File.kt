@@ -39,9 +39,9 @@ data class File(val value: java.io.File) : Value {
      */
     @Suppress("unused")
     object Definitions {
-        @MField(name = "file.local-file")
+        @MField(name="file.from-path")
         @JvmField
-        val localFile: Value = File(java.io.File("."))
+        val fromPath: Value = Value.Impl1("file.from-path") { path -> File((path as Symbol).value) }
 
         @MField(name = "file.name")
         @JvmField
