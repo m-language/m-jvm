@@ -1,6 +1,5 @@
 package io.github.m;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,18 +17,33 @@ public interface Data extends Value.Delegate {
      */
     Value get(Symbol name);
 
+    /**
+     * Delegates this data to a pair of its type and a function from a symbol to
+     * the value of the field with that symbol's name.
+     */
     @Override
     default Value value() {
-        return new Pair(type(), new Value.Impl1(type().value, name -> get(Symbol.from(name))));
+        Value function = new Impl1(type().value, name -> get(Symbol.from(name)));
+        return new Pair(type(), function);
     }
 
+    /**
+     * An abstract implementation of data.
+     */
     class Abstract implements Data {
-        public final Symbol type;
-        public final Map<String, Value> fields;
+        /**
+         * The type of the data.
+         */
+        private final Symbol type;
+
+        /**
+         * A map of fields of the data.
+         */
+        private final Map<String, Value> fields;
 
         public Abstract(Symbol type, Map<String, Value> fields) {
             this.type = type;
-            this.fields = Collections.unmodifiableMap(fields);
+            this.fields = fields;
         }
 
         @SafeVarargs
