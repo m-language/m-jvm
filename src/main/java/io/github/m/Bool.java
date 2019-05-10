@@ -9,7 +9,7 @@ public final class Bool implements Value {
      */
     public final boolean value;
 
-    public Bool(boolean value) {
+    private Bool(boolean value) {
         this.value = value;
     }
 

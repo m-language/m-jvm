@@ -1,9 +1,12 @@
 package io.github.m;
 
 /**
- * M wrapper class for chars.
+ * M wrapper class for characters.
  */
-public class Char implements Value.Delegate {
+public final class Char implements Value.Delegate {
+    /**
+     * The primitive value of this character.
+     */
     public final char value;
 
     private Char(char value) {
@@ -11,19 +14,29 @@ public class Char implements Value.Delegate {
     }
 
     @Override
-    public Value value() {
-        return Nat.valueOf((int) value);
-    }
-
-    @Override
     public String toString() {
         return Character.toString(value);
     }
 
+    /**
+     * Delegates this character to the natural number whose value us the Unicode
+     * code point of this character.
+     */
+    @Override
+    public Value value() {
+        return Nat.valueOf((int) value);
+    }
+
+    /**
+     * Wraps a primitive character in a character.
+     */
     public static Char valueOf(char value) {
         return new Char(value);
     }
 
+    /**
+     * Converts a value to a character.
+     */
     public static Char from(Value value) {
         if (value instanceof Char) {
             return (Char) value;
