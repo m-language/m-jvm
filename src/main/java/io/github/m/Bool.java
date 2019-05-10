@@ -46,13 +46,6 @@ public final class Bool implements Value {
     }
 
     /**
-     * Tests if a value is a boolean.
-     */
-    public static boolean is(Value value) {
-        return value instanceof Bool || value.invoke(TRUE, FALSE) instanceof Bool;
-    }
-
-    /**
      * Converts a value to a boolean.
      */
     public static Bool from(Value value) {
