@@ -81,6 +81,7 @@ data class File(val value: java.io.File) : Value {
 
         @MField(name = "mpm-root")
         @JvmField
-        val mpmRoot: Value = File(java.io.File.listRoots().first()).child("mpm-root")
+        val mpmRoot: Value = System.getenv("MPM_ROOT")?.let { File(it) }
+                ?: File(java.io.File.listRoots().first()).child("mpm-root")
     }
 }
