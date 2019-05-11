@@ -2,6 +2,9 @@ package io.github.m;
 
 import java.io.IOException;
 
+/**
+ * M wrapper class for standard input and output.
+ */
 public final class Stdio {
     @MField(name = "stdout")
     public static final Value stdout = new Value.Impl1("stdout", arg ->

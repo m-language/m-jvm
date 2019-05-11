@@ -12,10 +12,16 @@ import java.util.function.Function;
  */
 @FunctionalInterface
 public interface Value {
+    /**
+     * Invokes this value with the empty list.
+     */
     default Value invoke() {
         return invoke(List.NIL);
     }
 
+    /**
+     * The result of applying this value to one argument.
+     */
     Value invoke(Value arg);
 
     default Value invoke(Value arg1, Value arg2) {
@@ -34,6 +40,9 @@ public interface Value {
         return invoke(arg1, arg2, arg3, arg4).invoke(arg5);
     }
 
+    /**
+     * Delegates a value to another value.
+     */
     interface Delegate extends Value {
         Value value();
 
@@ -43,6 +52,9 @@ public interface Value {
         }
     }
 
+    /**
+     * Partially applies a value to an argument.
+     */
     final class Partial implements Value {
         private final Value value;
         private final Value arg;

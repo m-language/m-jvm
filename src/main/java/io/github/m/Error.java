@@ -15,15 +15,21 @@ public class Error extends Throwable implements Value {
     }
 
     @Override
-    public Value invoke(Value arg) {
-        return this;
-    }
-
-    @Override
     public String toString() {
         return "Error(" + getMessage() + ")";
     }
 
+    /**
+     * Ignores its argument and returns itself.
+     */
+    @Override
+    public Value invoke(Value arg) {
+        return this;
+    }
+
+    /**
+     * Wraps a throwable in an error.
+     */
     public static Error wrap(Throwable t) {
         return new Error(t.getMessage(), t);
     }

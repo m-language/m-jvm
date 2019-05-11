@@ -3,7 +3,10 @@ package io.github.m;
 /**
  * M wrapper class for strings.
  */
-public class Symbol implements Value.Delegate {
+public final class Symbol implements Value.Delegate {
+    /**
+     * The primitive value of this symbol.
+     */
     public final String value;
 
     private Symbol(String value) {
@@ -15,19 +18,24 @@ public class Symbol implements Value.Delegate {
         return value;
     }
 
+    /**
+     * Delegates this symbol to a list of characters.
+     */
     @Override
     public Value value() {
-        if (value.isEmpty()) {
-            return List.NIL;
-        } else {
-            return new Pair(Char.valueOf(value.charAt(0)), new Symbol(value.substring(1)));
-        }
+        return toList(value);
     }
 
+    /**
+     * Wraps a primitive string in a symbol.
+     */
     public static Symbol valueOf(String string) {
         return new Symbol(string);
     }
 
+    /**
+     * Converts a value to a symbol.
+     */
     public static Symbol from(Value value) {
         if (value instanceof Symbol) {
             return (Symbol) value;
@@ -36,13 +44,19 @@ public class Symbol implements Value.Delegate {
         }
     }
 
+    /**
+     * Converts a value to a string.
+     */
     public static String toString(Value value) {
         StringBuilder builder = new StringBuilder();
         List.from(value).forEach(x -> builder.append(Char.from(x).value));
         return builder.toString();
     }
 
-    static List toList(String string) {
+    /**
+     * Converts a string to a list.
+     */
+    public static List toList(String string) {
         char[] chars = string.toCharArray();
         List list = List.NIL;
         for (int i = chars.length - 1; i >= 0; i--) {

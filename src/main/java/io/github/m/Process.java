@@ -7,13 +7,22 @@ import java.util.function.Supplier;
  */
 @FunctionalInterface
 public interface Process extends Value {
+    /**
+     * Unsafely runs a process.
+     */
     Value run();
 
+    /**
+     * Flat maps this process with a value.
+     */
     @Override
     default Value invoke(Value arg) {
         return new ThenRunWith(this, arg);
     }
 
+    /**
+     * The default implementation of a process.
+     */
     final class Impl implements Process {
         public final String name;
         public final Supplier<Value> impl;
@@ -34,6 +43,9 @@ public interface Process extends Value {
         }
     }
 
+    /**
+     * Creates a process from a value.
+     */
     final class Impure implements Process {
         public final Value value;
 
@@ -47,6 +59,9 @@ public interface Process extends Value {
         }
     }
 
+    /**
+     * Flat maps a process with a value..
+     */
     final class ThenRunWith implements Process {
         public final Process process;
         public final Value value;
@@ -62,6 +77,9 @@ public interface Process extends Value {
         }
     }
 
+    /**
+     * Runs two processes sequentially.
+     */
     final class ThenRun implements Process {
         public final Process first;
         public final Process second;
@@ -78,6 +96,9 @@ public interface Process extends Value {
         }
     }
 
+    /**
+     * Maps a process with a value..
+     */
     final class RunWith implements Process {
         public final Process process;
         public final Value value;

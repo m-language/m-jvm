@@ -32,6 +32,9 @@ public interface List extends Iterable<Value>, Value {
         };
     }
 
+    /**
+     * The singleton empty list.
+     */
     List NIL = new List() {
         @Override
         public Value invoke(Value arg) {
@@ -49,18 +52,23 @@ public interface List extends Iterable<Value>, Value {
         }
     };
 
+    /**
+     * The cons of a value to a list.
+     */
     final class Cons implements List, Value.Delegate {
+        /**
+         * The head of the list.
+         */
         public final Value car;
+
+        /**
+         * The tail of the list.
+         */
         public final List cdr;
 
         public Cons(Value car, List cdr) {
             this.car = car;
             this.cdr = cdr;
-        }
-
-        @Override
-        public Value value() {
-            return new Pair(car, cdr);
         }
 
         @Override
@@ -71,8 +79,19 @@ public interface List extends Iterable<Value>, Value {
                     .map(Value::toString)
                     .collect(Collectors.joining(" ", "(", ")"));
         }
+
+        /**
+         * Delegates this list to a pair of its car and cdr.
+         */
+        @Override
+        public Value value() {
+            return new Pair(car, cdr);
+        }
     }
 
+    /**
+     * Converts a value to a list.
+     */
     static List from(Value value) {
         if (value instanceof List) {
             return (List) value;

@@ -3,8 +3,15 @@ package io.github.m;
 /**
  * M wrapper class for pairs.
  */
-public class Pair implements Value {
+public final class Pair implements Value {
+    /**
+     * The first value of the pair.
+     */
     public final Value first;
+
+    /**
+     * The second value of the pair.
+     */
     public final Value second;
 
     public Pair(Value first, Value second) {
@@ -13,21 +20,21 @@ public class Pair implements Value {
     }
 
     @Override
-    public Value invoke(Value arg) {
-        if (arg == Bool.TRUE) {
-            return first;
-        } else if (arg == Bool.FALSE) {
-            return second;
-        } else {
-            return arg.invoke(first, second);
-        }
-    }
-
-    @Override
     public String toString() {
         return "(" + first + ", " + second + ")";
     }
 
+    /**
+     * Applies the argument to the first and second elements of this pair.
+     */
+    @Override
+    public Value invoke(Value arg) {
+        return arg.invoke(first, second);
+    }
+
+    /**
+     * Converts a value to a pair.
+     */
     public static Pair from(Value value) {
         if (value instanceof Pair) {
             return (Pair) value;
