@@ -3,7 +3,7 @@ package io.github.m;
 /**
  * M wrapper class for errors.
  */
-public class Error extends Throwable implements Value {
+public class Error extends RuntimeException implements Value {
     private static final long serialVersionUID = 5916392373513454218L;
 
     public Error(String message) {
@@ -35,5 +35,7 @@ public class Error extends Throwable implements Value {
     }
 
     @MField(name = "error")
-    public static final Value error = new Value.Impl1("error", message -> new Error(Symbol.toString(List.from(message))));
+    public static final Value error = new Value.Impl1("error", message -> {
+        throw new Error(Symbol.toString(List.from(message)));
+    });
 }

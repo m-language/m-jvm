@@ -9,7 +9,7 @@ package io.github.m
  * @param clazz The class to run.
  */
 @Suppress("unused")
-fun run(args: Array<String>, clazz: Class<*>) {
+fun run(args: kotlin.Array<String>, clazz: Class<*>) {
     try {
         val function = clazz.getField(Symbol.normalize("")).get(null) as? Value
                 ?: throw Exception("Could not find main function")
