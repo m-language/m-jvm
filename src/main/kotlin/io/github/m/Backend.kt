@@ -23,7 +23,8 @@ object Backend {
             Declaration.Definitions::class.java,
             Generator.Definitions::class.java,
             Interpreter.Definitions::class.java,
-            Operation.Definitions::class.java
+            Operation.Definitions::class.java,
+            HTTP.Definitions::class.java
     ).flatMap {
         val type = Type.getType("L${it.name.replace('.', '/')};")
         it.fields.asSequence()
