@@ -24,10 +24,6 @@ dependencies {
     compile 'com.github.kittinunf.fuel:fuel:2.0.1'
 }
 
-test {
-    useJUnitPlatform()
-}
-
 task fatJar(type: Jar) {
     manifest { attributes 'Main-Class': 'io.github.m.Compiler' }
     baseName = project.name
