@@ -28,6 +28,7 @@ public final class Cli {
                         stackTrace[i].getLineNumber()
                 );
             }
+            e.setStackTrace(stackTrace);
             throw e;
         }
         System.out.flush();
