@@ -21,9 +21,9 @@ object Compiler {
     }
 
     fun compile(`in`: File, out: File) {
-        val exprs = Parser.parse(`in`, "", true).asCons()
+        val exprs = Parser.parse(`in`).asCons()
         val env = Generator.Env(emptyMap(), emptyMap(), "", 0)
-        val result = Generator.generate(exprs, env)
+        val result = Generator(`in`.nameWithoutExtension).generate(exprs, env)
         Generator.writeProgram(out, result.operation, result.declarations)
     }
 }

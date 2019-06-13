@@ -3,7 +3,7 @@ package io.github.m
 import java.nio.file.StandardOpenOption
 
 @Suppress("MemberVisibilityCanBePrivate")
-object Generator {
+data class Generator(val path: String) {
     data class Env(val locals: Map<String, Variable.Local>,
                    val globals: Map<String, Variable.Global>,
                    val def: String,
@@ -16,8 +16,6 @@ object Generator {
                       val env: Env)
 
     class Failure(message: String) : Exception(message)
-
-    fun mangleLambdaName(name: String, index: Int) = "${name}_$index"
 
     fun closures(expr: Expr, env: Env): Set<String> = when (expr) {
         is Expr.Symbol -> when (env[expr.name]) {
@@ -49,8 +47,8 @@ object Generator {
                 .toMap()
         val result = generateExpr(expr, newEnv.copy(locals = locals, def = mangledName))
         Result(
-                Operation.Fn(Symbol.toList(expr.path), Symbol.toList(mangledName), Symbol.toList(name), result.operation, closureOperations.list()),
-                Declaration.Fn(Symbol.toList(mangledName), Symbol.toList(expr.path), closures.map { Symbol.toList(it) }.list(), result.operation).cons(result.declarations),
+                Operation.Fn(Symbol.toList(path), Symbol.toList(mangledName), Symbol.toList(name), result.operation, closureOperations.list()),
+                Declaration.Fn(Symbol.toList(mangledName), Symbol.toList(path), closures.map { Symbol.toList(it) }.list(), result.operation).cons(result.declarations),
                 result.env.copy(locals = newEnv.locals, def = newEnv.def, index = newEnv.index)
         )
     }
@@ -58,11 +56,11 @@ object Generator {
     fun generateDefExpr(name: String, expr: Expr, env: Env): Result = if (env[name] != null) {
         throw Exception("$name has already been defined")
     } else {
-        val newEnv = env.copy(globals = env.globals + (name to Variable.Global(Symbol.toList(name), Symbol.toList(expr.path))))
+        val newEnv = env.copy(globals = env.globals + (name to Variable.Global(Symbol.toList(name), Symbol.toList(path))))
         val result = generateExpr(expr, newEnv.copy(def = name))
         Result(
-                Operation.Def(Symbol.toList(name), Symbol.toList(expr.path), result.operation),
-                Declaration.Def(Symbol.toList(name), Symbol.toList(expr.path), result.operation).cons(result.declarations),
+                Operation.Def(Symbol.toList(name), Symbol.toList(path), result.operation),
+                Declaration.Def(Symbol.toList(name), Symbol.toList(path), result.operation).cons(result.declarations),
                 result.env.copy(def = newEnv.def)
         )
     }
@@ -95,11 +93,11 @@ object Generator {
         when (expr) {
             is Expr.Symbol -> generateIdentifierExpr(expr.name, env)
             is Expr.List -> generateListExpr(expr, env)
-        }.run { copy(operation = Operation.LineNumber(operation, Nat.valueOf(expr.start.line))) }
+        }
     } catch (e: Failure) {
         throw e
     } catch (e: Exception) {
-        throw Failure("${e.message} at ${expr.path}.${env.def}(${expr.path.substringAfterLast('/')}.m:${expr.start.line})")
+        throw Failure("${e.message} in ${env.def}")
     }
 
     fun generate(exprs: Sequence<Expr>, env: Env): Result = if (exprs.none()) {
@@ -114,24 +112,28 @@ object Generator {
         )
     }
 
-    fun write(bytes: ByteArray, out: File, name: String) {
-        val file = out.child("${name.replace('.', '/')}.class").value
-        val path = file.toPath()
-        file.parentFile.mkdirs()
-        if (file.exists()) java.nio.file.Files.delete(path)
-        java.nio.file.Files.write(path, bytes, StandardOpenOption.CREATE)
+    companion object {
+        fun mangleLambdaName(name: String, index: Int) = "${name}_$index"
+
+        fun write(bytes: ByteArray, out: File, name: String) {
+            val file = out.child("${name.replace('.', '/')}.class").value
+            val path = file.toPath()
+            file.parentFile.mkdirs()
+            if (file.exists()) java.nio.file.Files.delete(path)
+            java.nio.file.Files.write(path, bytes, StandardOpenOption.CREATE)
+        }
+
+        fun generateProgram(@Suppress("UNUSED_PARAMETER") operation: Operation, declarations: Sequence<Declaration>) =
+                declarations
+                        .groupBy { Symbol.toString(it.path) }
+                        .map { (path, decls) -> path to Backend.run { clazz(path, decls.asSequence()) } }
+                        .toMap()
+
+        fun writeProgram(out: File, @Suppress("UNUSED_PARAMETER") operation: Operation, declarations: Sequence<Declaration>) =
+                generateProgram(operation, declarations).forEach { (path, bytes) ->
+                    write(bytes, out, path)
+                }
     }
-
-    fun generateProgram(@Suppress("UNUSED_PARAMETER") operation: Operation, declarations: Sequence<Declaration>) =
-            declarations
-                    .groupBy { Symbol.toString(it.path) }
-                    .map { (path, decls) -> path to Backend.run { clazz(path, decls.asSequence()) } }
-                    .toMap()
-
-    fun writeProgram(out: File, @Suppress("UNUSED_PARAMETER") operation: Operation, declarations: Sequence<Declaration>) =
-            generateProgram(operation, declarations).forEach { (path, bytes) ->
-                write(bytes, out, path)
-            }
 
     @Suppress("unused")
     object Definitions {
