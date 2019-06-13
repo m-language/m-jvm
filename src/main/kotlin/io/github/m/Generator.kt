@@ -4,6 +4,11 @@ import java.nio.file.StandardOpenOption
 
 @Suppress("MemberVisibilityCanBePrivate")
 data class Generator(val path: String) {
+    sealed class Variable {
+        data class Local(val name: List, val index: Nat) : Variable()
+        data class Global(val name: List, val path: List) : Variable()
+    }
+
     data class Env(val locals: Map<String, Variable.Local>,
                    val globals: Map<String, Variable.Global>,
                    val def: String,
