@@ -3,6 +3,9 @@ package io.github.m
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.Method
 
+/**
+ * M wrapper class for http.
+ */
 object HTTP {
     @Suppress("unused")
     object Definitions {
