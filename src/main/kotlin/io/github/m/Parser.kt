@@ -19,24 +19,13 @@ object Parser {
             else
                 parseComment(input.cdr)
 
-    tailrec fun parseSingleQuote(input: Sequence<Char>, acc: Sequence<Char>): Result = when (input.car) {
-        '"' -> Result(input.cdr, Expr.Symbol(String(acc.reversed().toCharArray())))
-        in newlines -> parseSingleQuote(input.cdr, input.car.cons(acc))
-        else -> parseSingleQuote(input.cdr, input.car.cons(acc))
-    }
-
-    tailrec fun parseDoubleQuote(input: Sequence<Char>, acc: Sequence<Char>): Result = when (input.car) {
-        '"' -> if (input.cdr.car == '"')
-            Result(input.cdr.cdr, Expr.Symbol(String(acc.reversed().toCharArray())))
-        else
-            parseDoubleQuote(input.cdr, '"'.cons(acc))
-        in newlines -> parseDoubleQuote(input.cdr, input.car.cons(acc))
-        else -> parseDoubleQuote(input.cdr, input.car.cons(acc))
-    }
-
     fun parseIdentifierLiteralExpr(input: Sequence<Char>, acc: Sequence<Char>): Result = when (input.car) {
-        '"' -> parseDoubleQuote(input.cdr, acc)
-        else -> parseSingleQuote(input, acc)
+        '"' -> when (input.cdr.car) {
+            '"' -> parseIdentifierLiteralExpr(input.cdr.cdr, '"'.cons(acc))
+            else -> Result(input.cdr, Expr.Symbol(String(acc.reversed().toCharArray())))
+        }
+        in newlines -> parseIdentifierLiteralExpr(input.cdr, input.car.cons(acc))
+        else -> parseIdentifierLiteralExpr(input.cdr, input.car.cons(acc))
     }
 
     tailrec fun parseIdentifierExpr(input: Sequence<Char>, acc: Sequence<Char>): Result = when (input.car) {
