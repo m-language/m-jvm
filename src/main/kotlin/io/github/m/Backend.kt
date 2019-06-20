@@ -125,7 +125,6 @@ object Backend {
         is Operation.Symbol -> write(operation)
         is Operation.Apply -> write(operation)
         is Operation.LineNumber -> write(operation)
-        is Operation.Nil -> write(operation)
         else -> TODO(operation.javaClass.name)
     }
 
@@ -210,9 +209,5 @@ object Backend {
     private fun GeneratorAdapter.write(operation: Operation.LineNumber) {
         visitLineNumber(operation.line.value, mark())
         write(operation.operation)
-    }
-
-    private fun GeneratorAdapter.write(@Suppress("UNUSED_PARAMETER") operation: Operation.Nil) {
-        getStatic(Type.getType("Lio/github/m/List;"), "NIL", Type.getType("Lio/github/m/List;"))
     }
 }
