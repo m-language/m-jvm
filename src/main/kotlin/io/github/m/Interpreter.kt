@@ -29,7 +29,6 @@ object Interpreter {
         is Operation.Symbol -> this
         is Operation.Apply -> copy(fn = fn.rename(), arg = arg.rename())
         is Operation.LineNumber -> copy(operation = operation.rename())
-        is Operation.Nil -> this
         else -> TODO(this::class.java.name)
     }
 

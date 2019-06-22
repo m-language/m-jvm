@@ -38,8 +38,6 @@ data class Compiler(val path: String) {
                 null -> throw Exception("Could not find $name")
             }
 
-    fun generateNil(env: Env) = Result(Operation.Nil, nil(), env)
-
     fun generateLambdaExpr(name: String, expr: Expr, env: Env): Result = run {
         val mangledName = mangleLambdaName(env.def, env.index)
         val newEnv = env.copy(index = env.index + 1)
@@ -83,7 +81,7 @@ data class Compiler(val path: String) {
     }
 
     fun generateListExpr(expr: Expr.List, env: Env): Result = if (expr.exprs.isEmpty()) {
-        generateNil(env)
+        Result(Operation.Symbol(List.NIL), nil(), env)
     } else {
         val exprs = expr.exprs
         when ((exprs.first() as? Expr.Symbol)?.name) {
@@ -106,7 +104,7 @@ data class Compiler(val path: String) {
     }
 
     fun generate(exprs: Sequence<Expr>, env: Env): Result = if (exprs.none()) {
-        Result(Operation.Nil, nil(), env)
+        Result(Operation.Symbol(List.NIL), nil(), env)
     } else {
         val car = generateExpr(exprs.car, env)
         val cdr = generate(exprs.cdr, car.env)
