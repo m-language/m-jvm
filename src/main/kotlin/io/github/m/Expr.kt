@@ -1,7 +1,5 @@
 package io.github.m
 
-import io.github.m.List as MList
-
 /**
  * Class representing an M expression.
  */

@@ -24,6 +24,7 @@ object Backend {
             Compiler.Definitions::class.java,
             Interpreter.Definitions::class.java,
             Operation.Definitions::class.java,
+            Tree.Definitions::class.java,
             HTTP.Definitions::class.java
     ).flatMap {
         val type = Type.getType("L${it.name.replace('.', '/')};")
@@ -119,7 +120,6 @@ object Backend {
     fun GeneratorAdapter.write(operation: Operation) = when (operation) {
         is Operation.LocalVariable -> write(operation)
         is Operation.GlobalVariable -> write(operation)
-        is Operation.If -> write(operation)
         is Operation.Def -> write(operation)
         is Operation.Fn -> write(operation)
         is Operation.Symbol -> write(operation)
@@ -136,29 +136,6 @@ object Backend {
     private fun GeneratorAdapter.write(operation: Operation.GlobalVariable) {
         val type = Type.getType("L${Symbol.toString(operation.path)};")
         getStatic(type, Symbol.normalize(Symbol.toString(operation.name)), Type.getType("Lio/github/m/Value;"))
-    }
-
-    private fun GeneratorAdapter.write(operation: Operation.If) {
-        val endLabel = newLabel()
-        val falseLabel = newLabel()
-
-        write(operation.cond)
-
-        invokeStatic(
-                Type.getType("Lio/github/m/Bool;"),
-                Method.getMethod("boolean primitiveFrom (io.github.m.Value)")
-        )
-
-        ifZCmp(GeneratorAdapter.EQ, falseLabel)
-
-        write(operation.`true`)
-        goTo(endLabel)
-
-        mark(falseLabel)
-
-        write(operation.`false`)
-
-        mark(endLabel)
     }
 
     private fun GeneratorAdapter.write(operation: Operation.Def) {
