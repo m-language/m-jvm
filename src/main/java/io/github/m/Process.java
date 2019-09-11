@@ -60,7 +60,7 @@ public interface Process extends Value {
     }
 
     /**
-     * Flat maps a process with a value..
+     * Flat maps a process with a value.
      */
     final class ThenRunWith implements Process {
         public final Process process;

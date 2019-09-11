@@ -11,7 +11,6 @@ interface Operation : Value {
     data class Symbol(val name: List) : Data.Abstract("symbol-operation", "name" to name), Operation
     data class Apply(val fn: Operation, val arg: Operation) : Data.Abstract("apply-operation", "fn" to fn, "arg" to arg), Operation
     data class LineNumber(val operation: Operation, val line: Nat) : Data.Abstract("line-number-operation", "operation" to operation, "line" to line), Operation
-    object Nil : Data.Abstract("nil-operation"), Operation
 
     /**
      * M operation definitions.
@@ -59,9 +58,5 @@ interface Operation : Value {
         val lineNumber: Value = Value.Impl2("line-number-operation") { operation, line ->
             LineNumber(operation as Operation, Nat.from(line))
         }
-
-        @MField(name = "nil-operation")
-        @JvmField
-        val nil: Value = Nil
     }
 }
