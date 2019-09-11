@@ -99,7 +99,7 @@ data class Compiler(val path: String) {
     }
 
     fun generate(trees: Sequence<Tree>, env: Env): Result = if (trees.none()) {
-        Result(Operation.Nil, nil(), env)
+        Result(Operation.Symbol(List.NIL), nil(), env)
     } else {
         val car = generate(trees.car, env)
         val cdr = generate(trees.cdr, car.env)
