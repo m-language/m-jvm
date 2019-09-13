@@ -22,7 +22,6 @@ object Backend {
             File.Definitions::class.java,
             Declaration.Definitions::class.java,
             Compiler.Definitions::class.java,
-            Interpreter.Definitions::class.java,
             Operation.Definitions::class.java,
             Tree.Definitions::class.java,
             HTTP.Definitions::class.java
