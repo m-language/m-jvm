@@ -6,7 +6,6 @@ package io.github.m
 interface Operation : Value {
     data class LocalVariable(val name: List, val index: Nat) : Data.Abstract("local-variable-operation", "name" to name, "index" to index), Operation
     data class GlobalVariable(val name: List, val path: List) : Data.Abstract("global-variable-operation", "name" to name, "path" to path), Operation
-    data class If(val cond: Operation, val `true`: Operation, val `false`: Operation) : Data.Abstract("if-operation", "cond" to cond, "true" to `true`, "false" to `false`), Operation
     data class Def(val name: List, val path: List, val _value: Operation) : Data.Abstract("def-operation", "name" to name, "value" to _value, "path" to path), Operation
     data class Fn(val path: List, val name: List, val arg: List, val _value: Operation, val closures: List) : Data.Abstract("fn-operation", "path" to path, "name" to name, "arg" to arg, "value" to _value, "closures" to closures), Operation
     data class Symbol(val name: List) : Data.Abstract("symbol-operation", "name" to name), Operation
@@ -28,12 +27,6 @@ interface Operation : Value {
         @JvmField
         val globalVariable: Value = Value.Impl2("global-variable-operation") { name, path ->
             GlobalVariable(List.from(name), List.from(path))
-        }
-
-        @MField(name = "if-operation")
-        @JvmField
-        val `if`: Value = Value.Impl3("if-operation") { cond, `true`, `false` ->
-            If(cond as Operation, `true` as Operation, `false` as Operation)
         }
 
         @MField(name = "def-operation")
