@@ -31,7 +31,7 @@ object HTTP {
 
             val httpMethod = Symbol.from(method)
             val methodUsed = methodMap[httpMethod.value]
-                    ?: return@Impl4 Error("$httpMethod is not a valid HTTP method")
+                    ?: throw Error("$httpMethod is not a valid HTTP method")
 
             val request = Fuel.request(methodUsed, Symbol.from(url).value)
                     .header(reqHeaders)
@@ -40,7 +40,7 @@ object HTTP {
                 val fullRequest = when (body) {
                     is File -> request.body(body.value)
                     is Symbol -> request.body(body.value)
-                    else -> return@Process Error("$body is not a valid request body")
+                    else -> throw Error("$body is not a valid request body")
                 }
                 Symbol.valueOf(fullRequest.responseString().second.body().asString(null))
             }

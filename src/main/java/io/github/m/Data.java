@@ -60,7 +60,7 @@ public interface Data extends Value.Delegate {
         public Value get(Symbol name) {
             Value value = fields.get(name.value);
             if (value == null)
-                return new Error("No field " + name + " for data " + type().value);
+                throw new Error("No field " + name + " for data " + type().value);
             else
                 return value;
         }
